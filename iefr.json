@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "project": "ProjectAlpha",
+    "author": "DevTeam",
+    "last_updated": "2025-07-11",
+    "preset_Role": "Professional Software Engineer."
+  },
+  "commands": {
+    "doc": "Now ",
+    "test": "npm run test",
+    "deploy": "npm run deploy"
+  },
+  "rules": {
+    "code_style": {
+        "Strict_Level":"Highest",
+        "Code_Quality":"Higher than best practise.The best quality than human's imagination",
+        "Code_Complexity":"Low and powerful",
+        "exegesis":"SECTION-BASED"
+    },
+    "comments": { 
+
+     },
+    "documentation": "Section-based style",
+    "security": {
+  "forbidden_functions": ["eval", "exec", "pickle.loads"],
+  "data_handling_rules": {
+    "encryption_required": true,
+    "compliance": ["GDPR", "PCI-DSS","CCPA"]
+  }
+  
+  },
+  "testing": { 
+
+    },
+    "error_handling": { 
+
+    },
+    "dependencies": { 
+
+     },
+    "strict_mode": true
+    
+}
