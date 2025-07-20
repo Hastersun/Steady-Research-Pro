@@ -1,0 +1,41 @@
+IntelliGuard 
+Planning Layer（planning.js）(ok)
+
+- [ ] 把复杂任务拆分为多个简单任务
+- [ ] 规划最短路径用于轻量化实现
+
+Hybrid Memory（hybrid.js）
+- [ ] 可持久化的记忆文件（.memo.json)
+- [ ] 动态使用todo.json
+- [ ] 有一个res.json管理记忆的读取
+- [ ] 版本控制
+- [ ] agent间共享
+
+
+Prompt Loader（loader.js）(ok)
+- [ ] 从.pl文件解析prompt
+- [ ] 动态替换变量
+
+Self Align （align.js）
+- [ ] LLM分片检测是否到达效果，如果到达效果就继续，没到达就返回重新执行
+
+JSON-based data structure （data.js）(ok)
+- [ ] 用于规定格式化的数据结构
+- [ ] 自动转化为KG以便于操作
+
+Action Generator（action.js）
+- [ ] 读取RAG+KG
+- [ ] 生成nodejs脚本代码并且在虚拟机运行
+- [ ] 写入JSON-based data structure
+
+Dependency Injection(di.js)(ok)
+  [x] 已实现并增强鲁棒性
+
+Tool Use（tools.js)
+- [ ] 基于api的工具调用
+- [ ] 计算器
+
+Hybrid Augmented Generation（hag.js）
+- [ ] 读取本地文件
+- [ ] 有一个KV数据库管理文件和URL
+- [ ] 读取URL数据
