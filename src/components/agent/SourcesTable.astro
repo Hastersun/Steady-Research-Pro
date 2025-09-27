@@ -1,0 +1,48 @@
+---
+const loading = false
+---
+<div class="bg-white/70 backdrop-blur rounded-xl shadow-soft border border-gray-100 p-6 animate-fade-in">
+  <h2 class="text-sm font-semibold tracking-wide text-gray-500 uppercase mb-4">来源列表</h2>
+  <div class="overflow-x-auto scrollbar-hide -mx-2 px-2">
+    <table class="min-w-full text-left text-xs">
+      <thead class="text-gray-500 font-medium">
+        <tr class="border-b border-gray-100">
+          <th class="py-2 pe-4">标题</th>
+          <th class="py-2 pe-4">域</th>
+          <th class="py-2 pe-4">类型</th>
+          <th class="py-2 pe-4">评分</th>
+          <th class="py-2">操作</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {loading && Array.from({length:5}).map((_,i)=>(
+          <tr>
+            <td class="py-2 pe-4">
+              <div class="h-2.5 rounded bg-gray-200 w-48 overflow-hidden relative"><span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/60 to-transparent animate-shimmer"></span></div>
+            </td>
+            <td class="py-2 pe-4"><div class="h-2.5 w-20 rounded bg-gray-200 overflow-hidden relative animate-pulse" /></td>
+            <td class="py-2 pe-4"><div class="h-4 w-10 rounded bg-gray-200" /></td>
+            <td class="py-2 pe-4"><div class="h-2.5 w-8 rounded bg-gray-200" /></td>
+            <td class="py-2"><div class="h-6 w-16 rounded bg-gray-200" /></td>
+          </tr>
+        ))}
+        {!loading && Array.from({length:5}).map((_,i)=>(
+          <tr class="hover:bg-gray-50/70 animate-fade-in" style={`animation-delay:${i*40}ms`}>
+            <td class="py-2 pe-4 max-w-[220px]">
+              <div class="line-clamp-2 font-medium text-gray-700">OpenAI 发布新评测基准集：更全面衡量 LLM 推理能力 {i+1}</div>
+            </td>
+            <td class="py-2 pe-4 text-gray-500">openai.com</td>
+            <td class="py-2 pe-4"><span class="inline-flex items-center rounded bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 ring-1 ring-inset ring-brand-200/70">Blog</span></td>
+            <td class="py-2 pe-4 font-medium text-gray-800">{(Math.random()*2+3).toFixed(1)}</td>
+            <td class="py-2">
+              <div class="flex gap-1.5">
+                <button class="p-1 rounded hover:bg-gray-100" title="查看"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+                <button class="p-1 rounded hover:bg-gray-100" title="引用"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17a4 4 0 01-4-4V7a4 4 0 014-4h4v4H7v6h4v4H7z"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 17a4 4 0 004-4V7a4 4 0 00-4-4h-4v4h4v6h-4v4h4z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>

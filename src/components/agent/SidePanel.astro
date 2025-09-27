@@ -1,0 +1,361 @@
+<aside class="w-full lg:w-72 flex-shrink-0 space-y-6" id="side-panel">
+  <div class="bg-white/70 backdrop-blur rounded-xl shadow-soft border border-gray-100 p-5">
+    <h2 class="text-sm font-semibold tracking-wide text-gray-500 uppercase">AI 研究配置</h2>
+    <form class="mt-4 space-y-4" id="config-form">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">研究主题</label>
+        <input id="research-topic" type="text" placeholder="例如：大语言模型在教育领域的应用" class="w-full rounded-md border-gray-300 focus:border-brand-500 focus:ring-brand-500 text-sm" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">选择 AI 模型</label>
+        <select id="research-model" class="w-full rounded-md border-gray-300 focus:border-brand-500 focus:ring-brand-500 text-sm">
+          <option value="">加载中...</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">深度级别</label>
+          <select id="depth-level" class="w-full rounded-md border-gray-300 focus:border-brand-500 focus:ring-brand-500 text-sm">
+            <option value="basic">基础分析</option>
+            <option value="standard" selected>标准研究</option>
+            <option value="deep">深度研究</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">创造性</label>
+          <select id="creativity-level" class="w-full rounded-md border-gray-300 focus:border-brand-500 focus:ring-brand-500 text-sm">
+            <option value="0.2">保守</option>
+            <option value="0.5" selected>平衡</option>
+            <option value="0.8">创新</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">研究重点</label>
+        <textarea id="research-focus" rows="2" placeholder="描述特定的研究角度或关注点..." class="w-full rounded-md border-gray-300 focus:border-brand-500 focus:ring-brand-500 text-sm"></textarea>
+      </div>
+      <div class="flex items-center justify-between pt-2">
+        <button type="button" id="stop-btn" class="items-center gap-1.5 rounded-md bg-red-600 px-3 py-2 text-xs font-medium text-white shadow hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 hidden">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 10h6v4H9z"/></svg>
+          停止
+        </button>
+        <button id="start-btn" type="submit" class="inline-flex items-center gap-1.5 rounded-md bg-gray-900 px-3 py-2 text-xs font-medium text-white shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          开始 AI 研究
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="bg-white/70 backdrop-blur rounded-xl shadow-soft border border-gray-100 p-5" id="progress-card">
+    <h3 class="text-sm font-semibold tracking-wide text-gray-500 uppercase mb-3">进度</h3>
+    <div class="mb-4">
+      <div class="h-1.5 w-full bg-gray-200 rounded overflow-hidden relative">
+        <div id="progress-bar" class="h-full w-0 bg-gradient-to-r from-brand-400 via-brand-500 to-brand-600 transition-all duration-500 ease-out"></div>
+        <div class="absolute inset-0 bg-[linear-gradient(110deg,rgba(255,255,255,0)_0%,rgba(255,255,255,.6)_40%,rgba(255,255,255,0)_70%)] animate-shimmer pointer-events-none mix-blend-overlay"></div>
+      </div>
+      <div id="progress-meta" class="mt-1 text-[10px] font-medium tracking-wide text-gray-500 select-none">0% · 等待开始</div>
+    </div>
+    <ol id="progress-timeline" class="relative ms-4 space-y-5" aria-live="polite"></ol>
+  </div>
+</aside>
+
+<script>
+  // AI 研究功能集成
+  let isResearching = false;
+  let currentStream = null;
+
+  // 元素引用
+  const researchTopic = document.getElementById('research-topic');
+  const researchModel = document.getElementById('research-model');
+  const depthLevel = document.getElementById('depth-level');
+  const creativityLevel = document.getElementById('creativity-level');
+  const researchFocus = document.getElementById('research-focus');
+  const startBtn = document.getElementById('start-btn');
+  const stopBtn = document.getElementById('stop-btn');
+  const progressBar = document.getElementById('progress-bar');
+  const progressMeta = document.getElementById('progress-meta');
+  const progressTimeline = document.getElementById('progress-timeline');
+  const configForm = document.getElementById('config-form');
+
+  // 研究步骤配置
+  const researchSteps = [
+    { id: 'plan', label: '生成研究计划', icon: '📋' },
+    { id: 'search', label: '多源搜索', icon: '🔍' },
+    { id: 'extract', label: '内容提取', icon: '📄' },
+    { id: 'cluster', label: '主题聚类', icon: '🔗' },
+    { id: 'synthesis', label: '综合分析', icon: '🧠' }
+  ];
+
+  // 初始化
+  async function initResearchPanel() {
+    await loadModels();
+    setupEventListeners();
+    renderTimeline();
+  }
+
+  // 加载可用模型
+  async function loadModels() {
+    try {
+      const response = await fetch('/api/ollama', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'models' })
+      });
+      
+      const data = await response.json();
+      if (data.success && researchModel) {
+        researchModel.innerHTML = '';
+        
+        if (data.models.length === 0) {
+          researchModel.innerHTML = '<option value="">暂无可用模型</option>';
+          return;
+        }
+
+        data.models.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model.name;
+          option.textContent = model.name;
+          researchModel.appendChild(option);
+        });
+      }
+    } catch (error) {
+      console.error('加载模型失败:', error);
+      if (researchModel) {
+        researchModel.innerHTML = '<option value="">加载失败</option>';
+      }
+    }
+  }
+
+  // 设置事件监听
+  function setupEventListeners() {
+    // 表单提交
+    configForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await startResearch();
+    });
+
+    // 停止按钮
+    stopBtn?.addEventListener('click', () => {
+      stopResearch();
+    });
+  }
+
+  // 渲染进度时间线
+  function renderTimeline(activeStep = null) {
+    if (!progressTimeline) return;
+
+    progressTimeline.innerHTML = researchSteps.map((step, index) => {
+      const isActive = activeStep === step.id;
+      const isCompleted = activeStep && researchSteps.findIndex(s => s.id === activeStep) > index;
+      
+      let statusClass = 'bg-gray-300';
+      let textClass = 'text-gray-500';
+      let status = '';
+
+      if (isCompleted) {
+        statusClass = 'bg-green-500';
+        textClass = 'text-gray-900';
+        status = '✓ 完成';
+      } else if (isActive) {
+        statusClass = 'bg-brand-500 animate-pulse';
+        textClass = 'text-gray-900';
+        status = '🔄 进行中';
+      }
+
+      return `
+        <li class="before:content-[''] before:absolute before:-start-4 before:top-1.5 before:w-2 before:h-2 before:rounded-full before:${statusClass} relative" data-step="${step.id}">
+          <div class="flex items-center gap-2">
+            <span class="text-sm">${step.icon}</span>
+            <p class="text-xs font-medium ${textClass}">${step.label}</p>
+          </div>
+          <p class="text-[10px] text-gray-400 mt-0.5">${status}</p>
+        </li>
+      `;
+    }).join('');
+  }
+
+  // 更新进度
+  function updateProgress(progress, message) {
+    if (progressBar) {
+      progressBar.style.width = `${progress}%`;
+    }
+    if (progressMeta) {
+      progressMeta.textContent = `${progress}% · ${message}`;
+    }
+  }
+
+  // 开始研究
+  async function startResearch() {
+    const topic = (researchTopic as HTMLInputElement)?.value?.trim();
+    const model = (researchModel as HTMLSelectElement)?.value;
+    
+    if (!topic) {
+      alert('请输入研究主题');
+      return;
+    }
+    
+    if (!model) {
+      alert('请选择 AI 模型');
+      return;
+    }
+
+    // 检查 Ollama 服务
+    try {
+      const healthResponse = await fetch('/api/ollama', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'health' })
+      });
+      
+      const healthData = await healthResponse.json();
+      if (!healthData.healthy) {
+        alert('Ollama 服务不可用，请确保 Ollama 正在运行');
+        return;
+      }
+    } catch (error) {
+      alert('无法连接到 Ollama 服务');
+      return;
+    }
+
+    isResearching = true;
+    updateUIForResearchState();
+
+    const options = {
+      depth: (depthLevel as HTMLSelectElement)?.value || 'standard',
+      temperature: parseFloat((creativityLevel as HTMLSelectElement)?.value || '0.5'),
+      focus: (researchFocus as HTMLTextAreaElement)?.value?.trim()
+    };
+
+    try {
+      const response = await fetch('/api/research-stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: topic,
+          model: model,
+          options: options
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      currentStream = reader as any;
+
+      if (!reader) {
+        throw new Error('无法获取响应流');
+      }
+
+      while (true) {
+        const { value, done } = await reader.read();
+        
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.slice(6).trim();
+            if (!jsonStr) continue; // 跳过空行
+            
+            try {
+              const data = JSON.parse(jsonStr);
+              
+              if (data.error) {
+                throw new Error(data.message || '研究过程中出现错误');
+              }
+              
+              if (data.done) {
+                completeResearch();
+                return;
+              }
+              
+              // 更新进度和时间线
+              if (data.stepId && data.progress !== undefined) {
+                updateProgress(data.progress, data.message);
+                renderTimeline(data.stepId);
+                
+                // 更新推理面板和搜索日志
+                if (data.data) {
+                  updateReasoningPanel(data);
+                }
+              }
+            } catch (e) {
+              if (e instanceof SyntaxError) {
+                console.warn('JSON 解析错误，跳过该行:', jsonStr);
+                continue;
+              }
+              throw e;
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('研究过程失败:', error);
+      alert(`研究失败: ${error.message}`);
+      stopResearch();
+    }
+  }
+
+  // 停止研究
+  function stopResearch() {
+    isResearching = false;
+    
+    if (currentStream) {
+      try {
+        (currentStream as any).cancel?.();
+      } catch (e) {
+        console.log('Stream already closed');
+      }
+      currentStream = null;
+    }
+    
+    updateUIForResearchState();
+    updateProgress(0, '已停止');
+    renderTimeline();
+  }
+
+  // 完成研究
+  function completeResearch() {
+    isResearching = false;
+    updateUIForResearchState();
+    updateProgress(100, '研究完成');
+    
+    // 显示完成状态
+    setTimeout(() => {
+      updateProgress(0, '等待开始');
+      renderTimeline();
+    }, 3000);
+  }
+
+  // 更新UI状态
+  function updateUIForResearchState() {
+    if (startBtn && stopBtn) {
+      if (isResearching) {
+        startBtn.classList.add('hidden');
+        stopBtn.classList.remove('hidden');
+        stopBtn.classList.add('inline-flex');
+      } else {
+        startBtn.classList.remove('hidden');
+        stopBtn.classList.add('hidden');
+        stopBtn.classList.remove('inline-flex');
+      }
+    }
+  }
+
+  // 更新推理面板（与主界面的推理面板交互）
+  function updateReasoningPanel(data) {
+    // 触发自定义事件，让主界面处理
+    const event = new CustomEvent('research-update', {
+      detail: data
+    });
+    document.dispatchEvent(event);
+  }
+
+  // 启动初始化
+  document.addEventListener('DOMContentLoaded', initResearchPanel);
+</script>

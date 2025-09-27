@@ -1,0 +1,168 @@
+---
+// ResearchAgentUI: Deep Research Agent 界面骨架（静态版，后续可接入逻辑）
+import SidePanel from './agent/SidePanel.astro'
+import ResultsGrid from './agent/ResultsGrid.astro'
+import SourcesTable from './agent/SourcesTable.astro'
+import OllamaPanel from './OllamaPanel.astro'
+---
+<section class="min-h-screen flex flex-col lg:flex-row gap-6">
+  <SidePanel />
+  <div class="flex-1 space-y-6">
+    <div class="bg-white/70 backdrop-blur rounded-xl shadow-soft border border-gray-100 p-6 flex items-start gap-4">
+      <div class="flex-1">
+        <h1 class="text-xl font-semibold tracking-tight text-gray-900">Deep Research Agent</h1>
+        <p class="text-sm text-gray-600 mt-1">智能聚合多源信息，生成结构化研究洞察。</p>
+      </div>
+
+    </div>
+  <div id="reasoning-panel" class="rounded-xl border border-dashed border-brand-200 bg-white/40 p-4 space-y-3 text-xs text-gray-600 hidden animate-fade-in">
+      <h2 class="text-xs font-semibold tracking-wide text-brand-600 flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+        推理轨迹
+      </h2>
+      <ol id="reasoning-steps" class="space-y-2"></ol>
+    </div>
+    <div id="search-log" class="rounded-xl border border-gray-100 bg-white/60 p-4 hidden text-[11px] leading-relaxed space-y-1 font-mono overflow-auto max-h-56"></div>
+    <OllamaPanel />
+    <ResultsGrid />
+    <SourcesTable />
+  </div>
+</section>
+<script>
+  // Progressive reasoning & search simulation
+  const startBtn = document.getElementById('start-btn');
+  const stepsEl = document.getElementById('reasoning-steps');
+  const reasoningPanel = document.getElementById('reasoning-panel');
+  const searchLog = document.getElementById('search-log');
+  const progressTimeline = document.getElementById('progress-timeline');
+  let running = false;
+  const pipeline = [
+    { id: 'plan', label: '生成初步研究计划' },
+    { id: 'search', label: '多源搜索与抓取' },
+    { id: 'extract', label: '内容清洗与摘要抽取' },
+    { id: 'cluster', label: '主题聚类与归纳' },
+    { id: 'synthesis', label: '综合分析与洞察输出' },
+  ];
+  const progressBar = document.getElementById('progress-bar');
+  const progressMeta = document.getElementById('progress-meta');
+  
+  function setProgress(fraction, text) {
+    if (progressBar) progressBar.style.width = Math.min(100, fraction*100)+'%';
+    if (progressMeta) progressMeta.textContent = `${Math.round(fraction*100)}% · ${text}`;
+  }
+  
+  function renderTimeline(activeIndex = -1) {
+    if (!progressTimeline) return;
+    progressTimeline.innerHTML = pipeline.map((p, i) => {
+      const state = i < activeIndex ? 'done' : i === activeIndex ? 'active' : 'todo';
+      const color = state === 'done' ? 'bg-brand-500' : state === 'active' ? 'bg-brand-400 animate-pulse' : 'bg-gray-300';
+      return `<li class="before:content-[''] before:absolute before:-start-4 before:top-1.5 before:w-2 before:h-2 before:rounded-full before:${color} relative">`+
+        `<p class="text-xs font-medium ${state==='todo'?'text-gray-500':'text-gray-900'}">${p.label}</p>`+
+        `<p class="text-[11px] text-gray-500">${state==='done'?'完成':state==='active'?'进行中...':''}</p>`+
+      `</li>`;
+    }).join('');
+  }
+  renderTimeline();
+  
+  // Collapsible reasoning steps
+  let currentStep;
+  
+  function createReasoningStep(label) {
+    if (!stepsEl) return null;
+    const index = stepsEl.children.length + 1;
+    const li = document.createElement('li');
+    li.className = 'rounded-lg border border-brand-100 bg-white/60 shadow-soft animate-slide-up';
+    li.style.animationDelay = (index * 40) + 'ms';
+    const summaryId = `rs-summary-${index}`;
+    li.innerHTML = `\n      <button type=button id="${summaryId}" class="group w-full flex items-center justify-between gap-3 px-3 py-2 text-left cursor-pointer select-none">
+        <span class="flex items-center gap-2 text-[11px] font-medium tracking-wide text-brand-600">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Step ${index}
+        </span>
+        <span class="flex-1 truncate text-[11px] text-gray-600">${label}</span>
+        <span class="status text-[10px] font-medium text-gray-400">待执行</span>
+        <svg class="chevron w-3.5 h-3.5 text-gray-400 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
+      </button>
+      <div class="detail px-4 pt-0 pb-3 space-y-1 text-[11px] leading-relaxed border-t border-brand-100/50 overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">\n      </div>`;
+    stepsEl.appendChild(li);
+    const summaryBtn = li.querySelector('#'+summaryId);
+    const detailEl = li.querySelector('.detail');
+    const statusEl = li.querySelector('.status');
+    const chevron = li.querySelector('.chevron');
+    if (summaryBtn) summaryBtn.addEventListener('click', ()=> detailEl && chevron && toggleDetail(detailEl, chevron));
+    
+    function toggleDetail(detail, chev) {
+      const expanded = detail.getAttribute('data-open') === 'true';
+      if (expanded) {
+        detail.setAttribute('data-open','false');
+        if (detail instanceof HTMLElement) { detail.style.maxHeight = '0px'; detail.style.opacity = '0'; }
+        chev.classList?.remove('rotate-180');
+      } else {
+        detail.setAttribute('data-open','true');
+        if (detail instanceof HTMLElement) { detail.style.maxHeight = detail.scrollHeight + 'px'; detail.style.opacity = '1'; }
+        chev.classList?.add('rotate-180');
+      }
+    }
+    
+    function addLine(text, type='log') {
+      const line = document.createElement('div');
+      line.className = 'relative pl-3';
+      if (type==='done') line.classList.add('text-brand-600','font-medium');
+      line.innerHTML = `<span class=\"absolute left-0 top-1 w-1 h-1 rounded-full ${type==='done'?'bg-brand-500':'bg-brand-300'}\"></span>${text}`;
+      if (detailEl) {
+        detailEl.appendChild(line);
+        if (detailEl.getAttribute('data-open')==='true' && detailEl instanceof HTMLElement) {
+          detailEl.style.maxHeight = detailEl.scrollHeight + 'px';
+        }
+      }
+    }
+    
+    function start() { if(statusEl){ statusEl.textContent = '执行中'; statusEl.className='status text-[10px] font-medium text-brand-600'; } addLine('开始: '+label); }
+    function finish() { if(statusEl){ statusEl.textContent = '完成'; statusEl.className='status text-[10px] font-medium text-emerald-600'; } addLine('完成 ✓', 'done'); }
+    return { start, finish, addLine, expand: ()=>{ if(detailEl instanceof HTMLElement){ detailEl.setAttribute('data-open','true'); detailEl.style.maxHeight=detailEl.scrollHeight+'px'; detailEl.style.opacity='1'; } chevron?.classList.add('rotate-180'); } };
+  }
+  
+  function logSearch(text) {
+    if (!searchLog) return;
+    searchLog.classList.remove('hidden');
+    const line = document.createElement('div');
+    const count = searchLog.children.length;
+    line.className = 'animate-fade-in';
+    line.style.animationDelay = (count * 40) + 'ms';
+    line.textContent = text;
+    searchLog.appendChild(line);
+    searchLog.scrollTop = searchLog.scrollHeight;
+    // also push into current step detail
+    if (currentStep && typeof currentStep.addLine === 'function') currentStep.addLine(text.replace('[search]','搜索')); 
+  }
+  
+  async function runPipeline() {
+    if (running) return; running = true;
+    reasoningPanel && reasoningPanel.classList.remove('hidden');
+    stepsEl && (stepsEl.innerHTML='');
+    searchLog && (searchLog.innerHTML='');
+    for (let i=0;i<pipeline.length;i++) {
+      renderTimeline(i);
+      const p = pipeline[i];
+      currentStep = createReasoningStep(p.label);
+      if (currentStep && typeof currentStep.start === 'function') currentStep.start();
+      setProgress(i/pipeline.length, p.label);
+      if (p.id === 'search') {
+        for (let k=0;k<5;k++) {
+          logSearch(`[search] query#${k+1} 触发 -> 模拟结果 ${Math.random().toString(36).slice(2,8)}`);
+          await new Promise(r=>setTimeout(r,180));
+          setProgress((i + (k+1)/6)/pipeline.length, '搜索中');
+        }
+      }
+      await new Promise(r=>setTimeout(r, 600 + Math.random()*500));
+      if (currentStep && typeof currentStep.finish === 'function') currentStep.finish();
+    }
+    setProgress(1,'完成');
+    renderTimeline(pipeline.length);
+    running = false;
+  }
+  
+  if (startBtn) {
+    startBtn.addEventListener('click', (e)=>{ e.preventDefault(); runPipeline(); });
+  }
+</script>

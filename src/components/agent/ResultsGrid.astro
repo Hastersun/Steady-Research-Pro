@@ -1,0 +1,41 @@
+---
+const sections = ['模型评测框架','Benchmark 对比','实验设计建议','风险与限制','趋势洞察','行动清单']
+const loading = false // 后续可由父级状态传入
+---
+<div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+  {loading && Array.from({length:6}).map((_,i)=>(
+    <div class="relative overflow-hidden rounded-xl border border-gray-100 bg-white/50 p-5 shadow-soft animate-fade-in" style={`animation-delay:${i*60}ms`}>
+      <div class="h-3 w-24 rounded bg-gray-200 mb-4"></div>
+      <div class="space-y-2 mb-4">
+        {Array.from({length:4}).map((__,j)=>(
+          <div class="h-2.5 rounded bg-gray-200 w-full overflow-hidden relative">
+            <span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/60 to-transparent animate-shimmer"></span>
+          </div>
+        ))}
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="h-2 w-20 rounded bg-gray-200"></div>
+        <div class="h-6 w-14 rounded bg-gray-200"></div>
+      </div>
+    </div>
+  ))}
+  {!loading && sections.map((title, i) => (
+    <article class="group relative overflow-hidden rounded-xl border border-gray-100 bg-white/60 backdrop-blur p-5 shadow-soft hover:shadow transition animate-slide-up" style={`animation-delay:${i*70}ms`}>
+      <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-400 via-brand-500 to-brand-600 opacity-70" />
+      <h3 class="text-sm font-semibold text-gray-900 flex items-start gap-2">
+        <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+        {title}
+      </h3>
+      <p class="mt-2 text-xs text-gray-600 line-clamp-5 leading-relaxed">
+        这是一个占位摘要。后续可动态替换为模型输出内容，支持富文本、引用与高亮。
+      </p>
+      <div class="mt-3 flex items-center justify-between text-[11px] text-gray-500">
+        <span>置信度: <span class="text-brand-600 font-medium">0.82</span></span>
+        <button class="inline-flex items-center gap-1 rounded px-2 py-1 bg-gray-100 text-gray-600 hover:bg-gray-200">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20l9-16H3l9 16z"/></svg>
+          展开
+        </button>
+      </div>
+    </article>
+  ))}
+</div>
