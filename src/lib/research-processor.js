@@ -1,10 +1,20 @@
 // 研究任务处理模块 - 将 Ollama AI 与研究流程集成
 import OllamaClient from './ollama-client.js';
+import searchApiClient from './search-api-client.js';
 
 class ResearchTaskProcessor {
   constructor() {
     this.ollama = new OllamaClient();
+    this.searchClient = searchApiClient;
     this.isProcessing = false;
+  }
+
+  /**
+   * 设置搜索 API 密钥
+   * @param {Object} apiKeys - API 密钥配置
+   */
+  async configureSearchAPIs(apiKeys) {
+    return await this.searchClient.setApiKeys(apiKeys);
   }
 
   /**
@@ -37,7 +47,7 @@ class ResearchTaskProcessor {
         const step = pipeline[i];
         onProgress?.(step.id, 'start', totalProgress, step.label);
 
-        const stepResult = await this.executeStep(step, query, model, options);
+        const stepResult = await this.executeStep(step, query, model, options, results);
         results[step.id] = stepResult;
 
         totalProgress += step.weight;
@@ -65,23 +75,29 @@ class ResearchTaskProcessor {
    * @param {string} query - 研究查询
    * @param {string} model - 模型名称
    * @param {Object} options - 选项
+   * @param {Object} previousResults - 之前步骤的结果
    */
-  async executeStep(step, query, model, options) {
+  async executeStep(step, query, model, options, previousResults = {}) {
+    const stepOptions = {
+      ...options,
+      previousResults
+    };
+
     switch (step.id) {
       case 'plan':
-        return await this.generateResearchPlan(query, model, options);
+        return await this.generateResearchPlan(query, model, stepOptions);
       
       case 'search':
-        return await this.simulateMultiSourceSearch(query, model, options);
+        return await this.performRealSearch(query, model, stepOptions);
       
       case 'extract':
-        return await this.extractAndSummarize(query, model, options);
+        return await this.extractAndSummarize(query, model, stepOptions);
       
       case 'cluster':
-        return await this.clusterTopics(query, model, options);
+        return await this.clusterTopics(query, model, stepOptions);
       
       case 'synthesis':
-        return await this.synthesizeInsights(query, model, options);
+        return await this.synthesizeInsights(query, model, stepOptions);
       
       default:
         throw new Error(`未知步骤: ${step.id}`);
@@ -126,7 +142,129 @@ class ResearchTaskProcessor {
   }
 
   /**
-   * 模拟多源搜索
+   * 执行真实的多源搜索
+   */
+  async performRealSearch(query, model, options) {
+    try {
+      // 1. 首先生成搜索策略
+      const strategyPrompt = `作为信息检索专家，为研究问题"${query}"生成最有效的搜索关键词：
+
+请提供 3-5 个不同角度的搜索关键词，每个关键词应该：
+- 具体且相关
+- 能够找到不同类型的信息源
+- 覆盖问题的不同维度
+
+只返回关键词列表，每行一个。`;
+
+      const strategyResponse = await this.ollama.generate(model, strategyPrompt, {
+        temperature: 0.3,
+        ...options
+      });
+
+      // 解析搜索关键词
+      const searchQueries = strategyResponse.split('\n')
+        .map(line => line.trim().replace(/^[-*•]\s*/, ''))
+        .filter(line => line && !line.match(/^[0-9]+\.?\s*/))
+        .slice(0, 4); // 限制查询数量
+
+      if (searchQueries.length === 0) {
+        searchQueries.push(query); // 回退到原始查询
+      }
+
+      // 2. 执行搜索
+      const searchResults = [];
+      const searchErrors = [];
+
+      for (let i = 0; i < searchQueries.length; i++) {
+        const searchQuery = searchQueries[i];
+        try {
+          // 错开请求以避免API限制
+          if (i > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+
+          const result = await this.searchClient.search(searchQuery, ['bing', 'google'], {
+            bing: { count: 5, market: 'zh-CN' },
+            google: { num: 5, lr: 'lang_zh-CN' }
+          });
+
+          if (result.success) {
+            searchResults.push({
+              query: searchQuery,
+              results: result.data.results || [],
+              engines: result.data.engines || [],
+              totalResults: result.data.totalResults || 0
+            });
+          } else {
+            searchErrors.push({
+              query: searchQuery,
+              error: result.error
+            });
+          }
+        } catch (error) {
+          searchErrors.push({
+            query: searchQuery,
+            error: error.message
+          });
+        }
+      }
+
+      // 3. 汇总搜索结果
+      const allResults = [];
+      searchResults.forEach(sr => {
+        allResults.push(...sr.results);
+      });
+
+      // 去重
+      const uniqueResults = this.deduplicateSearchResults(allResults);
+
+      return {
+        type: 'search_results',
+        strategy: {
+          originalQuery: query,
+          searchQueries: searchQueries,
+          searchCount: searchResults.length
+        },
+        results: uniqueResults,
+        summary: {
+          totalQueries: searchQueries.length,
+          successfulQueries: searchResults.length,
+          totalResults: uniqueResults.length,
+          errors: searchErrors
+        },
+        query,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      console.error('真实搜索执行失败:', error);
+      
+      // 回退到模拟搜索
+      return await this.simulateMultiSourceSearch(query, model, options);
+    }
+  }
+
+  /**
+   * 搜索结果去重
+   * @param {Array} results - 搜索结果数组
+   */
+  deduplicateSearchResults(results) {
+    const seen = new Set();
+    const unique = [];
+
+    for (const result of results) {
+      const key = result.url;
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(result);
+      }
+    }
+
+    return unique.slice(0, 15); // 限制结果数量
+  }
+
+  /**
+   * 模拟多源搜索（回退方法）
    */
   async simulateMultiSourceSearch(query, model, options) {
     const prompt = `作为信息检索专家，为研究问题"${query}"生成多样化的搜索策略和关键词：
@@ -165,18 +303,46 @@ class ResearchTaskProcessor {
   }
 
   /**
-   * 内容摘要提取
+   * 内容摘要提取（基于真实搜索结果）
    */
   async extractAndSummarize(query, model, options) {
-    const prompt = `作为内容分析专家，针对研究问题"${query}"，分析以下模拟的搜索结果并提取关键信息：
+    // 从之前的搜索步骤获取结果
+    const searchData = options.previousResults?.search;
+    
+    let prompt;
+    if (searchData && searchData.results && searchData.results.length > 0) {
+      // 基于真实搜索结果进行分析
+      const searchSummary = searchData.results.slice(0, 10).map((result, index) => 
+        `${index + 1}. 标题: ${result.title}\n   摘要: ${result.snippet}\n   来源: ${result.displayUrl || result.url}`
+      ).join('\n\n');
+
+      prompt = `作为内容分析专家，针对研究问题"${query}"，分析以下真实的搜索结果并提取关键信息：
+
+搜索结果：
+${searchSummary}
+
+请基于这些搜索结果提供：
+1. 核心事实和数据（5-8个要点）
+2. 主要观点和论证（3-5个）
+3. 关键趋势和模式
+4. 重要的数据来源和统计信息
+5. 需要进一步研究的问题
+
+保持客观中立，重点提取与研究问题最相关的信息，并注明信息来源。`;
+
+    } else {
+      // 回退到模拟分析
+      prompt = `作为内容分析专家，针对研究问题"${query}"，基于一般知识提供分析：
 
 请提供：
 1. 核心事实和数据（5-8个要点）
 2. 主要观点和论证（3-5个）
 3. 关键统计数据或趋势
 4. 重要的引用和来源
+5. 研究建议
 
 保持客观中立，重点提取与研究问题最相关的信息。`;
+    }
 
     try {
       const response = await this.ollama.generate(model, prompt, {
@@ -187,6 +353,8 @@ class ResearchTaskProcessor {
       return {
         type: 'content_extraction',
         content: response,
+        basedOnRealData: !!(searchData && searchData.results && searchData.results.length > 0),
+        sourceCount: searchData?.results?.length || 0,
         query,
         timestamp: new Date().toISOString()
       };

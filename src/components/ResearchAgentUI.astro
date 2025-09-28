@@ -2,8 +2,6 @@
 // ResearchAgentUI: Deep Research Agent 界面骨架（静态版，后续可接入逻辑）
 import SidePanel from './agent/SidePanel.astro'
 import ResultsGrid from './agent/ResultsGrid.astro'
-import SourcesTable from './agent/SourcesTable.astro'
-import OllamaPanel from './OllamaPanel.astro'
 ---
 <section class="min-h-screen flex flex-col lg:flex-row gap-6">
   <SidePanel />
@@ -23,14 +21,11 @@ import OllamaPanel from './OllamaPanel.astro'
       <ol id="reasoning-steps" class="space-y-2"></ol>
     </div>
     <div id="search-log" class="rounded-xl border border-gray-100 bg-white/60 p-4 hidden text-[11px] leading-relaxed space-y-1 font-mono overflow-auto max-h-56"></div>
-    <OllamaPanel />
     <ResultsGrid />
-    <SourcesTable />
   </div>
 </section>
 <script>
   // Progressive reasoning & search simulation
-  const startBtn = document.getElementById('start-btn');
   const stepsEl = document.getElementById('reasoning-steps');
   const reasoningPanel = document.getElementById('reasoning-panel');
   const searchLog = document.getElementById('search-log');
@@ -162,7 +157,6 @@ import OllamaPanel from './OllamaPanel.astro'
     running = false;
   }
   
-  if (startBtn) {
-    startBtn.addEventListener('click', (e)=>{ e.preventDefault(); runPipeline(); });
-  }
+  // 监听自定义事件，由 SidePanel 触发
+  document.addEventListener('research:start', runPipeline);
 </script>

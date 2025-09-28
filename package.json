@@ -25,6 +25,7 @@
     "tailwindcss": "^3.4.17"
   },
   "dependencies": {
+    "@astrojs/node": "^9.4.4",
     "@types/node": "^24.5.2",
     "node-fetch": "^3.3.2",
     "ollama": "^0.6.0"

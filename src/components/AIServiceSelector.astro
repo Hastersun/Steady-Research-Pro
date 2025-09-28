@@ -1,0 +1,836 @@
+---
+// AI 服务选择器 - 统一设置面板
+---
+
+<div class="settings-panel ai-service-panel">
+  <header class="panel-header">
+    <div>
+      <h3>AI 服务接入</h3>
+      <p>集中管理并测试各类模型提供商的访问配置</p>
+    </div>
+    <div class="current-selection">
+      <span>当前选择</span>
+      <strong id="currentSelection">本地Ollama</strong>
+    </div>
+  </header>
+
+  <p class="panel-subtitle" id="selectionDetails">使用本地Ollama服务进行AI对话</p>
+
+  <div class="field-group">
+    <label for="aiProvider">选择 AI 服务提供商</label>
+    <select id="aiProvider" class="input-control">
+      <option value="ollama">本地Ollama</option>
+      <option value="deepseek">DeepSeek</option>
+      <option value="openai">OpenAI</option>
+      <option value="claude">Claude (Anthropic)</option>
+      <option value="gemini">Google Gemini</option>
+    </select>
+  </div>
+
+  <div class="config-grid">
+    <section id="ollamaConfig" class="config-card">
+      <header class="config-card__header">
+        <div>
+          <h4>本地 Ollama 服务</h4>
+          <p>无需 API 密钥，直接连接本地部署模型</p>
+        </div>
+        <span id="ollamaStatus" class="status-badge" data-tone="idle">未连接</span>
+      </header>
+      <div class="config-card__body">
+        <div class="field">
+          <label for="ollamaUrl">服务地址</label>
+          <input type="text" id="ollamaUrl" class="input-control" value="http://localhost:11434" />
+        </div>
+        <div class="field">
+          <label for="ollamaModel">首选模型</label>
+          <select id="ollamaModel" class="input-control">
+            <option value="">加载中...</option>
+          </select>
+        </div>
+      </div>
+      <footer class="config-card__footer">
+        <button id="testOllama" class="action-button">测试连接</button>
+      </footer>
+    </section>
+
+    <section id="httpApiConfig" class="config-card hidden">
+      <header class="config-card__header">
+        <div>
+          <h4 id="providerName">云端 API 服务</h4>
+          <p id="providerInfo">请配置 API 密钥以使用此服务</p>
+        </div>
+        <span id="httpApiStatus" class="status-badge" data-tone="idle">未配置</span>
+      </header>
+      <div class="config-card__body">
+        <div class="field">
+          <label for="apiKey">API 密钥</label>
+          <input type="password" id="apiKey" class="input-control" placeholder="请输入 API 密钥" />
+        </div>
+        <div class="field">
+          <label for="apiModel">模型选择</label>
+          <select id="apiModel" class="input-control">
+            <option value="">请选择模型</option>
+          </select>
+        </div>
+      </div>
+      <footer class="config-card__footer">
+        <button id="testHttpApi" class="action-button" disabled>测试连接</button>
+      </footer>
+    </section>
+  </div>
+</div>
+
+<script>
+// @ts-nocheck
+(() => {
+  const STATUS_TONES = {
+    idle: 'idle',
+    success: 'success',
+    warning: 'warning',
+    error: 'error'
+  };
+
+  const STORAGE_KEY = 'steady-research-pro:ai-service';
+
+  const remoteProviders = {
+    deepseek: {
+      name: 'DeepSeek',
+      info: '高性能大语言模型，支持中英文对话',
+      models: ['deepseek-chat', 'deepseek-coder'],
+      defaultModel: 'deepseek-chat'
+    },
+    openai: {
+      name: 'OpenAI',
+      info: '领先的通用对话模型，可完成生成和分析任务',
+      models: ['gpt-3.5-turbo', 'gpt-4', 'gpt-4o-mini'],
+      defaultModel: 'gpt-3.5-turbo'
+    },
+    claude: {
+      name: 'Claude (Anthropic)',
+      info: '擅长分析和推理的安全大模型',
+      models: ['claude-3-haiku-20240307', 'claude-3-sonnet-20240229', 'claude-3-opus-20240229'],
+      defaultModel: 'claude-3-haiku-20240307'
+    },
+    gemini: {
+      name: 'Google Gemini',
+      info: '谷歌最新多模态模型，擅长创意和多模态任务',
+      models: ['gemini-1.5-flash-latest', 'gemini-1.5-pro-latest', 'gemini-pro'],
+      defaultModel: 'gemini-1.5-flash-latest'
+    }
+  };
+
+  const providerConfigs = {
+    ollama: {
+      type: 'local',
+      name: '本地Ollama',
+      url: 'http://localhost:11434',
+      model: '',
+      available: false,
+      models: []
+    },
+    deepseek: {
+      type: 'remote',
+      name: remoteProviders.deepseek.name,
+      apiKey: '',
+      model: remoteProviders.deepseek.defaultModel,
+      available: false,
+      models: [...remoteProviders.deepseek.models]
+    },
+    openai: {
+      type: 'remote',
+      name: remoteProviders.openai.name,
+      apiKey: '',
+      model: remoteProviders.openai.defaultModel,
+      available: false,
+      models: [...remoteProviders.openai.models]
+    },
+    claude: {
+      type: 'remote',
+      name: remoteProviders.claude.name,
+      apiKey: '',
+      model: remoteProviders.claude.defaultModel,
+      available: false,
+      models: [...remoteProviders.claude.models]
+    },
+    gemini: {
+      type: 'remote',
+      name: remoteProviders.gemini.name,
+      apiKey: '',
+      model: remoteProviders.gemini.defaultModel,
+      available: false,
+      models: [...remoteProviders.gemini.models]
+    }
+  };
+
+  let currentProvider = 'ollama';
+  let initialized = false;
+
+  const refs = {
+    currentSelection: document.getElementById('currentSelection'),
+    selectionDetails: document.getElementById('selectionDetails'),
+    providerSelect: document.getElementById('aiProvider'),
+    providerName: document.getElementById('providerName'),
+    providerInfo: document.getElementById('providerInfo'),
+    sections: {
+      ollama: document.getElementById('ollamaConfig'),
+      http: document.getElementById('httpApiConfig')
+    },
+    inputs: {
+      ollamaUrl: document.getElementById('ollamaUrl'),
+      ollamaModel: document.getElementById('ollamaModel'),
+      apiKey: document.getElementById('apiKey'),
+      apiModel: document.getElementById('apiModel')
+    },
+    buttons: {
+      testOllama: document.getElementById('testOllama'),
+      testHttp: document.getElementById('testHttpApi')
+    },
+    badges: {
+      ollama: document.getElementById('ollamaStatus'),
+      remote: document.getElementById('httpApiStatus')
+    }
+  };
+
+  function init() {
+    if (initialized) return;
+    initialized = true;
+
+    bindEvents();
+    loadSavedState();
+    updateUI();
+    refreshStatuses();
+    loadOllamaModels();
+  }
+
+  function bindEvents() {
+    refs.providerSelect?.addEventListener('change', (event) => {
+      const value = (event.target || {}).value;
+      if (value) {
+        switchProvider(value);
+      }
+    });
+
+    refs.inputs.ollamaUrl?.addEventListener('change', (event) => {
+      providerConfigs.ollama.url = (event.target || {}).value?.trim() || providerConfigs.ollama.url;
+      saveState();
+      updateSelectionDetails();
+    });
+
+    refs.inputs.ollamaModel?.addEventListener('change', (event) => {
+      providerConfigs.ollama.model = (event.target || {}).value || '';
+      saveState();
+    });
+
+    refs.inputs.apiKey?.addEventListener('input', (event) => {
+      const value = (event.target || {}).value?.trim() || '';
+      const config = providerConfigs[currentProvider];
+      if (config && config.type === 'remote') {
+        config.apiKey = value;
+        updateHttpButtonState();
+        saveState();
+      }
+    });
+
+    refs.inputs.apiModel?.addEventListener('change', (event) => {
+      const value = (event.target || {}).value || '';
+      const config = providerConfigs[currentProvider];
+      if (config && config.type === 'remote') {
+        config.model = value;
+        saveState();
+      }
+    });
+
+    refs.buttons.testOllama?.addEventListener('click', handleTestOllama);
+    refs.buttons.testHttp?.addEventListener('click', handleTestHttpApi);
+  }
+
+  function loadSavedState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed?.currentProvider && providerConfigs[parsed.currentProvider]) {
+        currentProvider = parsed.currentProvider;
+      }
+      if (parsed?.providers) {
+        Object.keys(parsed.providers).forEach((key) => {
+          if (providerConfigs[key]) {
+            const saved = parsed.providers[key];
+            const next = { ...providerConfigs[key], ...saved };
+            if (Array.isArray(saved?.models)) {
+              next.models = [...saved.models];
+            }
+            providerConfigs[key] = next;
+          }
+        });
+      }
+    } catch (error) {
+      console.warn('加载 AI 服务配置失败:', error);
+    }
+
+    if (refs.providerSelect) {
+      (refs.providerSelect).value = currentProvider;
+    }
+
+    populateInputs();
+  }
+
+  function populateInputs() {
+    const config = providerConfigs[currentProvider];
+    if (!config) return;
+
+    if (currentProvider === 'ollama') {
+      if (refs.inputs.ollamaUrl) {
+        refs.inputs.ollamaUrl.value = config.url || '';
+      }
+      if (refs.inputs.ollamaModel) {
+        if (config.model) {
+          refs.inputs.ollamaModel.value = config.model;
+        }
+      }
+    } else {
+      if (refs.inputs.apiKey) {
+        refs.inputs.apiKey.value = config.apiKey || '';
+      }
+      populateModelOptions(currentProvider);
+      if (refs.inputs.apiModel && config.model) {
+        refs.inputs.apiModel.value = config.model;
+      }
+    }
+    updateHttpButtonState();
+  }
+
+  function updateUI() {
+    updateSelectionDetails();
+    toggleSections();
+    populateInputs();
+  }
+
+  function updateSelectionDetails() {
+    const config = providerConfigs[currentProvider];
+    if (!config) return;
+
+    if (refs.currentSelection) {
+      refs.currentSelection.textContent = config.name;
+    }
+
+    if (refs.selectionDetails) {
+      if (currentProvider === 'ollama') {
+        const url = config.url || 'http://localhost:11434';
+        refs.selectionDetails.textContent = `使用本地Ollama服务 (${url})`;
+      } else {
+        const meta = remoteProviders[currentProvider];
+        refs.selectionDetails.textContent = meta?.info || '配置远程 API 服务';
+      }
+    }
+
+    if (currentProvider !== 'ollama') {
+      const meta = remoteProviders[currentProvider];
+      if (refs.providerName) refs.providerName.textContent = meta?.name || '云端 API 服务';
+      if (refs.providerInfo) refs.providerInfo.textContent = meta?.info || '请配置 API 密钥以使用此服务';
+    }
+  }
+
+  function toggleSections() {
+    if (currentProvider === 'ollama') {
+      refs.sections.ollama?.classList.remove('hidden');
+      refs.sections.http?.classList.add('hidden');
+    } else {
+      refs.sections.ollama?.classList.add('hidden');
+      refs.sections.http?.classList.remove('hidden');
+    }
+  }
+
+  function populateModelOptions(provider) {
+    const meta = remoteProviders[provider];
+    if (!meta || !refs.inputs.apiModel) return;
+
+    refs.inputs.apiModel.innerHTML = '<option value="">请选择模型</option>';
+    meta.models.forEach((model) => {
+      const option = document.createElement('option');
+      option.value = model;
+      option.textContent = model;
+      refs.inputs.apiModel.appendChild(option);
+    });
+    if (providerConfigs[provider]) {
+      providerConfigs[provider].models = [...meta.models];
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          currentProvider,
+          providers: providerConfigs
+        })
+      );
+    } catch (error) {
+      console.warn('保存 AI 服务配置失败:', error);
+    }
+  }
+
+  function setStatus(badge, tone, text) {
+    if (!badge) return;
+    badge.dataset.tone = tone;
+    badge.textContent = text;
+  }
+
+  async function handleTestOllama() {
+    setStatus(refs.badges.ollama, STATUS_TONES.warning, '测试中');
+    try {
+      const response = await fetch('/api/ollama', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'health' })
+      });
+      const data = await response.json();
+      if (data.healthy) {
+        providerConfigs.ollama.available = true;
+        setStatus(refs.badges.ollama, STATUS_TONES.success, '连接正常');
+      } else {
+        providerConfigs.ollama.available = false;
+        setStatus(refs.badges.ollama, STATUS_TONES.error, '服务离线');
+      }
+    } catch (error) {
+      providerConfigs.ollama.available = false;
+      setStatus(refs.badges.ollama, STATUS_TONES.error, '连接失败');
+    }
+    saveState();
+    dispatchChange();
+  }
+
+  async function handleTestHttpApi() {
+    if (currentProvider === 'ollama') return;
+    const config = providerConfigs[currentProvider];
+    if (!config?.apiKey) return;
+
+    setStatus(refs.badges.remote, STATUS_TONES.warning, '测试中');
+    refs.buttons.testHttp?.setAttribute('data-loading', 'true');
+
+    try {
+      const response = await fetch('/api/http-api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: currentProvider,
+          message: 'status-check',
+          apiKey: config.apiKey,
+          model: config.model
+        })
+      });
+
+      if (!response.ok) throw new Error('请求失败');
+      const data = await response.json();
+
+      const connected = data?.success !== false;
+      providerConfigs[currentProvider].available = connected;
+      setStatus(refs.badges.remote, connected ? STATUS_TONES.success : STATUS_TONES.error, connected ? '连接正常' : '连接失败');
+    } catch (error) {
+      providerConfigs[currentProvider].available = false;
+      setStatus(refs.badges.remote, STATUS_TONES.error, '连接异常');
+    } finally {
+      refs.buttons.testHttp?.removeAttribute('data-loading');
+      saveState();
+      dispatchChange();
+    }
+  }
+
+  async function loadOllamaModels() {
+    try {
+      const response = await fetch('/api/ollama', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'models' })
+      });
+      const data = await response.json();
+      if (Array.isArray(data?.models) && refs.inputs.ollamaModel) {
+        refs.inputs.ollamaModel.innerHTML = '';
+        if (data.models.length === 0) {
+          refs.inputs.ollamaModel.innerHTML = '<option value="">暂无模型</option>';
+          providerConfigs.ollama.available = false;
+          providerConfigs.ollama.models = [];
+        } else {
+          const placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = '请选择模型';
+          refs.inputs.ollamaModel.appendChild(placeholder);
+
+          data.models.forEach((model) => {
+            const option = document.createElement('option');
+            option.value = model.name;
+            option.textContent = model.name;
+            refs.inputs.ollamaModel.appendChild(option);
+          });
+          if (providerConfigs.ollama.model) {
+            refs.inputs.ollamaModel.value = providerConfigs.ollama.model;
+          }
+          providerConfigs.ollama.available = true;
+          providerConfigs.ollama.models = data.models.map((model) => model.name);
+        }
+      }
+      setStatus(refs.badges.ollama, providerConfigs.ollama.available ? STATUS_TONES.success : STATUS_TONES.warning, providerConfigs.ollama.available ? '就绪' : '未连接');
+    } catch (error) {
+      setStatus(refs.badges.ollama, STATUS_TONES.error, '加载失败');
+      providerConfigs.ollama.available = false;
+      providerConfigs.ollama.models = [];
+    } finally {
+      saveState();
+    }
+  }
+
+  async function refreshStatuses() {
+    if (currentProvider === 'ollama') {
+      await checkOllamaStatus();
+    } else {
+      await checkRemoteStatus(currentProvider);
+    }
+  }
+
+  async function checkOllamaStatus() {
+    try {
+      const response = await fetch('/api/ollama', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'health' })
+      });
+      const data = await response.json();
+      providerConfigs.ollama.available = !!data?.healthy;
+      setStatus(refs.badges.ollama, data?.healthy ? STATUS_TONES.success : STATUS_TONES.error, data?.healthy ? '连接正常' : '服务离线');
+    } catch (error) {
+      providerConfigs.ollama.available = false;
+      setStatus(refs.badges.ollama, STATUS_TONES.error, '检查失败');
+    } finally {
+      saveState();
+    }
+  }
+
+  async function checkRemoteStatus(provider) {
+    const config = providerConfigs[provider];
+    if (!config) return;
+
+    if (!config.apiKey) {
+      setStatus(refs.badges.remote, STATUS_TONES.idle, '未配置');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/http-api');
+      const data = await response.json();
+      const status = data?.status?.[provider];
+      if (status?.hasApiKey && status?.connected) {
+        providerConfigs[provider].available = true;
+        setStatus(refs.badges.remote, STATUS_TONES.success, '连接正常');
+      } else if (status?.hasApiKey) {
+        providerConfigs[provider].available = false;
+        setStatus(refs.badges.remote, STATUS_TONES.warning, '待测试');
+      } else {
+        providerConfigs[provider].available = false;
+        setStatus(refs.badges.remote, STATUS_TONES.idle, '未配置');
+      }
+    } catch (error) {
+      providerConfigs[provider].available = false;
+      setStatus(refs.badges.remote, STATUS_TONES.error, '检查失败');
+    } finally {
+      saveState();
+    }
+  }
+
+  function updateHttpButtonState() {
+    const config = providerConfigs[currentProvider];
+    if (!refs.buttons.testHttp) return;
+    const disabled = !config || config.type !== 'remote' || !config.apiKey;
+    refs.buttons.testHttp.disabled = disabled;
+  }
+
+  function switchProvider(provider) {
+    if (!providerConfigs[provider]) return;
+    currentProvider = provider;
+    if (refs.providerSelect && refs.providerSelect.value !== provider) {
+      refs.providerSelect.value = provider;
+    }
+    updateUI();
+    saveState();
+    refreshStatuses();
+    dispatchChange();
+  }
+
+  function dispatchChange() {
+    const baseConfig = providerConfigs[currentProvider];
+    const models = Array.isArray(baseConfig?.models) ? [...baseConfig.models] : [];
+    const config = { ...baseConfig, models };
+    const detail = {
+      provider: currentProvider,
+      config,
+      models
+    };
+    window.dispatchEvent(new CustomEvent('aiProviderChanged', { detail }));
+  }
+
+  window.getAIServiceSelector = () => ({
+    getCurrentProvider: () => {
+      const baseConfig = providerConfigs[currentProvider];
+      const models = Array.isArray(baseConfig?.models) ? [...baseConfig.models] : [];
+      return { provider: currentProvider, config: { ...baseConfig, models }, models };
+    },
+    setProvider: switchProvider,
+    refreshStatuses,
+    setConfig: (provider, config) => {
+      if (!providerConfigs[provider]) return;
+      const next = { ...providerConfigs[provider], ...config };
+      if (Array.isArray(config?.models)) {
+        next.models = [...config.models];
+      }
+      providerConfigs[provider] = next;
+      if (provider === currentProvider) {
+        populateInputs();
+        updateSelectionDetails();
+      }
+      saveState();
+      dispatchChange();
+    }
+  });
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    init();
+  } else {
+    document.addEventListener('DOMContentLoaded', init);
+  }
+  document.addEventListener('astro:page-load', init);
+})();
+</script>
+
+<style>
+.ai-service-panel {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(244, 246, 255, 0.92));
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 15px 40px -12px rgba(15, 23, 42, 0.25);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.panel-header p {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.current-selection {
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.12), rgba(30, 64, 175, 0.12));
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.current-selection span {
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+.current-selection strong {
+  margin-top: 4px;
+  font-size: 1.05rem;
+}
+
+.panel-subtitle {
+  margin: 0;
+  color: #1d4ed8;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-group label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.input-control {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-control:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 960px) {
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.config-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 18px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.config-card.hidden {
+  display: none;
+}
+
+.config-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.config-card__header h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.config-card__header p {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.config-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.config-card__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(120deg, #2563eb, #7c3aed);
+  color: #fff;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.action-button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: linear-gradient(120deg, rgba(37, 99, 235, 0.45), rgba(124, 58, 237, 0.45));
+  box-shadow: none;
+}
+
+.action-button:not([disabled]):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px -10px rgba(37, 99, 235, 0.5);
+}
+
+.action-button[data-loading]::after {
+  content: '...';
+  margin-left: 6px;
+  animation: pulse 1s infinite ease-in-out;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: none;
+  background: rgba(148, 163, 184, 0.12);
+  color: #475569;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.status-badge[data-tone="success"] {
+  background: rgba(34, 197, 94, 0.12);
+  color: #047857;
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.status-badge[data-tone="warning"] {
+  background: rgba(251, 191, 36, 0.15);
+  color: #b45309;
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.status-badge[data-tone="error"] {
+  background: rgba(248, 113, 113, 0.15);
+  color: #b91c1c;
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.status-badge[data-tone="idle"] {
+  background: rgba(148, 163, 184, 0.12);
+  color: #475569;
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+</style>

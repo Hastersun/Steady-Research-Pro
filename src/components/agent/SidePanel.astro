@@ -11,24 +11,15 @@
         <select id="research-model" class="w-full rounded-md border-gray-300 focus:border-brand-500 focus:ring-brand-500 text-sm">
           <option value="">加载中...</option>
         </select>
+        <p id="provider-hint" class="mt-1 text-[11px] text-gray-500">使用 Settings 页面的当前服务配置</p>
       </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-medium text-gray-600 mb-1">深度级别</label>
-          <select id="depth-level" class="w-full rounded-md border-gray-300 focus:border-brand-500 focus:ring-brand-500 text-sm">
-            <option value="basic">基础分析</option>
-            <option value="standard" selected>标准研究</option>
-            <option value="deep">深度研究</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-600 mb-1">创造性</label>
-          <select id="creativity-level" class="w-full rounded-md border-gray-300 focus:border-brand-500 focus:ring-brand-500 text-sm">
-            <option value="0.2">保守</option>
-            <option value="0.5" selected>平衡</option>
-            <option value="0.8">创新</option>
-          </select>
-        </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">深度级别</label>
+        <select id="depth-level" class="w-full rounded-md border-gray-300 focus:border-brand-500 focus:ring-brand-500 text-sm">
+          <option value="basic">基础分析</option>
+          <option value="standard" selected>标准研究</option>
+          <option value="deep">深度研究</option>
+        </select>
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">研究重点</label>
@@ -60,15 +51,17 @@
 </aside>
 
 <script>
+  // @ts-nocheck
   // AI 研究功能集成
   let isResearching = false;
   let currentStream = null;
+  let providerState = { provider: 'manual', config: null, models: [] };
+  let syncRetryTimer = null;
 
   // 元素引用
   const researchTopic = document.getElementById('research-topic');
   const researchModel = document.getElementById('research-model');
   const depthLevel = document.getElementById('depth-level');
-  const creativityLevel = document.getElementById('creativity-level');
   const researchFocus = document.getElementById('research-focus');
   const startBtn = document.getElementById('start-btn');
   const stopBtn = document.getElementById('stop-btn');
@@ -76,6 +69,7 @@
   const progressMeta = document.getElementById('progress-meta');
   const progressTimeline = document.getElementById('progress-timeline');
   const configForm = document.getElementById('config-form');
+  const providerHint = document.getElementById('provider-hint');
 
   // 研究步骤配置
   const researchSteps = [
@@ -86,44 +80,147 @@
     { id: 'synthesis', label: '综合分析', icon: '🧠' }
   ];
 
-  // 初始化
-  async function initResearchPanel() {
-    await loadModels();
-    setupEventListeners();
-    renderTimeline();
+  function getSelectorInstance() {
+    if (typeof window === 'undefined') return null;
+    const globalAny = window as any;
+    return typeof globalAny.getAIServiceSelector === 'function' ? globalAny.getAIServiceSelector() : null;
   }
 
-  // 加载可用模型
-  async function loadModels() {
-    try {
-      const response = await fetch('/api/ollama', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'models' })
-      });
-      
-      const data = await response.json();
-      if (data.success && researchModel) {
-        researchModel.innerHTML = '';
-        
-        if (data.models.length === 0) {
-          researchModel.innerHTML = '<option value="">暂无可用模型</option>';
-          return;
-        }
+  function scheduleSyncRetry() {
+    if (typeof window === 'undefined') return;
+    if (syncRetryTimer) {
+      window.clearTimeout(syncRetryTimer);
+    }
+    syncRetryTimer = window.setTimeout(() => {
+      syncRetryTimer = null;
+      syncProviderState();
+    }, 400);
+  }
 
-        data.models.forEach(model => {
-          const option = document.createElement('option');
-          option.value = model.name;
-          option.textContent = model.name;
-          researchModel.appendChild(option);
-        });
+  function syncProviderState(detail) {
+    let provider = 'manual';
+    let config = null;
+    let models = [];
+
+    if (detail?.provider) {
+      provider = detail.provider;
+      config = detail.config || null;
+      if (Array.isArray(detail.models)) {
+        models = [...detail.models];
+      } else if (Array.isArray(detail.config?.models)) {
+        models = [...detail.config.models];
       }
-    } catch (error) {
-      console.error('加载模型失败:', error);
-      if (researchModel) {
-        researchModel.innerHTML = '<option value="">加载失败</option>';
+    } else {
+      const selector = getSelectorInstance();
+      if (selector?.getCurrentProvider) {
+        const state = selector.getCurrentProvider();
+        if (state) {
+          provider = state.provider;
+          config = state.config || null;
+          if (Array.isArray(state.models)) {
+            models = [...state.models];
+          } else if (Array.isArray(state.config?.models)) {
+            models = [...state.config.models];
+          }
+        }
       }
     }
+
+    if (!config) {
+      providerState = { provider, config: null, models: [] };
+      updateModelOptions();
+      updateProviderHint();
+      if (!detail) {
+        scheduleSyncRetry();
+      }
+      return;
+    }
+
+    if (syncRetryTimer) {
+      window.clearTimeout(syncRetryTimer);
+      syncRetryTimer = null;
+    }
+
+    providerState = { provider, config, models };
+    updateModelOptions();
+    updateProviderHint();
+  }
+
+  function updateModelOptions() {
+  const select = researchModel;
+    if (!select) return;
+
+    const models = Array.isArray(providerState.models) ? providerState.models : [];
+    const fallbackModel = providerState.config?.model;
+
+    select.innerHTML = '';
+
+    if (models.length > 0) {
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = '请选择模型';
+      select.appendChild(placeholder);
+
+      models.forEach((model) => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        select.appendChild(option);
+      });
+
+      if (fallbackModel && models.includes(fallbackModel)) {
+        select.value = fallbackModel;
+      }
+    } else if (fallbackModel) {
+      const option = document.createElement('option');
+      option.value = fallbackModel;
+      option.textContent = fallbackModel;
+      select.appendChild(option);
+      select.value = fallbackModel;
+    } else {
+      const option = document.createElement('option');
+      option.value = '';
+      option.textContent = '请在 Settings 页面配置模型';
+      select.appendChild(option);
+      select.value = '';
+    }
+
+    select.disabled = models.length === 0 && !fallbackModel;
+  }
+
+  function updateProviderHint() {
+    if (providerHint) {
+      if (!providerState.config) {
+        providerHint.textContent = '当前没有配置 AI 服务，请先前往 Settings 设置。';
+        providerHint.classList.remove('text-gray-500');
+        providerHint.classList.add('text-red-500');
+      } else {
+  const { name, available, model } = providerState.config;
+        const statusText = available ? '已连接' : '未连接';
+        const modelText = model ? ` · 模型：${model}` : '';
+        providerHint.textContent = `当前服务：${name || providerState.provider} · 状态：${statusText}${modelText}`;
+        providerHint.classList.remove('text-red-500', 'text-gray-500');
+        providerHint.classList.add(available ? 'text-gray-500' : 'text-red-500');
+      }
+    }
+
+    if (startBtn) {
+      if (isResearching) {
+        startBtn.disabled = true;
+      } else {
+        const disabled = !providerState.config || !providerState.config.available;
+        startBtn.disabled = disabled;
+        startBtn.classList.toggle('opacity-50', disabled);
+        startBtn.classList.toggle('cursor-not-allowed', disabled);
+      }
+    }
+  }
+
+  // 初始化
+  function initResearchPanel() {
+    setupEventListeners();
+    renderTimeline();
+    syncProviderState();
   }
 
   // 设置事件监听
@@ -137,6 +234,11 @@
     // 停止按钮
     stopBtn?.addEventListener('click', () => {
       stopResearch();
+    });
+
+    window.addEventListener('aiProviderChanged', (event) => {
+      const detail = event instanceof CustomEvent ? event.detail : undefined;
+      syncProviderState(detail);
     });
   }
 
@@ -187,42 +289,39 @@
   // 开始研究
   async function startResearch() {
     const topic = (researchTopic as HTMLInputElement)?.value?.trim();
-    const model = (researchModel as HTMLSelectElement)?.value;
+    const selectedModel = (researchModel as HTMLSelectElement)?.value;
+    const fallbackModel = providerState.config?.model;
+    const model = selectedModel || fallbackModel;
     
     if (!topic) {
       alert('请输入研究主题');
       return;
     }
     
-    if (!model) {
-      alert('请选择 AI 模型');
+    if (!providerState.config) {
+      alert('请先在 Settings 页面配置 AI 服务');
       return;
     }
 
-    // 检查 Ollama 服务
-    try {
-      const healthResponse = await fetch('/api/ollama', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'health' })
-      });
-      
-      const healthData = await healthResponse.json();
-      if (!healthData.healthy) {
-        alert('Ollama 服务不可用，请确保 Ollama 正在运行');
-        return;
-      }
-    } catch (error) {
-      alert('无法连接到 Ollama 服务');
+    if (!model) {
+      alert('请选择或配置 AI 模型');
+      return;
+    }
+
+    if (!providerState.config.available) {
+      alert('当前 AI 服务未连接，请先在 Settings 页面测试连接');
       return;
     }
 
     isResearching = true;
     updateUIForResearchState();
+    
+    // 触发研究开始事件，让 ResearchAgentUI 开始动画
+    document.dispatchEvent(new CustomEvent('research:start'));
 
     const options = {
       depth: (depthLevel as HTMLSelectElement)?.value || 'standard',
-      temperature: parseFloat((creativityLevel as HTMLSelectElement)?.value || '0.5'),
+      temperature: 0.7, // 固定温度值
       focus: (researchFocus as HTMLTextAreaElement)?.value?.trim()
     };
 
@@ -233,6 +332,7 @@
         body: JSON.stringify({
           query: topic,
           model: model,
+          provider: providerState.provider,
           options: options
         })
       });
@@ -345,6 +445,7 @@
         stopBtn.classList.remove('inline-flex');
       }
     }
+    updateProviderHint();
   }
 
   // 更新推理面板（与主界面的推理面板交互）
@@ -358,4 +459,5 @@
 
   // 启动初始化
   document.addEventListener('DOMContentLoaded', initResearchPanel);
+  document.addEventListener('astro:page-load', () => syncProviderState());
 </script>
