@@ -2,151 +2,126 @@
 // 搜索配置和测试组件
 ---
 
-<div class="search-config-panel">
-  <h3>搜索引擎 API 配置</h3>
-  
-  <!-- API 密钥配置表单 -->
-  <div class="api-config">
-    <div class="form-group">
-      <label for="bing-key">Bing API 密钥:</label>
-      <input type="password" id="bing-key" placeholder="输入 Bing Search API 密钥">
-    </div>
-    
-    <div class="form-group">
-      <label for="google-key">Google API 密钥:</label>
-      <input type="password" id="google-key" placeholder="输入 Google Custom Search API 密钥">
-    </div>
-    
-    <div class="form-group">
-      <label for="google-cse">Google CSE ID:</label>
-      <input type="text" id="google-cse" placeholder="输入 Google Custom Search Engine ID">
-    </div>
-    
-    <button id="save-config" class="btn btn-primary">保存配置</button>
-    <span id="config-status" class="status-indicator"></span>
-  </div>
-
-  <!-- 搜索测试 -->
-  <div class="search-test">
-    <h4>搜索测试</h4>
-    <div class="form-group">
-      <input type="text" id="search-query" placeholder="输入搜索查询" value="人工智能发展趋势">
-    </div>
-    
-    <div class="search-options">
-      <label>
-        <input type="checkbox" id="use-bing" checked> 使用 Bing
-      </label>
-      <label>
-        <input type="checkbox" id="use-google" checked> 使用 Google
-      </label>
-    </div>
-    
-    <button id="test-search" class="btn btn-secondary">测试搜索</button>
-  </div>
-
-  <!-- 搜索结果显示 -->
-  <div id="search-results" class="search-results" style="display: none;">
-    <h4>搜索结果</h4>
-    <div id="results-container"></div>
-  </div>
-
-  <!-- 研究任务测试 -->
-  <div class="research-test">
-    <h4>集成研究任务测试</h4>
-    <div class="form-group">
-      <input type="text" id="research-query" placeholder="输入研究问题" value="区块链技术在供应链管理中的应用">
-    </div>
-    <button id="start-research" class="btn btn-primary">开始研究任务</button>
-    
-    <!-- 研究进度显示 -->
-    <div id="research-progress" class="progress-container" style="display: none;">
-      <div class="progress-bar">
-        <div id="progress-fill" class="progress-fill"></div>
+<div class="settings-panel search-config-panel">
+  <header class="panel-header">
+    <div class="header-meta">
+      <span class="badge-soft">Search Orchestration</span>
+      <div class="title">
+        <h3>搜索引擎 API 配置</h3>
+        <p>配置 Bing / Google 密钥并验证检索与研究链路</p>
       </div>
-      <div id="progress-text" class="progress-text"></div>
     </div>
-    
-    <!-- 研究结果显示 -->
-    <div id="research-results" class="research-results" style="display: none;"></div>
+    <span id="config-status" class="status-indicator">待配置</span>
+  </header>
+
+  <div class="config-grid">
+    <section class="config-card" aria-labelledby="api-config-title">
+      <header class="config-card__header">
+        <div>
+          <h4 id="api-config-title">API 密钥管理</h4>
+          <p>保存后会将配置缓存在浏览器本地存储中</p>
+        </div>
+      </header>
+      <div class="config-card__body">
+        <div class="field">
+          <label for="bing-key">Bing API 密钥</label>
+          <input type="password" id="bing-key" class="input-control" placeholder="输入 Bing Search API 密钥" />
+        </div>
+        <div class="field">
+          <label for="google-key">Google API 密钥</label>
+          <input type="password" id="google-key" class="input-control" placeholder="输入 Google Custom Search API 密钥" />
+        </div>
+        <div class="field">
+          <label for="google-cse">Google CSE ID</label>
+          <input type="text" id="google-cse" class="input-control" placeholder="输入 Google Custom Search Engine ID" />
+        </div>
+      </div>
+      <footer class="config-card__footer">
+        <button id="save-config" class="action-button primary">保存配置</button>
+      </footer>
+    </section>
+
+    <section class="config-card" aria-labelledby="search-test-title">
+      <header class="config-card__header">
+        <div>
+          <h4 id="search-test-title">搜索测试</h4>
+          <p>校验外部检索服务是否已就绪</p>
+        </div>
+      </header>
+      <div class="config-card__body">
+        <div class="field">
+          <label for="search-query">测试查询</label>
+          <input type="text" id="search-query" class="input-control" placeholder="输入搜索查询" value="人工智能发展趋势" />
+        </div>
+        <div class="toggle-group">
+          <label class="toggle-item">
+            <input type="checkbox" id="use-bing" checked />
+            <span>Bing</span>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="use-google" checked />
+            <span>Google</span>
+          </label>
+        </div>
+      </div>
+      <footer class="config-card__footer">
+        <button id="test-search" class="action-button">测试搜索</button>
+      </footer>
+    </section>
   </div>
+
+  <section class="config-card full" id="search-results" style="display: none;">
+    <header class="config-card__header">
+      <div>
+        <h4>搜索结果</h4>
+        <p>展示最近一次搜索测试的聚合结果</p>
+      </div>
+    </header>
+    <div id="results-container" class="results-container"></div>
+  </section>
 </div>
 
-<script>
+<script type="module">
 // @ts-nocheck
+import { SearchAPIClient } from '../lib/search-api-client.js';
+
 (() => {
   'use strict';
 
-  class SearchAPIClient {
-    constructor() {
-      this.baseUrl = '/api/search';
-      this.apiKeys = { bing: null, google: null, googleCseId: null };
+  const STORAGE_KEY = 'steady-research-pro:search-config';
+  const CONFIG_PING_QUERY = '__search_config__';
+  const storage = typeof window !== 'undefined' ? window.localStorage : null;
+
+  const computeConfigured = (config = {}) =>
+    Boolean(config.bing) || Boolean(config.google && config.googleCseId);
+
+  const buildConfiguredMessage = (configured, fallback = '配置保存成功!') => {
+    if (!configured) return fallback;
+    const parts = [];
+    if (configured.bing) parts.push('Bing ✓');
+    if (configured.google) parts.push('Google ✓');
+    return parts.length ? `已连接: ${parts.join(' / ')}` : fallback;
+  };
+
+  const readStoredConfig = () => {
+    if (!storage) return null;
+    try {
+      const raw = storage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+      console.warn('读取搜索配置失败:', error);
+      return null;
     }
+  };
 
-    async setApiKeys(keys) {
-      this.apiKeys = { ...this.apiKeys, ...keys };
-      const response = await fetch(this.baseUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'config',
-          bingApiKey: keys.bing,
-          googleApiKey: keys.google,
-          googleCseId: keys.googleCseId
-        })
-      });
-      return response.json();
+  const writeStoredConfig = (config) => {
+    if (!storage) return;
+    try {
+      storage.setItem(STORAGE_KEY, JSON.stringify(config));
+    } catch (error) {
+      console.warn('保存搜索配置失败:', error);
     }
-
-    async search(query, engines = ['bing', 'google'], options = {}) {
-      const response = await fetch(this.baseUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'search', query, engines, options, apiKeys: this.apiKeys })
-      });
-      return response.json();
-    }
-  }
-
-  class ResearchTaskProcessor {
-    constructor() {
-      this.client = new SearchAPIClient();
-    }
-
-    configureSearchAPIs(apiKeys) {
-      return this.client.setApiKeys(apiKeys);
-    }
-
-    async processResearchTask(query, model, onProgress) {
-      const steps = [
-        { id: 'plan', label: '生成初步研究计划', weight: 0.2 },
-        { id: 'search', label: '多源搜索与抓取', weight: 0.3 },
-        { id: 'extract', label: '内容清洗与摘要抽取', weight: 0.2 },
-        { id: 'cluster', label: '主题聚类与归纳', weight: 0.15 },
-        { id: 'synthesis', label: '综合分析与洞察输出', weight: 0.15 }
-      ];
-
-      let progress = 0;
-      const results = {};
-
-      for (const step of steps) {
-        onProgress?.(step.id, 'start', progress, step.label);
-        await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
-
-        results[step.id] = {
-          type: step.id === 'search' ? 'search_results' : 'analysis',
-          content: `${step.label} 完成`,
-          results: step.id === 'search' ? [] : undefined,
-          strategy: step.id === 'search' ? { queries: ['示例查询1', '示例查询2'] } : undefined
-        };
-
-        progress += step.weight;
-        onProgress?.(step.id, 'complete', progress, step.label, results[step.id]);
-      }
-
-      return { success: true, results, query, model, timestamp: new Date().toISOString() };
-    }
-  }
+  };
 
   const el = (id) => document.getElementById(id);
   const refs = {
@@ -154,8 +129,7 @@
       bingKey: el('bing-key'),
       googleKey: el('google-key'),
       googleCse: el('google-cse'),
-      searchQuery: el('search-query'),
-      researchQuery: el('research-query')
+      searchQuery: el('search-query')
     },
     toggles: {
       bing: el('use-bing'),
@@ -163,25 +137,18 @@
     },
     buttons: {
       saveConfig: el('save-config'),
-      testSearch: el('test-search'),
-      startResearch: el('start-research')
+      testSearch: el('test-search')
     },
     sections: {
       searchResults: el('search-results'),
-      resultsContainer: el('results-container'),
-      researchProgress: el('research-progress'),
-      researchResults: el('research-results')
-    },
-    progress: {
-      fill: el('progress-fill'),
-      text: el('progress-text')
+      resultsContainer: el('results-container')
     },
     status: el('config-status')
   };
 
   const searchClient = new SearchAPIClient();
-  let processor = null;
   let isConfigured = false;
+  let cachedConfig = null;
 
   const getValue = (input) => (input && typeof input.value === 'string' ? input.value.trim() : '');
   const setDisabled = (node, state) => { if (node) node.disabled = !!state; };
@@ -189,23 +156,16 @@
 
   function showStatus(message, type = '') {
     if (!refs.status) return;
-    refs.status.textContent = message;
+    refs.status.textContent = message || '待配置';
     refs.status.className = `status-indicator ${type}`.trim();
     if (type === 'success' || type === 'error') {
       setTimeout(() => {
         if (refs.status) {
-          refs.status.textContent = '';
+          refs.status.textContent = '待配置';
           refs.status.className = 'status-indicator';
         }
       }, 3000);
     }
-  }
-
-  function ensureProcessor() {
-    if (!processor) {
-      processor = new ResearchTaskProcessor();
-    }
-    return processor;
   }
 
   const getSelectedEngines = () =>
@@ -213,293 +173,97 @@
       .filter(([, checkbox]) => checkbox?.checked)
       .map(([engine]) => engine);
 
-  function renderSearchResults(payload, query) {
-    const container = refs.sections.resultsContainer;
-    const wrapper = refs.sections.searchResults;
-    if (!container || !wrapper) return;
-    const results = payload?.data?.results || [];
-    toggle(wrapper, true);
-    container.innerHTML = `
-      <div class="search-summary">
-        <p>查询: <strong>${payload?.data?.query || query}</strong></p>
-        <p>总结果: ${payload?.data?.totalResults ?? results.length}</p>
-      </div>
-      <div class="results-list">
-        ${results.map((item) => `
-          <div class="result-item">
-            <h5><a href="${item.url}" target="_blank" rel="noopener">${item.title}</a></h5>
-            <p class="snippet">${item.snippet || ''}</p>
-            <p class="source">来源: ${item.displayUrl || ''}</p>
+  function hydrateFromConfig(config) {
+    if (!config) return;
+    cachedConfig = config;
+
+    if (refs.inputs.bingKey && config.bing) refs.inputs.bingKey.value = config.bing;
+    if (refs.inputs.googleKey && config.google) refs.inputs.googleKey.value = config.google;
+    if (refs.inputs.googleCse && config.googleCseId) refs.inputs.googleCse.value = config.googleCseId;
+
+    if (Array.isArray(config.engines)) {
+      Object.entries(refs.toggles).forEach(([engine, checkbox]) => {
+        if (Array.isArray(config.engines)) {
+          Object.entries(refs.toggles).forEach(([engine, checkbox]) => {
+            checkbox.checked = config.engines.includes(engine);
+          });
+        }
+      }
+
+      function collectConfig() {
+        return {
+          bing: getValue(refs.inputs.bingKey),
+          google: getValue(refs.inputs.googleKey),
+          googleCseId: getValue(refs.inputs.googleCse),
+          engines: getSelectedEngines()
+        };
+      }
+
+      function saveConfig() {
+        const config = collectConfig();
+        writeStoredConfig(config);
+        hydrateFromConfig(config);
+        showStatus('配置保存成功!', 'success');
+      }
+
+      async function testSearch() {
+        const config = collectConfig();
+        if (!config.engines.length) {
+          showStatus('请至少选择一个搜索引擎', 'error');
+          return;
+        }
+        const query = getValue(refs.inputs.searchQuery);
+        if (!query) {
+          showStatus('请输入搜索查询', 'error');
+          return;
+        }
+        showStatus('正在发起搜索...', '');
+        setDisabled(refs.buttons.testSearch, true);
+        try {
+          const results = await searchClient.testSearch({
+            ...config,
+            query
+          });
+          renderResults(results);
+          showStatus(`搜索完成，共返回 ${results.length} 条结果`, 'success');
+        } catch (error) {
+          showStatus(`搜索失败: ${error.message}`, 'error');
+        } finally {
+          setDisabled(refs.buttons.testSearch, false);
+        }
+      }
+
+      function renderResults(results) {
+        const container = refs.sections.resultsContainer;
+        if (!container) return;
+        container.innerHTML = '';
+        if (!results || !results.length) {
+          container.innerHTML = '<div class="text-slate-400 py-6 text-center">暂无结果</div>';
+          toggle(refs.sections.searchResults, true);
+          return;
+        }
+        const html = results.map((item) => `
+          <div class="result-item border-b border-white/10 py-3">
+            <div class="font-semibold text-slate-100">${item.title || '无标题'}</div>
+            <div class="text-xs text-slate-400 mt-1">${item.snippet || ''}</div>
+            <div class="text-xs text-slate-500 mt-1">${item.link ? `<a href="${item.link}" target="_blank" class="text-brand-400 underline">访问</a>` : ''}</div>
           </div>
-        `).join('')}
-      </div>`;
-  }
+        `).join('');
+        container.innerHTML = html;
+        toggle(refs.sections.searchResults, true);
+      }
 
-  function renderResearchResults(report) {
-    const container = refs.sections.researchResults;
-    if (!container) return;
-    toggle(container, true);
-    container.innerHTML = `
-      <h4>研究结果</h4>
-      <div class="research-result">
-        <p><strong>查询:</strong> ${report.query}</p>
-        <p><strong>完成时间:</strong> ${new Date(report.timestamp).toLocaleString()}</p>
-        ${Object.entries(report.results).map(([step, detail]) => `
-          <div class="step-result">
-            <h5>步骤: ${step}</h5>
-            <div class="step-content">
-              <pre>${detail?.content || ''}</pre>
-            </div>
-          </div>
-        `).join('')}
-      </div>`;
-  }
+      function init() {
+        const stored = readStoredConfig();
+        hydrateFromConfig(stored);
+        refs.buttons.saveConfig?.addEventListener('click', saveConfig);
+        refs.buttons.testSearch?.addEventListener('click', testSearch);
+      }
 
-  function updateProgress(label, ratio) {
-    const percentage = Math.round(ratio * 100);
-    if (refs.progress.fill) refs.progress.fill.style.width = `${percentage}%`;
-    if (refs.progress.text) refs.progress.text.textContent = `${label} (${percentage}%)`;
-  }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
 
-  refs.buttons.saveConfig?.addEventListener('click', async () => {
-    const config = {
-      bing: getValue(refs.inputs.bingKey),
-      google: getValue(refs.inputs.googleKey),
-      googleCseId: getValue(refs.inputs.googleCse)
-    };
-
-    if (!config.bing && !config.google) {
-      showStatus('请至少配置一个搜索引擎的 API 密钥', 'error');
-      return;
-    }
-
-    try {
-      showStatus('正在保存配置...', 'loading');
-      const result = await searchClient.setApiKeys(config);
-      if (!result.success) throw new Error(result.error || '配置失败');
-
-      isConfigured = true;
-      await ensureProcessor().configureSearchAPIs(config);
-      showStatus('配置保存成功!', 'success');
-    } catch (error) {
-      showStatus(`配置保存失败: ${error.message}`, 'error');
-    }
-  });
-
-  refs.buttons.testSearch?.addEventListener('click', async () => {
-    if (!isConfigured) {
-      showStatus('请先配置 API 密钥', 'error');
-      return;
-    }
-
-    const query = getValue(refs.inputs.searchQuery);
-    if (!query) {
-      showStatus('请输入搜索查询', 'error');
-      return;
-    }
-
-    const engines = getSelectedEngines();
-    if (!engines.length) {
-      showStatus('请选择至少一个搜索引擎', 'error');
-      return;
-    }
-
-    try {
-      showStatus('正在搜索...', 'loading');
-      setDisabled(refs.buttons.testSearch, true);
-      const result = await searchClient.search(query, engines);
-      if (!result.success) throw new Error(result.error || '未知错误');
-
-      renderSearchResults(result, query);
-      showStatus(`搜索完成，找到 ${result?.data?.totalResults ?? 0} 条结果`, 'success');
-    } catch (error) {
-      showStatus(`搜索失败: ${error.message}`, 'error');
-    } finally {
-      setDisabled(refs.buttons.testSearch, false);
-    }
-  });
-
-  refs.buttons.startResearch?.addEventListener('click', async () => {
-    if (!processor) {
-      showStatus('请先配置 API 密钥', 'error');
-      return;
-    }
-
-    const query = getValue(refs.inputs.researchQuery);
-    if (!query) {
-      showStatus('请输入研究问题', 'error');
-      return;
-    }
-
-    try {
-      setDisabled(refs.buttons.startResearch, true);
-      toggle(refs.sections.researchProgress, true);
-      toggle(refs.sections.researchResults, false);
-
-      const result = await processor.processResearchTask(query, 'llama2', (_, __, ratio, label) => {
-        updateProgress(label, ratio);
-      });
-
-      renderResearchResults(result);
-      showStatus('研究任务完成!', 'success');
-    } catch (error) {
-      showStatus(`研究任务失败: ${error.message}`, 'error');
-    } finally {
-      setDisabled(refs.buttons.startResearch, false);
-    }
-  });
-})();
-</script>
-
-<style>
-.search-config-panel {
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 10px;
-}
-
-.btn-primary { background-color: #007bff; color: white; }
-.btn-secondary { background-color: #6c757d; color: white; }
-.btn-success { background-color: #28a745; color: white; }
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.status-indicator {
-  margin-left: 10px;
-  padding: 5px 10px;
-  border-radius: 4px;
-}
-
-.status-indicator.success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.status-indicator.error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.status-indicator.loading {
-  background-color: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
-}
-
-.search-options label {
-  margin-right: 15px;
-}
-
-.progress-container {
-  margin: 20px 0;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 20px;
-  background-color: #f0f0f0;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background-color: #007bff;
-  transition: width 0.3s ease;
-}
-
-.progress-text {
-  text-align: center;
-  margin-top: 5px;
-  font-size: 14px;
-}
-
-.search-results, .research-results {
-  margin-top: 20px;
-  padding: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-}
-
-.result-item {
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
-}
-
-.result-item h5 {
-  margin: 0 0 5px 0;
-}
-
-.result-item h5 a {
-  color: #1a0dab;
-  text-decoration: none;
-}
-
-.result-item h5 a:hover {
-  text-decoration: underline;
-}
-
-.snippet {
-  color: #545454;
-  margin: 5px 0;
-}
-
-.source {
-  color: #006621;
-  font-size: 14px;
-  margin: 0;
-}
-
-.step-result {
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: white;
-  border-radius: 5px;
-}
-
-.step-content {
-  margin-top: 10px;
-}
-
-.step-content pre {
-  white-space: pre-wrap;
-  background-color: #f8f9fa;
-  padding: 10px;
-  border-radius: 4px;
-  font-size: 14px;
-}
-</style>
+    })();

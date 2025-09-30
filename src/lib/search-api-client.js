@@ -14,17 +14,19 @@ class SearchAPIClient {
    * @param {Object} keys - API 密钥配置
    */
   async setApiKeys(keys) {
-    this.apiKeys = { ...this.apiKeys, ...keys };
-    
+    const { query, ...apiKeyPayload } = keys || {};
+    this.apiKeys = { ...this.apiKeys, ...apiKeyPayload };
+
     try {
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'config',
-          bingApiKey: keys.bing,
-          googleApiKey: keys.google,
-          googleCseId: keys.googleCseId
+          query: query || '__search_config__',
+          bingApiKey: apiKeyPayload.bing,
+          googleApiKey: apiKeyPayload.google,
+          googleCseId: apiKeyPayload.googleCseId
         })
       });
 

@@ -6,54 +6,114 @@ import ResultsGrid from './agent/ResultsGrid.astro'
 <section class="min-h-screen flex flex-col lg:flex-row gap-6">
   <SidePanel />
   <div class="flex-1 space-y-6">
-    <div class="bg-white/70 backdrop-blur rounded-xl shadow-soft border border-gray-100 p-6 flex items-start gap-4">
-      <div class="flex-1">
-        <h1 class="text-xl font-semibold tracking-tight text-gray-900">Deep Research Agent</h1>
-        <p class="text-sm text-gray-600 mt-1">智能聚合多源信息，生成结构化研究洞察。</p>
+    <div class="relative overflow-hidden rounded-2xl glass-card border border-white/10 px-6 py-8 md:px-8 md:py-9 text-slate-100">
+      <span class="card-accent-gradient"></span>
+      <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center">
+        <div class="flex-1 space-y-4">
+          <span class="badge-soft" data-i18n="hero.realtimeBadge">Realtime orchestration</span>
+          <div class="space-y-2">
+            <h1 class="text-3xl font-semibold tracking-tight" data-i18n="hero.title">Deep Research Agent</h1>
+            <p class="text-sm text-slate-200/80 max-w-xl" data-i18n="hero.description">智能聚合多源信息，驱动可视化推理与搜索日志。通过事件总线与流式后端协作，实现由浅到深的洞察生成。</p>
+          </div>
+          <div class="flex flex-wrap gap-2 text-[11px] text-slate-200/80">
+            <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1" data-i18n="hero.capabilitySse">⚡ SSE 推理</span>
+            <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1" data-i18n="hero.capabilitySearch">🔎 多源搜索</span>
+            <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1" data-i18n="hero.capabilityTimeline">🧭 时间线追踪</span>
+            <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1" data-i18n="hero.capabilityReport">🗂️ 聚合报告</span>
+          </div>
+        </div>
+        <dl class="grid grid-cols-2 gap-4 lg:w-72">
+          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+            <dt class="text-[10px] uppercase tracking-[0.28em] text-slate-400" data-i18n="hero.currentTask">当前任务</dt>
+            <dd class="mt-2 text-2xl font-semibold text-white" data-i18n="hero.currentTaskIdle">Idle</dd>
+            <dd class="mt-1 text-[11px] text-slate-300/80" data-i18n="hero.currentTaskHint">等待研究主题</dd>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+            <dt class="text-[10px] uppercase tracking-[0.28em] text-slate-400" data-i18n="hero.latestOutput">最新输出</dt>
+            <dd class="mt-2 text-2xl font-semibold text-white">2025.09</dd>
+            <dd class="mt-1 text-[11px] text-slate-300/80" data-i18n="hero.latestOutputHint">最近一次完成时间</dd>
+          </div>
+        </dl>
       </div>
-
     </div>
-  <div id="reasoning-panel" class="rounded-xl border border-dashed border-brand-200 bg-white/40 p-4 space-y-3 text-xs text-gray-600 hidden animate-fade-in">
-      <h2 class="text-xs font-semibold tracking-wide text-brand-600 flex items-center gap-1">
+    <div class="grid gap-4 md:grid-cols-3">
+      <div class="glass-card glass-card--muted rounded-2xl border border-white/10 px-4 py-5 text-xs text-slate-200/85">
+        <p class="text-sm font-semibold text-white/90" data-i18n="hero.quickStartTitle">🎯 快速开始</p>
+        <p class="mt-2 leading-relaxed" data-i18n="hero.quickStartDescription">在左侧填写主题并选择模型，系统将自动规整研究流程并同步推理轨迹。</p>
+      </div>
+      <div class="glass-card glass-card--muted rounded-2xl border border-white/10 px-4 py-5 text-xs text-slate-200/85">
+        <p class="text-sm font-semibold text-white/90" data-i18n="hero.staySyncedTitle">🔁 保持同步</p>
+        <p class="mt-2 leading-relaxed" data-i18n="hero.staySyncedDescription">Settings 中切换服务后，SidePanel 会自动刷新可用模型列表并提示联机状态。</p>
+      </div>
+      <div class="glass-card glass-card--muted rounded-2xl border border-white/10 px-4 py-5 text-xs text-slate-200/85">
+        <p class="text-sm font-semibold text-white/90" data-i18n="hero.exportTitle">📦 导出结果</p>
+        <p class="mt-2 leading-relaxed" data-i18n="hero.exportDescription">完成后可在结果卡片中扩展详情，整理结构化结论与引用来源。</p>
+      </div>
+    </div>
+    <div id="reasoning-panel" class="rounded-2xl border border-brand-300/35 bg-slate-900/55 px-5 py-4 space-y-3 text-xs text-slate-200/80 backdrop-blur hidden animate-fade-in">
+      <h2 class="text-xs font-semibold tracking-wide text-brand-200 flex items-center gap-1 uppercase" data-i18n="hero.reasoningTitle">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
         推理轨迹
       </h2>
       <ol id="reasoning-steps" class="space-y-2"></ol>
     </div>
-    <div id="search-log" class="rounded-xl border border-gray-100 bg-white/60 p-4 hidden text-[11px] leading-relaxed space-y-1 font-mono overflow-auto max-h-56"></div>
+    <div id="search-log" class="rounded-2xl border border-white/10 bg-slate-900/55 px-5 py-4 hidden text-[11px] leading-relaxed space-y-1 font-mono text-slate-200/70 overflow-auto max-h-56 backdrop-blur"></div>
     <ResultsGrid />
   </div>
 </section>
 <script>
+  // @ts-nocheck
   // Progressive reasoning & search simulation
   const stepsEl = document.getElementById('reasoning-steps');
   const reasoningPanel = document.getElementById('reasoning-panel');
   const searchLog = document.getElementById('search-log');
   const progressTimeline = document.getElementById('progress-timeline');
+  const steadyI18n = (window).__steadyI18n || {};
+  const translate = (key, params, fallback) => {
+    try {
+      if (steadyI18n && typeof steadyI18n.t === 'function') {
+        return steadyI18n.t(key, params);
+      }
+    } catch (error) {
+      console.warn('[i18n] translation error', error);
+    }
+    return typeof fallback === 'string' ? fallback : key;
+  };
   let running = false;
+  let activeTimelineStep = -1;
   const pipeline = [
-    { id: 'plan', label: '生成初步研究计划' },
-    { id: 'search', label: '多源搜索与抓取' },
-    { id: 'extract', label: '内容清洗与摘要抽取' },
-    { id: 'cluster', label: '主题聚类与归纳' },
-    { id: 'synthesis', label: '综合分析与洞察输出' },
+    { id: 'plan', key: 'researchFlow.pipelinePlan', fallback: '生成初步研究计划' },
+    { id: 'search', key: 'researchFlow.pipelineSearch', fallback: '多源搜索与抓取' },
+    { id: 'extract', key: 'researchFlow.pipelineExtract', fallback: '内容清洗与摘要抽取' },
+    { id: 'cluster', key: 'researchFlow.pipelineCluster', fallback: '主题聚类与归纳' },
+    { id: 'synthesis', key: 'researchFlow.pipelineSynthesis', fallback: '综合分析与洞察输出' },
   ];
   const progressBar = document.getElementById('progress-bar');
   const progressMeta = document.getElementById('progress-meta');
   
-  function setProgress(fraction, text) {
+  function setProgress(fraction, stepKey) {
+    const label = translate(stepKey.key || stepKey, {}, stepKey.fallback || '');
     if (progressBar) progressBar.style.width = Math.min(100, fraction*100)+'%';
-    if (progressMeta) progressMeta.textContent = `${Math.round(fraction*100)}% · ${text}`;
+    if (progressMeta) progressMeta.textContent = `${Math.round(fraction*100)}% · ${label}`;
   }
   
   function renderTimeline(activeIndex = -1) {
     if (!progressTimeline) return;
+    activeTimelineStep = activeIndex;
     progressTimeline.innerHTML = pipeline.map((p, i) => {
+      const label = translate(p.key, {}, p.fallback);
       const state = i < activeIndex ? 'done' : i === activeIndex ? 'active' : 'todo';
-      const color = state === 'done' ? 'bg-brand-500' : state === 'active' ? 'bg-brand-400 animate-pulse' : 'bg-gray-300';
+      const color = state === 'done' ? 'bg-emerald-300' : state === 'active' ? 'bg-brand-300 animate-pulse' : 'bg-white/15';
+      const textTone = state === 'todo' ? 'text-slate-500' : 'text-slate-100';
+      const subTone = state === 'todo' ? 'text-slate-500' : 'text-slate-300';
+      const statusText = state === 'done'
+        ? translate('researchFlow.timelineStatusDone', {}, '完成')
+        : state === 'active'
+          ? translate('researchFlow.timelineStatusRunning', {}, '进行中')
+          : translate('researchFlow.timelineStatusPending', {}, '');
       return `<li class="before:content-[''] before:absolute before:-start-4 before:top-1.5 before:w-2 before:h-2 before:rounded-full before:${color} relative">`+
-        `<p class="text-xs font-medium ${state==='todo'?'text-gray-500':'text-gray-900'}">${p.label}</p>`+
-        `<p class="text-[11px] text-gray-500">${state==='done'?'完成':state==='active'?'进行中...':''}</p>`+
+        `<p class="text-xs font-medium ${textTone}">${label}</p>`+
+        `<p class="text-[11px] ${subTone}">${statusText}</p>`+
       `</li>`;
     }).join('');
   }
@@ -66,19 +126,20 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     if (!stepsEl) return null;
     const index = stepsEl.children.length + 1;
     const li = document.createElement('li');
-    li.className = 'rounded-lg border border-brand-100 bg-white/60 shadow-soft animate-slide-up';
+    li.className = 'rounded-xl border border-brand-300/30 bg-slate-900/55 shadow-soft backdrop-blur animate-slide-up';
     li.style.animationDelay = (index * 40) + 'ms';
     const summaryId = `rs-summary-${index}`;
-    li.innerHTML = `\n      <button type=button id="${summaryId}" class="group w-full flex items-center justify-between gap-3 px-3 py-2 text-left cursor-pointer select-none">
-        <span class="flex items-center gap-2 text-[11px] font-medium tracking-wide text-brand-600">
+    const pendingText = translate('researchFlow.detailPending', {}, '待执行');
+    li.innerHTML = `\n      <button type=button id="${summaryId}" class="group w-full flex items-center justify-between gap-3 px-4 py-3 text-left cursor-pointer select-none text-slate-200/85">
+        <span class="flex items-center gap-2 text-[11px] font-medium tracking-wide text-brand-200 uppercase">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
           Step ${index}
         </span>
-        <span class="flex-1 truncate text-[11px] text-gray-600">${label}</span>
-        <span class="status text-[10px] font-medium text-gray-400">待执行</span>
-        <svg class="chevron w-3.5 h-3.5 text-gray-400 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
+        <span class="flex-1 truncate text-[11px] text-slate-400">${label}</span>
+        <span class="status text-[10px] font-medium text-slate-500">${pendingText}</span>
+        <svg class="chevron w-3.5 h-3.5 text-slate-500 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
       </button>
-      <div class="detail px-4 pt-0 pb-3 space-y-1 text-[11px] leading-relaxed border-t border-brand-100/50 overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">\n      </div>`;
+      <div class="detail px-5 pt-0 pb-3 space-y-1 text-[11px] leading-relaxed text-slate-300/85 border-t border-brand-300/20 overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">\n      </div>`;
     stepsEl.appendChild(li);
     const summaryBtn = li.querySelector('#'+summaryId);
     const detailEl = li.querySelector('.detail');
@@ -102,8 +163,8 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     function addLine(text, type='log') {
       const line = document.createElement('div');
       line.className = 'relative pl-3';
-      if (type==='done') line.classList.add('text-brand-600','font-medium');
-      line.innerHTML = `<span class=\"absolute left-0 top-1 w-1 h-1 rounded-full ${type==='done'?'bg-brand-500':'bg-brand-300'}\"></span>${text}`;
+      if (type==='done') line.classList.add('text-brand-200','font-medium');
+      line.innerHTML = `<span class=\"absolute left-0 top-1 w-1 h-1 rounded-full ${type==='done'?'bg-brand-200':'bg-brand-400/70'}\"></span>${text}`;
       if (detailEl) {
         detailEl.appendChild(line);
         if (detailEl.getAttribute('data-open')==='true' && detailEl instanceof HTMLElement) {
@@ -112,8 +173,20 @@ import ResultsGrid from './agent/ResultsGrid.astro'
       }
     }
     
-    function start() { if(statusEl){ statusEl.textContent = '执行中'; statusEl.className='status text-[10px] font-medium text-brand-600'; } addLine('开始: '+label); }
-    function finish() { if(statusEl){ statusEl.textContent = '完成'; statusEl.className='status text-[10px] font-medium text-emerald-600'; } addLine('完成 ✓', 'done'); }
+    function start() {
+      if(statusEl){
+        statusEl.textContent = translate('researchFlow.detailRunning', {}, '执行中');
+        statusEl.className='status text-[10px] font-medium text-brand-600';
+      }
+      addLine(translate('researchFlow.detailStart', { label }, `开始: ${label}`));
+    }
+    function finish() {
+      if(statusEl){
+        statusEl.textContent = translate('researchFlow.detailDone', {}, '完成');
+        statusEl.className='status text-[10px] font-medium text-emerald-600';
+      }
+      addLine(translate('researchFlow.detailFinish', {}, '完成 ✓'), 'done');
+    }
     return { start, finish, addLine, expand: ()=>{ if(detailEl instanceof HTMLElement){ detailEl.setAttribute('data-open','true'); detailEl.style.maxHeight=detailEl.scrollHeight+'px'; detailEl.style.opacity='1'; } chevron?.classList.add('rotate-180'); } };
   }
   
@@ -128,7 +201,7 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     searchLog.appendChild(line);
     searchLog.scrollTop = searchLog.scrollHeight;
     // also push into current step detail
-    if (currentStep && typeof currentStep.addLine === 'function') currentStep.addLine(text.replace('[search]','搜索')); 
+    if (currentStep && typeof currentStep.addLine === 'function') currentStep.addLine(text.replace('[search]', translate('researchFlow.logSearchLabel', {}, '搜索'))); 
   }
   
   async function runPipeline() {
@@ -139,24 +212,33 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     for (let i=0;i<pipeline.length;i++) {
       renderTimeline(i);
       const p = pipeline[i];
-      currentStep = createReasoningStep(p.label);
+      const label = translate(p.key, {}, p.fallback);
+      currentStep = createReasoningStep(label);
       if (currentStep && typeof currentStep.start === 'function') currentStep.start();
-      setProgress(i/pipeline.length, p.label);
+      setProgress(i/pipeline.length, p);
       if (p.id === 'search') {
         for (let k=0;k<5;k++) {
-          logSearch(`[search] query#${k+1} 触发 -> 模拟结果 ${Math.random().toString(36).slice(2,8)}`);
+          const token = Math.random().toString(36).slice(2,8);
+          const message = translate('researchFlow.logSearchLine', { index: k+1, token }, `[search] query#${k+1} 触发 -> 模拟结果 ${token}`);
+          logSearch(message);
           await new Promise(r=>setTimeout(r,180));
-          setProgress((i + (k+1)/6)/pipeline.length, '搜索中');
+          setProgress((i + (k+1)/6)/pipeline.length, { key: 'researchFlow.searchProgress', fallback: '搜索中' });
         }
       }
       await new Promise(r=>setTimeout(r, 600 + Math.random()*500));
       if (currentStep && typeof currentStep.finish === 'function') currentStep.finish();
     }
-    setProgress(1,'完成');
+    setProgress(1, { key: 'researchFlow.timelineDone', fallback: '完成' });
     renderTimeline(pipeline.length);
     running = false;
   }
   
   // 监听自定义事件，由 SidePanel 触发
   document.addEventListener('research:start', runPipeline);
+
+  if (steadyI18n && typeof steadyI18n.onLocaleChange === 'function') {
+    steadyI18n.onLocaleChange(() => {
+      renderTimeline(typeof activeTimelineStep === 'number' ? activeTimelineStep : -1);
+    });
+  }
 </script>

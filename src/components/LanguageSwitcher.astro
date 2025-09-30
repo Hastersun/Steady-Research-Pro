@@ -1,0 +1,91 @@
+<div class="language-switcher glass-card glass-card--muted rounded-2xl border border-white/10 px-4 py-3 text-xs text-slate-200/90">
+  <div class="flex items-center justify-between gap-3">
+    <div class="space-y-0.5">
+      <p class="text-[11px] uppercase tracking-[0.32em] text-slate-400" data-i18n="languageSwitcher.label">界面语言</p>
+      <p class="text-[11px] text-slate-400/80" data-i18n="common.language">语言</p>
+    </div>
+    <div class="inline-flex items-center gap-1 rounded-full bg-white/5 p-1" role="group" aria-label="Language selector">
+      <button type="button" class="lang-btn" data-locale="zh-CN" data-i18n="languageSwitcher.zh">简体中文</button>
+      <button type="button" class="lang-btn" data-locale="en-US" data-i18n="languageSwitcher.en">English</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .language-switcher {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  .language-switcher .lang-btn {
+    position: relative;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgba(226, 232, 240, 0.78);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .language-switcher .lang-btn[data-active='true'] {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(16, 185, 129, 0.45));
+    color: rgba(15, 23, 42, 0.88);
+    box-shadow: 0 10px 20px -12px rgba(59, 130, 246, 0.65);
+  }
+  .language-switcher .lang-btn[data-active='false']:hover {
+    color: rgba(226, 232, 240, 0.95);
+  }
+</style>
+
+<script type="module">
+  const initLanguageSwitcher = () => {
+    const i18n = window.__steadyI18n;
+    if (!i18n) {
+      requestAnimationFrame(initLanguageSwitcher);
+      return;
+    }
+
+    const { getLocale, setLocale, onLocaleChange, applyTranslations } = i18n;
+    const buttons = Array.from(document.querySelectorAll('.language-switcher .lang-btn'));
+
+    const updateActiveButton = (locale) => {
+      buttons.forEach((button) => {
+        const target = button?.dataset?.locale;
+        const isActive = target === locale;
+        button.dataset.active = isActive ? 'true' : 'false';
+        button.setAttribute('aria-pressed', String(isActive));
+      });
+    };
+
+    const handleClick = (event) => {
+      const button = event.currentTarget;
+      const locale = button?.dataset?.locale;
+      if (!locale) return;
+      setLocale(locale);
+    };
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', handleClick);
+    });
+
+    const unsubscribe = onLocaleChange?.((locale) => {
+      updateActiveButton(locale);
+    });
+
+    updateActiveButton(getLocale?.() || 'zh-CN');
+
+    if (import.meta.hot) {
+      import.meta.hot.dispose(() => {
+        buttons.forEach((button) => button.removeEventListener('click', handleClick));
+        unsubscribe?.();
+      });
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLanguageSwitcher, { once: true });
+  } else {
+    initLanguageSwitcher();
+  }
+</script>
