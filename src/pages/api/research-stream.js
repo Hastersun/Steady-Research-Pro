@@ -28,12 +28,14 @@ export async function POST({ request }) {
           model,
           (stepId, status, progress, message, data) => {
             // 发送进度更新
+            const payload = typeof data === 'string' ? { raw: data } : (data || {});
             const update = {
               stepId,
               status,
               progress: Math.round(progress * 100),
               message,
-              data: data ? (typeof data === 'string' ? data : JSON.stringify(data, null, 2)) : null,
+              stepType: payload.stepType || stepId,
+              data: payload,
               timestamp: new Date().toISOString()
             };
 

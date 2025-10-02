@@ -1,6 +1,39 @@
 // Ollama 客户端封装
 import { Ollama } from 'ollama';
 
+const normalizeOptions = (options = {}) => {
+  if (!options) return {};
+
+  const {
+    topP,
+    top_p,
+    topK,
+    top_k,
+    temperature,
+    ...rest
+  } = options;
+
+  const normalized = { ...rest };
+
+  if (typeof temperature === 'number') {
+    normalized.temperature = temperature;
+  }
+
+  if (typeof top_p === 'number') {
+    normalized.top_p = top_p;
+  } else if (typeof topP === 'number') {
+    normalized.top_p = topP;
+  }
+
+  if (typeof top_k === 'number') {
+    normalized.top_k = top_k;
+  } else if (typeof topK === 'number') {
+    normalized.top_k = topK;
+  }
+
+  return normalized;
+};
+
 class OllamaClient {
   constructor() {
     this.ollama = new Ollama({
@@ -47,9 +80,9 @@ class OllamaClient {
         prompt,
         stream: false,
         options: {
-          temperature: options.temperature || 0.7,
-          top_p: options.top_p || 0.9,
-          ...options
+          temperature: options.temperature ?? 0.7,
+          top_p: options.top_p ?? options.topP ?? 0.9,
+          ...normalizeOptions(options)
         }
       });
       return response.response;
@@ -73,9 +106,9 @@ class OllamaClient {
         prompt,
         stream: true,
         options: {
-          temperature: options.temperature || 0.7,
-          top_p: options.top_p || 0.9,
-          ...options
+          temperature: options.temperature ?? 0.7,
+          top_p: options.top_p ?? options.topP ?? 0.9,
+          ...normalizeOptions(options)
         }
       });
 
@@ -107,9 +140,9 @@ class OllamaClient {
         messages,
         stream: false,
         options: {
-          temperature: options.temperature || 0.7,
-          top_p: options.top_p || 0.9,
-          ...options
+          temperature: options.temperature ?? 0.7,
+          top_p: options.top_p ?? options.topP ?? 0.9,
+          ...normalizeOptions(options)
         }
       });
       return response.message.content;
@@ -133,9 +166,9 @@ class OllamaClient {
         messages,
         stream: true,
         options: {
-          temperature: options.temperature || 0.7,
-          top_p: options.top_p || 0.9,
-          ...options
+          temperature: options.temperature ?? 0.7,
+          top_p: options.top_p ?? options.topP ?? 0.9,
+          ...normalizeOptions(options)
         }
       });
 

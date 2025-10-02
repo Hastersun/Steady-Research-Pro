@@ -67,6 +67,61 @@ class SearchAPIClient {
   }
 
   /**
+   * 搜索配置面板专用的测试调用
+   * @param {Object} payload - 测试参数
+   * @param {string} payload.query - 测试查询
+   * @param {Array} [payload.engines] - 启用的搜索引擎
+   * @param {string} [payload.bing]
+   * @param {string} [payload.google]
+   * @param {string} [payload.googleCseId]
+   */
+  async testSearch(payload = {}) {
+    const { query, engines = [], bing, google, googleCseId } = payload;
+
+    if (!query) {
+      throw new Error('缺少测试查询');
+    }
+
+    const activeEngines = Array.isArray(engines) && engines.length
+      ? engines
+      : ['bing', 'google'];
+
+    const resolvedKeys = { ...this.apiKeys };
+    if (bing !== undefined) resolvedKeys.bing = bing;
+    if (google !== undefined) resolvedKeys.google = google;
+    if (googleCseId !== undefined) resolvedKeys.googleCseId = googleCseId;
+    this.apiKeys = resolvedKeys;
+
+    try {
+      const response = await fetch(this.baseUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'search',
+          query,
+          engines: activeEngines,
+          options: {},
+          apiKeys: resolvedKeys
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || '搜索失败');
+      }
+
+      return result.data?.results || [];
+    } catch (error) {
+      console.error('测试搜索失败:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Bing 搜索
    * @param {string} query - 搜索查询
    * @param {Object} options - 搜索选项

@@ -52,13 +52,14 @@
 
 <script>
   // @ts-nocheck
-  // AI 研究功能集成
   let isResearching = false;
   let currentStream = null;
   let providerState = { provider: 'manual', config: null, models: [] };
   let syncRetryTimer = null;
 
-  // 元素引用
+  const STORAGE_KEY = 'steady-research-pro:search-config';
+  const AI_SERVICE_STORAGE_KEY = 'steady-research-pro:ai-service';
+
   const researchTopic = document.getElementById('research-topic');
   const researchModel = document.getElementById('research-model');
   const depthLevel = document.getElementById('depth-level');
@@ -71,7 +72,6 @@
   const configForm = document.getElementById('config-form');
   const providerHint = document.getElementById('provider-hint');
 
-  // 研究步骤配置
   const i18n = (window).__steadyI18n || {};
   const translate = (key, params, fallback) => {
     if (i18n && typeof i18n.t === 'function') {
@@ -84,17 +84,34 @@
     return fallback ?? key;
   };
 
-  const researchSteps = [
-    { id: 'plan', key: 'sidePanel.stepPlan', fallback: '生成研究计划', icon: '📋' },
-    { id: 'search', key: 'sidePanel.stepSearch', fallback: '多源搜索', icon: '🔍' },
-    { id: 'extract', key: 'sidePanel.stepExtract', fallback: '内容提取', icon: '📄' },
-    { id: 'cluster', key: 'sidePanel.stepCluster', fallback: '主题聚类', icon: '🔗' },
-    { id: 'synthesis', key: 'sidePanel.stepSynthesis', fallback: '综合分析', icon: '🧠' }
+  const LEGACY_STEPS = [
+    { id: 'plan', stepType: 'plan', key: 'sidePanel.stepPlan', fallback: '生成研究计划', icon: '📋' },
+    { id: 'search', stepType: 'search', key: 'sidePanel.stepSearch', fallback: '多源搜索', icon: '🔍' },
+    { id: 'extract', stepType: 'extract', key: 'sidePanel.stepExtract', fallback: '内容提取', icon: '📄' },
+    { id: 'cluster', stepType: 'cluster', key: 'sidePanel.stepCluster', fallback: '主题聚类', icon: '🔗' },
+    { id: 'synthesis', stepType: 'synthesis', key: 'sidePanel.stepSynthesis', fallback: '综合分析', icon: '🧠' }
   ];
+
+  const DEEP_STEPS = [
+    { id: 'plan', stepType: 'plan', key: 'sidePanel.stepPlan', fallback: '生成研究计划', icon: '📋' },
+    { id: 'search', stepType: 'deep_search', key: 'sidePanel.stepDeepSearch', fallback: '多源深度搜索', icon: '🔎' },
+    { id: 'cluster', stepType: 'modeling', key: 'sidePanel.stepModeling', fallback: '结构化建模', icon: '🧩' },
+    { id: 'synthesis', stepType: 'reporting', key: 'sidePanel.stepReporting', fallback: '智能报告生成', icon: '📝' }
+  ];
+
+  let currentSteps = [...LEGACY_STEPS];
+  const stepStatuses = new Map();
+
+  const researchState = {
+    mode: 'legacy',
+    deepAgent: null,
+    search: null,
+    providerDeepAgent: {}
+  };
 
   function getSelectorInstance() {
     if (typeof window === 'undefined') return null;
-    const globalAny = window as any;
+    const globalAny = window;
     return typeof globalAny.getAIServiceSelector === 'function' ? globalAny.getAIServiceSelector() : null;
   }
 
@@ -154,12 +171,28 @@
     }
 
     providerState = { provider, config, models };
+
+    const mappingSource = detail?.deepAgent || config?.deepAgent;
+    if (mappingSource) {
+      researchState.providerDeepAgent = {
+        ...(researchState.providerDeepAgent || {}),
+        [provider]: { ...mappingSource }
+      };
+      if (typeof window !== 'undefined') {
+        window.steadyResearchConfig = window.steadyResearchConfig || {};
+        window.steadyResearchConfig.providerDeepAgent = {
+          ...(window.steadyResearchConfig.providerDeepAgent || {}),
+          [provider]: { ...mappingSource }
+        };
+      }
+    }
+
     updateModelOptions();
     updateProviderHint();
   }
 
   function updateModelOptions() {
-  const select = researchModel;
+    const select = researchModel;
     if (!select) return;
 
     const models = Array.isArray(providerState.models) ? providerState.models : [];
@@ -210,7 +243,7 @@
         providerHint.classList.remove('text-slate-400', 'text-emerald-300', 'text-amber-300', 'text-rose-400');
         providerHint.classList.add('text-rose-400');
       } else {
-  const { name, available, model } = providerState.config;
+        const { name, available, model } = providerState.config;
         const statusKey = available ? 'sidePanel.providerStatusConnected' : 'sidePanel.providerStatusDisconnected';
         const statusText = translate(statusKey, {}, available ? '已连接' : '未连接');
         const modelText = model ? translate('sidePanel.providerStatusModelSuffix', { model }, ` · 模型：${model}`) : '';
@@ -236,238 +269,192 @@
     }
   }
 
-  // 初始化
-  function initResearchPanel() {
-    setupEventListeners();
-    renderTimeline();
-    syncProviderState();
-    if (i18n && typeof i18n.applyTranslations === 'function') {
-      i18n.applyTranslations(document.getElementById('side-panel'));
+  function readStoredSearchConfig() {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+      console.warn('[search-config] failed to read storage', error);
+      return null;
     }
   }
 
-  // 设置事件监听
-  function setupEventListeners() {
-    // 表单提交
-    configForm?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      await startResearch();
-    });
-
-    // 停止按钮
-    stopBtn?.addEventListener('click', () => {
-      stopResearch();
-    });
-
-    window.addEventListener('aiProviderChanged', (event) => {
-      const detail = event instanceof CustomEvent ? event.detail : undefined;
-      syncProviderState(detail);
-    });
+  function readStoredAIServiceConfig() {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      const raw = window.localStorage.getItem(AI_SERVICE_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+      console.warn('[ai-service] failed to read storage', error);
+      return null;
+    }
   }
 
-  // 渲染进度时间线
-  function renderTimeline(activeStep = null) {
+  function extractProviderDeepAgent(config) {
+    if (!config?.providers) return {};
+    const mapping = {};
+    Object.entries(config.providers).forEach(([provider, value]) => {
+      if (value?.deepAgent) {
+        mapping[provider] = { ...value.deepAgent };
+      }
+    });
+    return mapping;
+  }
+
+  function getDeepAgentConfig() {
+    if (typeof window !== 'undefined' && window.steadyResearchConfig?.deepAgent) {
+      return window.steadyResearchConfig.deepAgent;
+    }
+    const stored = readStoredSearchConfig();
+    return stored?.deepAgent || null;
+  }
+
+  function getProviderDeepAgent() {
+    if (typeof window !== 'undefined' && window.steadyResearchConfig?.providerDeepAgent) {
+      return { ...window.steadyResearchConfig.providerDeepAgent };
+    }
+    const stored = readStoredAIServiceConfig();
+    return extractProviderDeepAgent(stored || {});
+  }
+
+  function getSearchConfig() {
+    if (typeof window !== 'undefined' && window.steadyResearchConfig?.search) {
+      return window.steadyResearchConfig.search;
+    }
+    const stored = readStoredSearchConfig();
+    if (!stored) return null;
+    return {
+      engines: Array.isArray(stored.engines) ? stored.engines : [],
+      bing: stored.bing || '',
+      google: stored.google || '',
+      googleCseId: stored.googleCseId || ''
+    };
+  }
+
+  function syncResearchConfig() {
+    researchState.deepAgent = getDeepAgentConfig();
+    researchState.search = getSearchConfig();
+    researchState.providerDeepAgent = getProviderDeepAgent();
+  }
+
+  function buildSearchOptions(config) {
+    if (!config) return null;
+    const engines = Array.isArray(config.engines) ? config.engines.filter(Boolean) : [];
+    const apiKeys = {
+      bing: config.bing || '',
+      google: config.google || '',
+      googleCseId: config.googleCseId || ''
+    };
+
+    const hasKeys = apiKeys.bing || (apiKeys.google && apiKeys.googleCseId);
+    if (!engines.length && !hasKeys) return null;
+
+    return {
+      engines: engines.length ? engines : undefined,
+      apiKeys
+    };
+  }
+
+  function buildDeepAgentOptions(config) {
+    if (!config?.enabled) return { enabled: false };
+    return {
+      enabled: true,
+      models: config.models || {},
+      sampling: config.sampling || {},
+      engines: config.engines || undefined,
+      engineOptions: config.engineOptions || undefined,
+      maxResults: typeof config.maxResults === 'number' ? config.maxResults : undefined,
+      maxQueries: typeof config.maxQueries === 'number' ? config.maxQueries : undefined
+    };
+  }
+
+  function setCurrentSteps(mode) {
+    researchState.mode = mode === 'deep' ? 'deep' : 'legacy';
+    currentSteps = researchState.mode === 'deep' ? DEEP_STEPS : LEGACY_STEPS;
+    stepStatuses.clear();
+    renderTimeline();
+  }
+
+  function renderTimeline(activeStepId = null) {
     if (!progressTimeline) return;
 
-    progressTimeline.innerHTML = researchSteps.map((step, index) => {
-      const isActive = activeStep === step.id;
-      const isCompleted = activeStep && researchSteps.findIndex(s => s.id === activeStep) > index;
-      
-      let statusClass = 'bg-white/15';
+    progressTimeline.innerHTML = currentSteps.map((step) => {
+      const status = stepStatuses.get(step.id) || 'pending';
+      let indicatorClass = 'bg-white/15';
       let textClass = 'text-slate-500';
-      let status = '';
+      let statusText = translate('sidePanel.stepPending', {}, '等待执行');
 
-      if (isCompleted) {
-        statusClass = 'bg-emerald-300';
+      if (status === 'done') {
+        indicatorClass = 'bg-emerald-300';
         textClass = 'text-slate-200';
-        status = translate('sidePanel.stepComplete', {}, '✓ 完成');
-      } else if (isActive) {
-        statusClass = 'bg-brand-300 animate-pulse';
+        statusText = translate('sidePanel.stepComplete', {}, '✓ 完成');
+      } else if (status === 'active' || (activeStepId && step.id === activeStepId && status !== 'done')) {
+        indicatorClass = 'bg-brand-300 animate-pulse';
         textClass = 'text-white';
-        status = translate('sidePanel.stepRunning', {}, '🔄 进行中');
+        statusText = translate('sidePanel.stepRunning', {}, '🔄 进行中');
+      } else if (status === 'error') {
+        indicatorClass = 'bg-rose-400 animate-pulse';
+        textClass = 'text-rose-200';
+        statusText = translate('sidePanel.stepError', {}, '⚠️ 出错');
       }
 
       const labelText = translate(step.key, {}, step.fallback);
       return `
-        <li class="before:content-[''] before:absolute before:-start-4 before:top-1.5 before:w-2 before:h-2 before:rounded-full before:${statusClass} relative" data-step="${step.id}">
+        <li class="before:content-[''] before:absolute before:-start-4 before:top-1.5 before:w-2 before:h-2 before:rounded-full before:${indicatorClass} relative" data-step="${step.id}">
           <div class="flex items-center gap-2">
             <span class="text-sm">${step.icon}</span>
             <p class="text-xs font-medium ${textClass}">${labelText}</p>
           </div>
-          <p class="text-[10px] text-slate-400 mt-0.5">${status}</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">${statusText}</p>
         </li>
       `;
     }).join('');
   }
 
-  if (i18n && typeof i18n.onLocaleChange === 'function') {
-    i18n.onLocaleChange(() => {
-      renderTimeline();
-      updateProviderHint();
-      updateModelOptions();
-      if (!isResearching && progressMeta) {
-        progressMeta.textContent = i18n.t?.('sidePanel.progressIdle') || '0% · 等待开始';
-      }
-    });
+  function setStepStatus(stepId, status) {
+    if (!stepId) return;
+    stepStatuses.set(stepId, status);
   }
 
-  // 更新进度
+  function resolveMessage(update) {
+    if (!update) return '';
+    if (update.messageKey) {
+      try {
+        return translate(update.messageKey, update.messageParams || {}, update.message || update.messageKey);
+      } catch (error) {
+        console.warn('[research] translate message failed', error);
+      }
+    }
+    return update.message || '';
+  }
+
   function updateProgress(progress, message) {
-    if (progressBar) {
-      progressBar.style.width = `${progress}%`;
+    if (progressBar && Number.isFinite(progress)) {
+      const clamped = Math.max(0, Math.min(100, progress));
+      progressBar.style.width = `${clamped}%`;
     }
     if (progressMeta) {
-      progressMeta.textContent = `${progress}% · ${message}`;
+      const text = message || translate('sidePanel.progressIdle', {}, '0% · 等待开始');
+      const prefix = Number.isFinite(progress) ? `${Math.round(Math.max(0, Math.min(100, progress)))}% · ` : '';
+      progressMeta.textContent = `${prefix}${text}`.trim();
     }
   }
 
-  // 开始研究
-  async function startResearch() {
-    const topic = (researchTopic as HTMLInputElement)?.value?.trim();
-    const selectedModel = (researchModel as HTMLSelectElement)?.value;
-    const fallbackModel = providerState.config?.model;
-    const model = selectedModel || fallbackModel;
-    
-    if (!topic) {
-      alert(translate('sidePanel.validationTopic', {}, '请输入研究主题'));
-      return;
-    }
-    
-    if (!providerState.config) {
-      alert(translate('sidePanel.validationProvider', {}, '请先在 Settings 页面配置 AI 服务'));
-      return;
-    }
-
-    if (!model) {
-      alert(translate('sidePanel.validationModel', {}, '请选择或配置 AI 模型'));
-      return;
-    }
-
-    if (!providerState.config.available) {
-      alert(translate('sidePanel.validationOffline', {}, '当前 AI 服务未连接，请先在 Settings 页面测试连接'));
-      return;
-    }
-
-    isResearching = true;
-    updateUIForResearchState();
-    
-    // 触发研究开始事件，让 ResearchAgentUI 开始动画
-    document.dispatchEvent(new CustomEvent('research:start'));
-
-    const options = {
-      depth: (depthLevel as HTMLSelectElement)?.value || 'standard',
-      temperature: 0.7, // 固定温度值
-      focus: (researchFocus as HTMLTextAreaElement)?.value?.trim()
-    };
-
-    try {
-      const response = await fetch('/api/research-stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: topic,
-          model: model,
-          provider: providerState.provider,
-          options: options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      currentStream = reader as any;
-
-      if (!reader) {
-        throw new Error('无法获取响应流');
-      }
-
-      while (true) {
-        const { value, done } = await reader.read();
-        
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.slice(6).trim();
-            if (!jsonStr) continue; // 跳过空行
-            
-            try {
-              const data = JSON.parse(jsonStr);
-              
-              if (data.error) {
-                throw new Error(data.message || '研究过程中出现错误');
-              }
-              
-              if (data.done) {
-                completeResearch();
-                return;
-              }
-              
-              // 更新进度和时间线
-              if (data.stepId && data.progress !== undefined) {
-                updateProgress(data.progress, translate(data.messageKey || '', data.messageParams || {}, data.message || data.messageKey || ''));
-                renderTimeline(data.stepId);
-                
-                // 更新推理面板和搜索日志
-                if (data.data) {
-                  updateReasoningPanel(data);
-                }
-              }
-            } catch (e) {
-              if (e instanceof SyntaxError) {
-                console.warn('JSON 解析错误，跳过该行:', jsonStr);
-                continue;
-              }
-              throw e;
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('研究过程失败:', error);
-      alert(translate('sidePanel.researchFailed', { message: error.message }, `研究失败: ${error.message}`));
-      stopResearch();
+  function resetProgress() {
+    if (progressBar) progressBar.style.width = '0%';
+    if (progressMeta) {
+      progressMeta.textContent = translate('sidePanel.progressIdle', {}, '0% · 等待开始');
     }
   }
 
-  // 停止研究
-  function stopResearch() {
-    isResearching = false;
-    
-    if (currentStream) {
-      try {
-        (currentStream as any).cancel?.();
-      } catch (e) {
-        console.log('Stream already closed');
-      }
-      currentStream = null;
-    }
-    
-    updateUIForResearchState();
-    updateProgress(0, translate('sidePanel.progressStopped', {}, '已停止'));
-    renderTimeline();
+  function updateReasoningPanel(data) {
+    const event = new CustomEvent('research-update', {
+      detail: data
+    });
+    document.dispatchEvent(event);
   }
 
-  // 完成研究
-  function completeResearch() {
-    isResearching = false;
-    updateUIForResearchState();
-    updateProgress(100, translate('sidePanel.progressCompleted', {}, '研究完成'));
-    
-    // 显示完成状态
-    setTimeout(() => {
-      updateProgress(0, translate('sidePanel.progressIdleLabel', {}, '等待开始'));
-      renderTimeline();
-    }, 3000);
-  }
-
-  // 更新UI状态
   function updateUIForResearchState() {
     if (startBtn && stopBtn) {
       if (isResearching) {
@@ -483,16 +470,308 @@
     updateProviderHint();
   }
 
-  // 更新推理面板（与主界面的推理面板交互）
-  function updateReasoningPanel(data) {
-    // 触发自定义事件，让主界面处理
-    const event = new CustomEvent('research-update', {
-      detail: data
-    });
-    document.dispatchEvent(event);
+  function getSelectedModel() {
+    const selectedModel = researchModel?.value;
+    const fallbackModel = providerState.config?.model;
+    return selectedModel || fallbackModel;
   }
 
-  // 启动初始化
+  async function startResearch() {
+    const topic = researchTopic?.value?.trim();
+    const model = getSelectedModel();
+    const focus = researchFocus?.value?.trim();
+    const depth = depthLevel?.value || 'standard';
+
+    if (!topic) {
+      alert(translate('sidePanel.validationTopic', {}, '请输入研究主题'));
+      return;
+    }
+
+    if (!providerState.config) {
+      alert(translate('sidePanel.validationProvider', {}, '请先在 Settings 页面配置 AI 服务'));
+      return;
+    }
+
+    if (!model) {
+      alert(translate('sidePanel.validationModel', {}, '请选择或配置 AI 模型'));
+      return;
+    }
+
+    if (!providerState.config.available) {
+      alert(translate('sidePanel.validationOffline', {}, '当前 AI 服务未连接，请先在 Settings 页面测试连接'));
+      return;
+    }
+
+    syncResearchConfig();
+    const searchOptions = buildSearchOptions(researchState.search);
+    const providerMapping = (researchState.providerDeepAgent || {})[providerState.provider] || {};
+    const deepAgentBase = buildDeepAgentOptions(researchState.deepAgent);
+    const deepEnabled = Boolean(deepAgentBase?.enabled);
+    const baseModels = {
+      search: providerMapping.search || model,
+      modeling: providerMapping.modeling || model,
+      report: providerMapping.report || model
+    };
+    const combinedDeepAgent = deepEnabled
+      ? {
+          ...deepAgentBase,
+          models: {
+            search: deepAgentBase.models?.search || baseModels.search,
+            modeling: deepAgentBase.models?.modeling || baseModels.modeling,
+            report: deepAgentBase.models?.report || baseModels.report
+          },
+          providerMapping: {
+            ...providerMapping,
+            enabled: Boolean(providerMapping?.enabled)
+          }
+        }
+      : null;
+    const mode = deepEnabled ? 'deep' : 'legacy';
+
+    setCurrentSteps(mode);
+    isResearching = true;
+    updateUIForResearchState();
+    resetProgress();
+
+    document.dispatchEvent(new CustomEvent('research:start', {
+      detail: {
+        mode,
+        query: topic,
+        provider: providerState.provider,
+        model,
+        deepAgentEnabled: deepEnabled
+      }
+    }));
+
+    const options = {
+      depth,
+      temperature: 0.7,
+      focus
+    };
+
+    if (searchOptions) {
+      options.search = searchOptions;
+    }
+    if (deepEnabled && combinedDeepAgent) {
+      options.deepAgent = combinedDeepAgent;
+    }
+
+    try {
+      const response = await fetch('/api/research-stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: topic,
+          model,
+          provider: providerState.provider,
+          options
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      currentStream = reader;
+
+      if (!reader) {
+        throw new Error('无法获取响应流');
+      }
+
+      const lastStep = currentSteps[currentSteps.length - 1];
+      let hasCompleted = false;
+      let buffer = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex;
+
+        while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+          const line = buffer.slice(0, newlineIndex).trim();
+          buffer = buffer.slice(newlineIndex + 1);
+
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (!jsonStr) continue;
+
+          let update;
+          try {
+            update = JSON.parse(jsonStr);
+          } catch (error) {
+            console.warn('JSON 解析错误，跳过该行:', jsonStr);
+            continue;
+          }
+
+          if (update.done) {
+            hasCompleted = true;
+            continue;
+          }
+
+          if (!update.stepId) {
+            continue;
+          }
+
+          const payload = typeof update.data === 'string' ? { raw: update.data } : (update.data || {});
+          const stepType = payload.stepType || update.stepId;
+          const timelineStep = currentSteps.find((step) => step.stepType === stepType || step.id === update.stepId);
+
+          if (timelineStep) {
+            if (update.status === 'start') {
+              setStepStatus(timelineStep.id, 'active');
+            } else if (update.status === 'progress') {
+              setStepStatus(timelineStep.id, 'active');
+            } else if (update.status === 'complete') {
+              setStepStatus(timelineStep.id, 'done');
+              if (timelineStep.id === lastStep?.id) {
+                hasCompleted = true;
+              }
+            } else if (update.status === 'error') {
+              setStepStatus(timelineStep.id, 'error');
+            }
+            renderTimeline(timelineStep.id);
+          }
+
+          const message = resolveMessage(update);
+          updateProgress(update.progress, message);
+
+          updateReasoningPanel({
+            ...update,
+            data: payload,
+            mode: researchState.mode
+          });
+        }
+      }
+
+      if (hasCompleted) {
+        completeResearch();
+      } else if (isResearching) {
+        stopResearch();
+      }
+    } catch (error) {
+      console.error('研究过程失败:', error);
+      alert(translate('sidePanel.researchFailed', { message: error.message }, `研究失败: ${error.message}`));
+      document.dispatchEvent(new CustomEvent('research:error', { detail: { message: error.message } }));
+      stopResearch();
+    }
+  }
+
+  function stopResearch() {
+    if (!isResearching) {
+      if (currentStream) {
+        try {
+          currentStream.cancel?.();
+        } catch (e) {
+          console.log('Stream already closed');
+        }
+        currentStream = null;
+      }
+      return;
+    }
+
+    isResearching = false;
+
+    if (currentStream) {
+      try {
+        currentStream.cancel?.();
+      } catch (e) {
+        console.log('Stream already closed');
+      }
+      currentStream = null;
+    }
+
+    updateUIForResearchState();
+    stepStatuses.clear();
+    renderTimeline();
+    updateProgress(0, translate('sidePanel.progressStopped', {}, '已停止'));
+    document.dispatchEvent(new CustomEvent('research:stop', {
+      detail: { mode: researchState.mode }
+    }));
+    setTimeout(() => resetProgress(), 1500);
+  }
+
+  function completeResearch() {
+    if (!isResearching) return;
+    isResearching = false;
+    updateUIForResearchState();
+    const finalStep = currentSteps[currentSteps.length - 1];
+    if (finalStep) {
+      setStepStatus(finalStep.id, 'done');
+      renderTimeline(finalStep.id);
+    }
+    updateProgress(100, translate('sidePanel.progressCompleted', {}, '研究完成'));
+    document.dispatchEvent(new CustomEvent('research:complete', {
+      detail: { mode: researchState.mode }
+    }));
+    setTimeout(() => {
+      stepStatuses.clear();
+      renderTimeline();
+      resetProgress();
+    }, 3000);
+  }
+
+  function initResearchPanel() {
+    setupEventListeners();
+    syncProviderState();
+    syncResearchConfig();
+    setCurrentSteps(researchState.deepAgent?.enabled ? 'deep' : 'legacy');
+    renderTimeline();
+    if (i18n && typeof i18n.applyTranslations === 'function') {
+      i18n.applyTranslations(document.getElementById('side-panel'));
+    }
+  }
+
+  function setupEventListeners() {
+    configForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await startResearch();
+    });
+
+    stopBtn?.addEventListener('click', () => {
+      stopResearch();
+    });
+
+    window.addEventListener('aiProviderChanged', (event) => {
+      const detail = event instanceof CustomEvent ? event.detail : undefined;
+      syncProviderState(detail);
+    });
+
+    window.addEventListener('deepAgent:configChanged', (event) => {
+      researchState.deepAgent = event.detail || null;
+      setCurrentSteps(researchState.deepAgent?.enabled ? 'deep' : 'legacy');
+    });
+
+    window.addEventListener('searchConfig:updated', (event) => {
+      researchState.search = event.detail || researchState.search;
+    });
+
+    window.addEventListener('deepAgent:providerMapping', (event) => {
+      const mapping = event instanceof CustomEvent ? event.detail : undefined;
+      if (mapping && typeof mapping === 'object') {
+        researchState.providerDeepAgent = mapping;
+      }
+    });
+  }
+
+  if (i18n && typeof i18n.onLocaleChange === 'function') {
+    i18n.onLocaleChange(() => {
+      renderTimeline();
+      updateProviderHint();
+      updateModelOptions();
+      if (!isResearching && progressMeta) {
+        progressMeta.textContent = translate('sidePanel.progressIdle', {}, '0% · 等待开始');
+      }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', initResearchPanel);
-  document.addEventListener('astro:page-load', () => syncProviderState());
+  document.addEventListener('astro:page-load', () => {
+    syncProviderState();
+    syncResearchConfig();
+    setCurrentSteps(researchState.deepAgent?.enabled ? 'deep' : 'legacy');
+  });
 </script>

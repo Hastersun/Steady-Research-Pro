@@ -1,12 +1,42 @@
 // 研究任务处理模块 - 将 Ollama AI 与研究流程集成
 import OllamaClient from './ollama-client.js';
 import searchApiClient from './search-api-client.js';
+import { SearchAgent, ModelingAgent, ReportAgent } from './agents/index.js';
+
+export const LEGACY_PIPELINE = [
+  { id: 'plan', label: '生成初步研究计划', weight: 0.15 },
+  { id: 'search', label: '多源搜索与抓取', weight: 0.25 },
+  { id: 'extract', label: '内容清洗与摘要抽取', weight: 0.2 },
+  { id: 'cluster', label: '主题聚类与归纳', weight: 0.2 },
+  { id: 'synthesis', label: '综合分析与洞察输出', weight: 0.2 }
+];
+
+export const DEEP_PIPELINE = [
+  { id: 'plan', emitId: 'plan', label: '生成初步研究计划', weight: 0.15 },
+  { id: 'deep_search', emitId: 'search', label: '多源深度搜索', weight: 0.35 },
+  { id: 'modeling', emitId: 'cluster', label: '结构化建模', weight: 0.2 },
+  { id: 'reporting', emitId: 'synthesis', label: '智能报告生成', weight: 0.3 }
+];
+
+const clamp = (value, min, max, fallback) => {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return fallback;
+  }
+  if (typeof min === 'number' && value < min) return min;
+  if (typeof max === 'number' && value > max) return max;
+  return value;
+};
 
 class ResearchTaskProcessor {
-  constructor() {
-    this.ollama = new OllamaClient();
-    this.searchClient = searchApiClient;
+  constructor({ llmClient, searchClient, agents } = {}) {
+    this.ollama = llmClient || new OllamaClient();
+    this.searchClient = searchClient || searchApiClient;
     this.isProcessing = false;
+
+    const providedAgents = agents || {};
+    this.searchAgent = providedAgents.searchAgent || new SearchAgent({ llmClient: this.ollama, searchClient: this.searchClient });
+    this.modelingAgent = providedAgents.modelingAgent || new ModelingAgent({ llmClient: this.ollama });
+    this.reportAgent = providedAgents.reportAgent || new ReportAgent({ llmClient: this.ollama });
   }
 
   /**
@@ -17,41 +47,72 @@ class ResearchTaskProcessor {
     return await this.searchClient.setApiKeys(apiKeys);
   }
 
-  /**
-   * 处理研究任务的主要流程
-   * @param {string} query - 研究查询
-   * @param {string} model - 使用的模型
-   * @param {Function} onProgress - 进度回调
-   * @param {Object} options - 选项
-   */
+  resolveDeepAgentConfig(deepOptions = {}, fallbackModel) {
+    const providerMapping = deepOptions?.providerMapping || {};
+    const enabled = typeof deepOptions?.enabled === 'boolean'
+      ? Boolean(deepOptions.enabled)
+      : Boolean(providerMapping?.enabled);
+    const safeNumber = (value, fallback) => clamp(typeof value === 'number' ? value : Number.parseFloat(value), -Infinity, Infinity, fallback);
+
+    const sampling = {
+      temperature: clamp(safeNumber(deepOptions?.sampling?.temperature, 0.3), 0, 2, 0.3),
+      topP: clamp(safeNumber(deepOptions?.sampling?.topP ?? deepOptions?.sampling?.top_p, 0.85), 0, 1, 0.85)
+    };
+
+    const models = {
+      search: deepOptions?.models?.search || providerMapping?.search || fallbackModel,
+      modeling: deepOptions?.models?.modeling || providerMapping?.modeling || fallbackModel,
+      report: deepOptions?.models?.report || providerMapping?.report || fallbackModel
+    };
+
+    return {
+      enabled,
+      models,
+      sampling,
+      engines: deepOptions?.engines || null,
+      engineOptions: deepOptions?.engineOptions || null,
+      maxResults: typeof deepOptions?.maxResults === 'number' ? deepOptions.maxResults : undefined,
+      maxQueries: typeof deepOptions?.maxQueries === 'number' ? deepOptions.maxQueries : undefined,
+      providerMapping: providerMapping?.enabled ? providerMapping : undefined
+    };
+  }
+
+  buildExecutionContext(query, model, options, deepAgentConfig) {
+    return {
+      query,
+      baseModel: model,
+      options,
+      deepAgentConfig,
+      results: {},
+      createdAt: Date.now()
+    };
+  }
+
   async processResearchTask(query, model, onProgress, options = {}) {
     if (this.isProcessing) {
       throw new Error('已有研究任务在进行中');
     }
 
+    if (!query || !model) {
+      throw new Error('缺少必要参数: query 或 model');
+    }
+
     this.isProcessing = true;
-    
+
+    const deepAgentConfig = this.resolveDeepAgentConfig(options?.deepAgent, model);
+    const useDeepAgent = deepAgentConfig.enabled;
+    const context = this.buildExecutionContext(query, model, options, deepAgentConfig);
+    const pipeline = useDeepAgent ? this.buildDeepPipeline(context) : this.buildLegacyPipeline(context);
+
     try {
-      const pipeline = [
-        { id: 'plan', label: '生成初步研究计划', weight: 0.15 },
-        { id: 'search', label: '多源搜索与抓取', weight: 0.25 },
-        { id: 'extract', label: '内容清洗与摘要抽取', weight: 0.2 },
-        { id: 'cluster', label: '主题聚类与归纳', weight: 0.2 },
-        { id: 'synthesis', label: '综合分析与洞察输出', weight: 0.2 }
-      ];
+      await this.executePipeline(pipeline, context, onProgress);
 
-      let totalProgress = 0;
-      const results = {};
-
-      for (let i = 0; i < pipeline.length; i++) {
-        const step = pipeline[i];
-        onProgress?.(step.id, 'start', totalProgress, step.label);
-
-        const stepResult = await this.executeStep(step, query, model, options, results);
-        results[step.id] = stepResult;
-
-        totalProgress += step.weight;
-        onProgress?.(step.id, 'complete', totalProgress, step.label, stepResult);
+      const results = { ...context.results };
+      if (useDeepAgent) {
+        // 为旧版界面兼容保留原有键
+        if (results.deep_search) results.search = results.deep_search;
+        if (results.modeling) results.cluster = results.modeling;
+        if (results.reporting) results.synthesis = results.reporting;
       }
 
       return {
@@ -59,46 +120,166 @@ class ResearchTaskProcessor {
         results,
         query,
         model,
+        mode: useDeepAgent ? 'deep_agent' : 'legacy',
         timestamp: new Date().toISOString()
       };
     } catch (error) {
-      onProgress?.('error', 'error', 0, '任务失败', error);
+      onProgress?.('error', 'error', 0, '任务失败', { error: error.message });
       throw error;
     } finally {
       this.isProcessing = false;
     }
   }
 
-  /**
-   * 执行单个研究步骤
-   * @param {Object} step - 步骤信息
-   * @param {string} query - 研究查询
-   * @param {string} model - 模型名称
-   * @param {Object} options - 选项
-   * @param {Object} previousResults - 之前步骤的结果
-   */
-  async executeStep(step, query, model, options, previousResults = {}) {
-    const stepOptions = {
-      ...options,
-      previousResults
-    };
+  buildDeepPipeline(context) {
+    const { deepAgentConfig } = context;
+    return DEEP_PIPELINE.map((step) => ({ ...step, deepAgentConfig }));
+  }
+
+  buildLegacyPipeline() {
+    return LEGACY_PIPELINE;
+  }
+
+  async executePipeline(pipeline, context, onProgress) {
+    let totalProgress = 0;
+
+    for (const step of pipeline) {
+      const emitId = step.emitId || step.id;
+      const payloadBase = { stepType: step.id };
+
+      onProgress?.(emitId, 'start', totalProgress, step.label, payloadBase);
+
+      const emitProgress = (payload = {}) => {
+        const ratio = clamp(typeof payload.ratio === 'number' ? payload.ratio : 0, 0, 0.99, 0);
+        const progressValue = totalProgress + (step.weight * ratio);
+        onProgress?.(emitId, 'progress', progressValue, payload.message || step.label, {
+          ...payloadBase,
+          ...payload
+        });
+      };
+
+      try {
+        const result = await this.executeStep(step, context, emitProgress);
+        context.results[step.id] = result;
+        totalProgress += step.weight;
+        const completionPayload = {
+          ...payloadBase,
+          result
+        };
+        if (result?.metadata) {
+          completionPayload.metadata = result.metadata;
+          if (result.metadata.isFallback) {
+            completionPayload.fallback = true;
+          }
+        }
+        onProgress?.(emitId, 'complete', totalProgress, step.label, completionPayload);
+      } catch (error) {
+        onProgress?.(emitId, 'error', totalProgress, step.label, {
+          ...payloadBase,
+          error: error.message
+        });
+        throw error;
+      }
+    }
+  }
+
+  async executeStep(step, context, emitProgress) {
+    const { query, baseModel, options, results, deepAgentConfig } = context;
 
     switch (step.id) {
       case 'plan':
-        return await this.generateResearchPlan(query, model, stepOptions);
-      
+        return await this.generateResearchPlan(query, baseModel, options);
+
+      case 'deep_search':
+        return await this.searchAgent.run({
+          query,
+          config: {
+            engines: deepAgentConfig.engines || options?.search?.engines,
+            engineOptions: deepAgentConfig.engineOptions || options?.search?.engineOptions,
+            maxResults: deepAgentConfig.maxResults || options?.search?.maxResults,
+            maxQueries: deepAgentConfig.maxQueries || options?.search?.maxQueries,
+            apiKeys: options?.search?.apiKeys,
+            model: deepAgentConfig.models.search,
+            sampling: deepAgentConfig.sampling
+          },
+          previous: results
+        }, {
+          model: deepAgentConfig.models.search,
+          sampling: deepAgentConfig.sampling
+        });
+
+      case 'modeling':
+        return await this.modelingAgent.run({
+          query,
+          evidence: results.deep_search?.notes || [],
+          strategy: results.deep_search?.strategy,
+          modelOverride: deepAgentConfig.models.modeling,
+          sampling: deepAgentConfig.sampling
+        }, {
+          model: deepAgentConfig.models.modeling,
+          sampling: deepAgentConfig.sampling
+        });
+
+      case 'reporting': {
+        const streamState = { chars: 0 };
+        const onToken = emitProgress
+          ? ({ chunk, done, error }) => {
+              if (error) {
+                emitProgress({ message: '报告生成失败', error: error.message });
+                return;
+              }
+              if (chunk) {
+                streamState.chars += chunk.length;
+                const ratio = Math.min(0.95, streamState.chars / 4000);
+                emitProgress({ ratio, chunk, message: '报告生成中' });
+              }
+              if (done) {
+                emitProgress({ ratio: 0.98, message: '报告收尾中' });
+              }
+            }
+          : undefined;
+
+        return await this.reportAgent.run({
+          query,
+          model: results.modeling,
+          evidence: results.deep_search?.notes || [],
+          options: {
+            format: options?.report?.format || 'markdown',
+            audience: options?.report?.audience || options?.audience || 'executive',
+            sampling: deepAgentConfig.sampling
+          },
+          modelOverride: deepAgentConfig.models.report
+        }, {
+          model: deepAgentConfig.models.report,
+          sampling: deepAgentConfig.sampling,
+          onToken
+        });
+      }
+
       case 'search':
-        return await this.performRealSearch(query, model, stepOptions);
-      
+        return await this.performRealSearch(query, baseModel, {
+          ...options,
+          previousResults: results
+        });
+
       case 'extract':
-        return await this.extractAndSummarize(query, model, stepOptions);
-      
+        return await this.extractAndSummarize(query, baseModel, {
+          ...options,
+          previousResults: results
+        });
+
       case 'cluster':
-        return await this.clusterTopics(query, model, stepOptions);
-      
+        return await this.clusterTopics(query, baseModel, {
+          ...options,
+          previousResults: results
+        });
+
       case 'synthesis':
-        return await this.synthesizeInsights(query, model, stepOptions);
-      
+        return await this.synthesizeInsights(query, baseModel, {
+          ...options,
+          previousResults: results
+        });
+
       default:
         throw new Error(`未知步骤: ${step.id}`);
     }

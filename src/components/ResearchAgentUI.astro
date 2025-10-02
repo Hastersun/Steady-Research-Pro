@@ -25,12 +25,12 @@ import ResultsGrid from './agent/ResultsGrid.astro'
         <dl class="grid grid-cols-2 gap-4 lg:w-72">
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
             <dt class="text-[10px] uppercase tracking-[0.28em] text-slate-400" data-i18n="hero.currentTask">当前任务</dt>
-            <dd class="mt-2 text-2xl font-semibold text-white" data-i18n="hero.currentTaskIdle">Idle</dd>
+            <dd id="current-task-value" class="mt-2 text-2xl font-semibold text-white" data-i18n="hero.currentTaskIdle">Idle</dd>
             <dd class="mt-1 text-[11px] text-slate-300/80" data-i18n="hero.currentTaskHint">等待研究主题</dd>
           </div>
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
             <dt class="text-[10px] uppercase tracking-[0.28em] text-slate-400" data-i18n="hero.latestOutput">最新输出</dt>
-            <dd class="mt-2 text-2xl font-semibold text-white">2025.09</dd>
+            <dd id="latest-output-value" class="mt-2 text-2xl font-semibold text-white">—</dd>
             <dd class="mt-1 text-[11px] text-slate-300/80" data-i18n="hero.latestOutputHint">最近一次完成时间</dd>
           </div>
         </dl>
@@ -63,11 +63,20 @@ import ResultsGrid from './agent/ResultsGrid.astro'
 </section>
 <script>
   // @ts-nocheck
-  // Progressive reasoning & search simulation
   const stepsEl = document.getElementById('reasoning-steps');
   const reasoningPanel = document.getElementById('reasoning-panel');
   const searchLog = document.getElementById('search-log');
-  const progressTimeline = document.getElementById('progress-timeline');
+  const heroTaskValue = document.getElementById('current-task-value');
+  const latestOutputValue = document.getElementById('latest-output-value');
+  const resultsGrid = document.getElementById('results-grid');
+  const resultsEmpty = document.getElementById('results-empty');
+  const sourcesBody = document.getElementById('sources-table-body');
+  const sourcesEmptyRow = document.getElementById('sources-empty-row');
+  const sourcesEmptyCell = sourcesEmptyRow ? sourcesEmptyRow.querySelector('td') : null;
+  const sourcesHint = document.getElementById('sources-update-hint');
+  const sourcesEmptyDefault = sourcesEmptyCell ? sourcesEmptyCell.textContent : '';
+  const sourcesHintDefault = sourcesHint ? sourcesHint.textContent : '';
+
   const steadyI18n = (window).__steadyI18n || {};
   const translate = (key, params, fallback) => {
     try {
@@ -79,166 +88,607 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     }
     return typeof fallback === 'string' ? fallback : key;
   };
-  let running = false;
-  let activeTimelineStep = -1;
-  const pipeline = [
-    { id: 'plan', key: 'researchFlow.pipelinePlan', fallback: '生成初步研究计划' },
-    { id: 'search', key: 'researchFlow.pipelineSearch', fallback: '多源搜索与抓取' },
-    { id: 'extract', key: 'researchFlow.pipelineExtract', fallback: '内容清洗与摘要抽取' },
-    { id: 'cluster', key: 'researchFlow.pipelineCluster', fallback: '主题聚类与归纳' },
-    { id: 'synthesis', key: 'researchFlow.pipelineSynthesis', fallback: '综合分析与洞察输出' },
+
+  const LEGACY_PIPELINE = [
+    { id: 'plan', stepType: 'plan', key: 'researchFlow.pipelinePlan', fallback: '生成初步研究计划' },
+    { id: 'search', stepType: 'search', key: 'researchFlow.pipelineSearch', fallback: '多源搜索与抓取' },
+    { id: 'extract', stepType: 'extract', key: 'researchFlow.pipelineExtract', fallback: '内容清洗与摘要抽取' },
+    { id: 'cluster', stepType: 'cluster', key: 'researchFlow.pipelineCluster', fallback: '主题聚类与归纳' },
+    { id: 'synthesis', stepType: 'synthesis', key: 'researchFlow.pipelineSynthesis', fallback: '综合分析与洞察输出' }
   ];
-  const progressBar = document.getElementById('progress-bar');
-  const progressMeta = document.getElementById('progress-meta');
-  
-  function setProgress(fraction, stepKey) {
-    const label = translate(stepKey.key || stepKey, {}, stepKey.fallback || '');
-    if (progressBar) progressBar.style.width = Math.min(100, fraction*100)+'%';
-    if (progressMeta) progressMeta.textContent = `${Math.round(fraction*100)}% · ${label}`;
+
+  const DEEP_PIPELINE = [
+    { id: 'plan', stepType: 'plan', key: 'researchFlow.pipelinePlan', fallback: '生成初步研究计划' },
+    { id: 'deep_search', stepType: 'deep_search', key: 'researchFlow.pipelineDeepSearch', fallback: '多源深度搜索' },
+    { id: 'modeling', stepType: 'modeling', key: 'researchFlow.pipelineModeling', fallback: '结构化建模' },
+    { id: 'reporting', stepType: 'reporting', key: 'researchFlow.pipelineReporting', fallback: '智能报告生成' }
+  ];
+
+  let pipeline = LEGACY_PIPELINE;
+  const stepNodes = new Map();
+  const stepStatus = new Map();
+  const state = {
+    mode: 'legacy',
+    query: '',
+    results: {},
+    reportDraft: ''
+  };
+
+  const translationKeys = {
+    heroIdle: 'hero.currentTaskIdle',
+    heroWorking: 'hero.currentTaskWorking',
+    heroComplete: 'hero.currentTaskComplete'
+  };
+
+  function setPipeline(mode) {
+    pipeline = mode === 'deep' ? DEEP_PIPELINE : LEGACY_PIPELINE;
   }
-  
-  function renderTimeline(activeIndex = -1) {
-    if (!progressTimeline) return;
-    activeTimelineStep = activeIndex;
-    progressTimeline.innerHTML = pipeline.map((p, i) => {
-      const label = translate(p.key, {}, p.fallback);
-      const state = i < activeIndex ? 'done' : i === activeIndex ? 'active' : 'todo';
-      const color = state === 'done' ? 'bg-emerald-300' : state === 'active' ? 'bg-brand-300 animate-pulse' : 'bg-white/15';
-      const textTone = state === 'todo' ? 'text-slate-500' : 'text-slate-100';
-      const subTone = state === 'todo' ? 'text-slate-500' : 'text-slate-300';
-      const statusText = state === 'done'
-        ? translate('researchFlow.timelineStatusDone', {}, '完成')
-        : state === 'active'
-          ? translate('researchFlow.timelineStatusRunning', {}, '进行中')
-          : translate('researchFlow.timelineStatusPending', {}, '');
-      return `<li class="before:content-[''] before:absolute before:-start-4 before:top-1.5 before:w-2 before:h-2 before:rounded-full before:${color} relative">`+
-        `<p class="text-xs font-medium ${textTone}">${label}</p>`+
-        `<p class="text-[11px] ${subTone}">${statusText}</p>`+
-      `</li>`;
-    }).join('');
+
+  function getStepDefinition(stepType) {
+    return pipeline.find((step) => step.stepType === stepType) || null;
   }
-  renderTimeline();
-  
-  // Collapsible reasoning steps
-  let currentStep;
-  
-  function createReasoningStep(label) {
+
+  function escapeHtml(value) {
+    if (typeof value !== 'string') return '';
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatTimestamp(input) {
+    if (!input) return '';
+    const date = typeof input === 'string' ? new Date(input) : input;
+    if (Number.isNaN(date?.getTime?.())) return '';
+    return date.toLocaleString();
+  }
+
+  function resolveMessage(update) {
+    if (!update) return '';
+    if (update.messageKey) {
+      try {
+        return translate(update.messageKey, update.messageParams || {}, update.message || update.messageKey);
+      } catch (error) {
+        console.warn('[research-ui] translate message failed', error);
+      }
+    }
+    return update.message || '';
+  }
+
+  function resetUI(query) {
+    stepNodes.clear();
+    stepStatus.clear();
+    if (stepsEl) stepsEl.innerHTML = '';
+    if (reasoningPanel) reasoningPanel.classList.add('hidden');
+    if (searchLog) {
+      searchLog.innerHTML = '';
+      searchLog.classList.add('hidden');
+    }
+    if (resultsGrid) {
+      const dynamicCards = resultsGrid.querySelectorAll('[data-dynamic-card="true"]');
+      dynamicCards.forEach((node) => node.remove());
+    }
+    if (resultsEmpty) {
+      resultsEmpty.classList.remove('hidden');
+    }
+    if (sourcesBody) {
+      const dynamicRows = sourcesBody.querySelectorAll('[data-dynamic-row="true"]');
+      dynamicRows.forEach((row) => row.remove());
+    }
+    if (sourcesEmptyRow) {
+      sourcesEmptyRow.classList.remove('hidden');
+    }
+    if (sourcesHint) {
+      sourcesHint.classList.add('hidden');
+      if (sourcesHintDefault) {
+        sourcesHint.textContent = sourcesHintDefault;
+      }
+    }
+    if (sourcesEmptyCell && sourcesEmptyDefault) {
+      sourcesEmptyCell.textContent = sourcesEmptyDefault;
+    }
+    state.results = {};
+    state.reportDraft = '';
+    state.query = query || '';
+  }
+
+  function ensureReasoningPanelVisible() {
+    if (reasoningPanel) {
+      reasoningPanel.classList.remove('hidden');
+    }
+  }
+
+  function createReasoningStep(label, stepType) {
     if (!stepsEl) return null;
     const index = stepsEl.children.length + 1;
     const li = document.createElement('li');
     li.className = 'rounded-xl border border-brand-300/30 bg-slate-900/55 shadow-soft backdrop-blur animate-slide-up';
-    li.style.animationDelay = (index * 40) + 'ms';
-    const summaryId = `rs-summary-${index}`;
+    li.style.animationDelay = `${index * 40}ms`;
+    li.dataset.stepType = stepType;
+    const summaryId = `rs-summary-${stepType}-${index}`;
     const pendingText = translate('researchFlow.detailPending', {}, '待执行');
-    li.innerHTML = `\n      <button type=button id="${summaryId}" class="group w-full flex items-center justify-between gap-3 px-4 py-3 text-left cursor-pointer select-none text-slate-200/85">
+    li.innerHTML = `
+      <button type="button" id="${summaryId}" class="group w-full flex items-center justify-between gap-3 px-4 py-3 text-left cursor-pointer select-none text-slate-200/85">
         <span class="flex items-center gap-2 text-[11px] font-medium tracking-wide text-brand-200 uppercase">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
-          Step ${index}
+          Step ${String(index).padStart(2, '0')}
         </span>
         <span class="flex-1 truncate text-[11px] text-slate-400">${label}</span>
         <span class="status text-[10px] font-medium text-slate-500">${pendingText}</span>
         <svg class="chevron w-3.5 h-3.5 text-slate-500 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
       </button>
-      <div class="detail px-5 pt-0 pb-3 space-y-1 text-[11px] leading-relaxed text-slate-300/85 border-t border-brand-300/20 overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">\n      </div>`;
+      <div class="detail px-5 pt-0 pb-3 space-y-1 text-[11px] leading-relaxed text-slate-300/85 border-t border-brand-300/20 overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out"></div>
+    `;
     stepsEl.appendChild(li);
-    const summaryBtn = li.querySelector('#'+summaryId);
+
+    const summaryBtn = li.querySelector(`#${summaryId}`);
     const detailEl = li.querySelector('.detail');
     const statusEl = li.querySelector('.status');
     const chevron = li.querySelector('.chevron');
-    if (summaryBtn) summaryBtn.addEventListener('click', ()=> detailEl && chevron && toggleDetail(detailEl, chevron));
-    
+
     function toggleDetail(detail, chev) {
       const expanded = detail.getAttribute('data-open') === 'true';
       if (expanded) {
-        detail.setAttribute('data-open','false');
-        if (detail instanceof HTMLElement) { detail.style.maxHeight = '0px'; detail.style.opacity = '0'; }
-        chev.classList?.remove('rotate-180');
+        detail.setAttribute('data-open', 'false');
+        if (detail instanceof HTMLElement) {
+          detail.style.maxHeight = '0px';
+          detail.style.opacity = '0';
+        }
+        chev?.classList.remove('rotate-180');
       } else {
-        detail.setAttribute('data-open','true');
-        if (detail instanceof HTMLElement) { detail.style.maxHeight = detail.scrollHeight + 'px'; detail.style.opacity = '1'; }
-        chev.classList?.add('rotate-180');
+        detail.setAttribute('data-open', 'true');
+        if (detail instanceof HTMLElement) {
+          detail.style.maxHeight = detail.scrollHeight + 'px';
+          detail.style.opacity = '1';
+        }
+        chev?.classList.add('rotate-180');
       }
     }
-    
-    function addLine(text, type='log') {
+
+    summaryBtn?.addEventListener('click', () => {
+      if (!detailEl || !chevron) return;
+      toggleDetail(detailEl, chevron);
+    });
+
+    function addLine(text, type = 'log') {
+      if (!detailEl) return;
       const line = document.createElement('div');
       line.className = 'relative pl-3';
-      if (type==='done') line.classList.add('text-brand-200','font-medium');
-      line.innerHTML = `<span class=\"absolute left-0 top-1 w-1 h-1 rounded-full ${type==='done'?'bg-brand-200':'bg-brand-400/70'}\"></span>${text}`;
-      if (detailEl) {
-        detailEl.appendChild(line);
-        if (detailEl.getAttribute('data-open')==='true' && detailEl instanceof HTMLElement) {
-          detailEl.style.maxHeight = detailEl.scrollHeight + 'px';
-        }
+      let indicator = 'bg-brand-400/70';
+      if (type === 'done') {
+        indicator = 'bg-emerald-300';
+        line.classList.add('text-brand-200', 'font-medium');
+      } else if (type === 'error') {
+        indicator = 'bg-rose-400';
+        line.classList.add('text-rose-300');
+      }
+      line.innerHTML = `<span class="absolute left-0 top-1 w-1 h-1 rounded-full ${indicator}"></span>${escapeHtml(text)}`;
+      detailEl.appendChild(line);
+      if (detailEl.getAttribute('data-open') === 'true' && detailEl instanceof HTMLElement) {
+        detailEl.style.maxHeight = detailEl.scrollHeight + 'px';
       }
     }
-    
+
+    function setStatus(text, toneClass) {
+      if (!statusEl) return;
+      statusEl.textContent = text;
+      statusEl.className = `status text-[10px] font-medium ${toneClass}`;
+    }
+
     function start() {
-      if(statusEl){
-        statusEl.textContent = translate('researchFlow.detailRunning', {}, '执行中');
-        statusEl.className='status text-[10px] font-medium text-brand-600';
-      }
+      setStatus(translate('researchFlow.detailRunning', {}, '执行中'), 'text-brand-400');
       addLine(translate('researchFlow.detailStart', { label }, `开始: ${label}`));
     }
+
     function finish() {
-      if(statusEl){
-        statusEl.textContent = translate('researchFlow.detailDone', {}, '完成');
-        statusEl.className='status text-[10px] font-medium text-emerald-600';
-      }
+      setStatus(translate('researchFlow.detailDone', {}, '完成'), 'text-emerald-400');
       addLine(translate('researchFlow.detailFinish', {}, '完成 ✓'), 'done');
     }
-    return { start, finish, addLine, expand: ()=>{ if(detailEl instanceof HTMLElement){ detailEl.setAttribute('data-open','true'); detailEl.style.maxHeight=detailEl.scrollHeight+'px'; detailEl.style.opacity='1'; } chevron?.classList.add('rotate-180'); } };
+
+    function setError(message) {
+      setStatus(translate('researchFlow.detailError', {}, '异常'), 'text-rose-400');
+      addLine(message || translate('researchFlow.detailError', {}, '发生错误'), 'error');
+    }
+
+    function expand() {
+      if (!detailEl || !(detailEl instanceof HTMLElement)) return;
+      detailEl.setAttribute('data-open', 'true');
+      detailEl.style.maxHeight = detailEl.scrollHeight + 'px';
+      detailEl.style.opacity = '1';
+      chevron?.classList.add('rotate-180');
+    }
+
+    return { start, finish, addLine, setError, expand };
   }
-  
-  function logSearch(text) {
-    if (!searchLog) return;
+
+  function ensureReasoningStep(stepType) {
+    if (stepNodes.has(stepType)) {
+      return stepNodes.get(stepType);
+    }
+    const stepDef = getStepDefinition(stepType);
+    const label = translate(stepDef?.key || '', {}, stepDef?.fallback || stepType);
+    const step = createReasoningStep(label, stepType);
+    if (step) {
+      stepNodes.set(stepType, step);
+    }
+    return step;
+  }
+
+  function appendSearchLog(text) {
+    if (!searchLog || !text) return;
     searchLog.classList.remove('hidden');
     const line = document.createElement('div');
     const count = searchLog.children.length;
     line.className = 'animate-fade-in';
-    line.style.animationDelay = (count * 40) + 'ms';
+    line.style.animationDelay = `${count * 40}ms`;
     line.textContent = text;
     searchLog.appendChild(line);
     searchLog.scrollTop = searchLog.scrollHeight;
-    // also push into current step detail
-    if (currentStep && typeof currentStep.addLine === 'function') currentStep.addLine(text.replace('[search]', translate('researchFlow.logSearchLabel', {}, '搜索'))); 
   }
-  
-  async function runPipeline() {
-    if (running) return; running = true;
-    reasoningPanel && reasoningPanel.classList.remove('hidden');
-    stepsEl && (stepsEl.innerHTML='');
-    searchLog && (searchLog.innerHTML='');
-    for (let i=0;i<pipeline.length;i++) {
-      renderTimeline(i);
-      const p = pipeline[i];
-      const label = translate(p.key, {}, p.fallback);
-      currentStep = createReasoningStep(label);
-      if (currentStep && typeof currentStep.start === 'function') currentStep.start();
-      setProgress(i/pipeline.length, p);
-      if (p.id === 'search') {
-        for (let k=0;k<5;k++) {
-          const token = Math.random().toString(36).slice(2,8);
-          const message = translate('researchFlow.logSearchLine', { index: k+1, token }, `[search] query#${k+1} 触发 -> 模拟结果 ${token}`);
-          logSearch(message);
-          await new Promise(r=>setTimeout(r,180));
-          setProgress((i + (k+1)/6)/pipeline.length, { key: 'researchFlow.searchProgress', fallback: '搜索中' });
+
+  function createCard({ id, order, title, badge, bodyHtml, footerHtml }) {
+    const article = document.createElement('article');
+    article.className = 'group relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/55 backdrop-blur p-6 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/40 hover:shadow-xl animate-slide-up';
+    article.dataset.dynamicCard = 'true';
+    article.dataset.cardId = id;
+    article.style.animationDelay = `${order * 70}ms`;
+    article.innerHTML = `
+      <div class="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style="background: radial-gradient(circle at top, rgba(45, 212, 191, 0.22), transparent 60%);"></div>
+      <div class="relative flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[11px] font-semibold text-white/80">${String(order + 1).padStart(2, '0')}</span>
+          <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+            <span>${title}</span>
+          </h3>
+        </div>
+        <span class="text-[11px] uppercase tracking-[0.22em] text-slate-400/70">${badge}</span>
+      </div>
+      <div class="relative mt-3 text-xs text-slate-200/80 space-y-2 leading-relaxed">${bodyHtml}</div>
+      ${footerHtml ? `<div class="relative mt-4 text-[11px] text-slate-300/70">${footerHtml}</div>` : ''}
+    `;
+    return article;
+  }
+
+  function renderResults() {
+    if (!resultsGrid) return;
+    const dynamicCards = resultsGrid.querySelectorAll('[data-dynamic-card="true"]');
+    dynamicCards.forEach((node) => node.remove());
+
+    const cards = [];
+    const plan = state.results.plan;
+    const searchResult = state.results.deep_search || state.results.search;
+    const modeling = state.results.modeling;
+    const reporting = state.results.reporting;
+
+    if (plan?.content) {
+      const paragraphs = plan.content.split(/\n+/).filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join('');
+      cards.push({
+        id: 'plan-card',
+        title: translate('resultsGrid.planTitle', {}, '研究计划'),
+        badge: 'PLAN',
+        bodyHtml: `<div class="space-y-2">${paragraphs}</div>`,
+        footerHtml: plan.timestamp ? translate('resultsGrid.generatedAt', { time: formatTimestamp(plan.timestamp) }, `生成时间：${formatTimestamp(plan.timestamp)}`) : ''
+      });
+    }
+
+    if (searchResult) {
+      const highlights = Array.isArray(searchResult.summary?.highlights) ? searchResult.summary.highlights.slice(0, 4) : [];
+      const notes = Array.isArray(searchResult.notes) ? searchResult.notes.slice(0, 3) : [];
+      const metadata = searchResult.metadata || {};
+      const fallbackPrimaryMessage = metadata.fallbackMessage || translate('resultsGrid.fallbackDefault', {}, '搜索使用了回退策略。');
+      let fallbackSecondaryMessage = '';
+      if (metadata.fallbackReason === 'summarize_unavailable') {
+        fallbackSecondaryMessage = translate('resultsGrid.fallbackSummarize', {}, '摘要生成暂不可用，展示原始搜索结果。');
+      } else if (metadata.fallbackReason === 'api_error') {
+        fallbackSecondaryMessage = translate('resultsGrid.fallbackApi', {}, '搜索接口异常，已展示可用的缓存或计划。');
+      } else if (metadata.fallbackReason === 'no_results') {
+        fallbackSecondaryMessage = translate('resultsGrid.fallbackEmpty', {}, '未检索到可靠来源，展示基础策略供参考。');
+      }
+      const fallbackNotice = metadata.isFallback
+        ? `
+            <div class="flex items-start gap-2 rounded-lg border border-amber-200/40 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-50">
+              <span class="mt-0.5">⚠️</span>
+              <div class="space-y-1">
+                <p class="font-medium text-amber-100">${escapeHtml(fallbackPrimaryMessage)}</p>
+                ${fallbackSecondaryMessage ? `<p class="text-amber-200/90">${escapeHtml(fallbackSecondaryMessage)}</p>` : ''}
+              </div>
+            </div>
+          `
+        : '';
+      const highlightHtml = highlights.length
+        ? `<ul class="list-disc ps-5 space-y-1">${highlights.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+        : '';
+      const noteHtml = notes.length
+        ? notes.map((note) => `
+            <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+              <p class="font-medium text-slate-100/90">${escapeHtml(note.topic || note.summary || '')}</p>
+              <p class="text-[11px] text-slate-300/80 mt-1 line-clamp-3">${escapeHtml(note.summary || '')}</p>
+            </div>
+          `).join('')
+        : '';
+      const metaParts = [];
+      if (Array.isArray(searchResult.strategy?.queries)) {
+        metaParts.push(`查询 ${searchResult.strategy.queries.length} 个`);
+      }
+      if (typeof searchResult.metadata?.resultsCount === 'number') {
+        metaParts.push(`结果 ${searchResult.metadata.resultsCount} 条`);
+      }
+      if (metadata.isFallback) {
+        metaParts.push(translate('resultsGrid.footerFallback', {}, '回退模式'));
+      }
+      let combinedBody = '';
+      if (fallbackNotice) combinedBody += fallbackNotice;
+      if (highlightHtml) combinedBody += highlightHtml;
+      if (noteHtml) combinedBody += noteHtml;
+      if (!combinedBody) {
+        combinedBody = `<p class="text-[11px] text-slate-300/70">${escapeHtml(translate('resultsGrid.searchAwaiting', {}, '等待搜索摘要'))}</p>`;
+      }
+      cards.push({
+        id: 'search-card',
+        title: translate('resultsGrid.sectionBenchmark', {}, '搜索洞察'),
+        badge: 'SEARCH',
+        bodyHtml: `<div class="space-y-2">${combinedBody}</div>`,
+        footerHtml: metaParts.join(' · ')
+      });
+    }
+
+    if (modeling) {
+      const drivers = Array.isArray(modeling.coreDrivers) ? modeling.coreDrivers.slice(0, 4) : [];
+      const driverHtml = drivers.length
+        ? drivers.map((driver, index) => `
+            <div class="flex items-start gap-2">
+              <span class="mt-0.5 text-[11px] text-brand-200">${String(index + 1).padStart(2, '0')}</span>
+              <div>
+                <p class="text-xs font-medium text-slate-100/90">${escapeHtml(driver.name || '关键驱动')}</p>
+                <p class="text-[11px] text-slate-300/80 mt-0.5 line-clamp-3">${escapeHtml(driver.description || '')}</p>
+              </div>
+            </div>
+          `).join('')
+        : '<p class="text-[11px] text-slate-300/70">等待建模结果</p>';
+      cards.push({
+        id: 'model-card',
+        title: translate('resultsGrid.sectionFramework', {}, '结构化模型'),
+        badge: 'MODEL',
+        bodyHtml: `<div class="space-y-2">${driverHtml}</div>`,
+        footerHtml: modeling.metadata?.method ? `Method · ${escapeHtml(modeling.metadata.method)}` : ''
+      });
+    }
+
+    const reportContent = reporting?.markdown || state.reportDraft;
+    if (reportContent) {
+      const preview = reportContent.split('\n').slice(0, 8).map((line) => escapeHtml(line)).join('<br />');
+      cards.push({
+        id: 'report-card',
+        title: translate('resultsGrid.sectionAction', {}, '洞察报告'),
+        badge: 'REPORT',
+        bodyHtml: `<p class="font-mono text-[11px] leading-relaxed whitespace-pre-wrap">${preview}</p>`,
+        footerHtml: reporting?.metadata?.format ? `Format · ${escapeHtml(reporting.metadata.format)}` : ''
+      });
+    }
+
+    if (!cards.length) {
+      if (resultsEmpty) resultsEmpty.classList.remove('hidden');
+      return;
+    }
+
+    if (resultsEmpty) resultsEmpty.classList.add('hidden');
+
+    cards.forEach((card, index) => {
+      const node = createCard({ ...card, order: index });
+      resultsGrid.appendChild(node);
+    });
+  }
+
+  function getDomain(url) {
+    try {
+      const { hostname } = new URL(url);
+      return hostname.replace(/^www\./, '');
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function renderSources() {
+    if (!sourcesBody) return;
+    const dynamicRows = sourcesBody.querySelectorAll('[data-dynamic-row="true"]');
+    dynamicRows.forEach((row) => row.remove());
+
+    const searchResult = state.results.deep_search || state.results.search;
+    const metadata = searchResult?.metadata || {};
+    const notes = Array.isArray(searchResult?.notes) ? searchResult.notes : [];
+    const rawResults = Array.isArray(searchResult?.rawResults) ? searchResult.rawResults : [];
+
+    const entries = notes.length ? notes : rawResults;
+
+    if (sourcesHint) {
+      if (metadata.isFallback && metadata.fallbackReason === 'summarize_unavailable') {
+        sourcesHint.textContent = translate('sourcesTable.hintSummarizeFallback', {}, '摘要失败，已展示原始来源列表。');
+      } else if (metadata.isFallback && metadata.fallbackMessage) {
+        sourcesHint.textContent = metadata.fallbackMessage;
+      } else if (sourcesHintDefault) {
+        sourcesHint.textContent = sourcesHintDefault;
+      }
+    }
+
+    if (!entries.length) {
+      if (sourcesEmptyCell) {
+        if (metadata.isFallback && metadata.fallbackReason === 'no_results') {
+          sourcesEmptyCell.textContent = translate('sourcesTable.emptyNoResults', {}, '搜索没有返回来源，保留策略建议供参考。');
+        } else if (metadata.isFallback && metadata.fallbackReason === 'api_error') {
+          sourcesEmptyCell.textContent = translate('sourcesTable.emptyApiFallback', {}, '搜索接口异常，暂无法展示来源列表。');
+        } else if (sourcesEmptyDefault) {
+          sourcesEmptyCell.textContent = sourcesEmptyDefault;
         }
       }
-      await new Promise(r=>setTimeout(r, 600 + Math.random()*500));
-      if (currentStep && typeof currentStep.finish === 'function') currentStep.finish();
+      sourcesEmptyRow?.classList.remove('hidden');
+      sourcesHint?.classList.add('hidden');
+      return;
     }
-    setProgress(1, { key: 'researchFlow.timelineDone', fallback: '完成' });
-    renderTimeline(pipeline.length);
-    running = false;
+
+    if (sourcesEmptyCell && sourcesEmptyDefault) {
+      sourcesEmptyCell.textContent = sourcesEmptyDefault;
+    }
+    sourcesEmptyRow?.classList.add('hidden');
+    sourcesHint?.classList.remove('hidden');
+
+    entries.slice(0, 10).forEach((item) => {
+      const title = item.title || item.summary || item.topic || '—';
+      const url = item.sourceUrl || item.url || item.link || '';
+      const domain = url ? getDomain(url) : (item.domain || '—');
+      const type = item.engine || item.type || 'Source';
+      const score = typeof item.confidence === 'number' ? item.confidence.toFixed(2) : (typeof item.score === 'number' ? item.score.toFixed(2) : '—');
+
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-gray-50/70 animate-fade-in';
+      tr.dataset.dynamicRow = 'true';
+      tr.innerHTML = `
+        <td class="py-2 pe-4 max-w-[220px]"><div class="line-clamp-2 font-medium text-gray-700">${escapeHtml(title)}</div></td>
+        <td class="py-2 pe-4 text-gray-500">${escapeHtml(domain)}</td>
+        <td class="py-2 pe-4"><span class="inline-flex items-center rounded bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 ring-1 ring-inset ring-brand-200/70">${escapeHtml(type)}</span></td>
+        <td class="py-2 pe-4 font-medium text-gray-800">${score}</td>
+        <td class="py-2">
+          ${url ? `<a class="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2 py-1 text-[11px] text-gray-500 hover:border-brand-300 hover:text-brand-500" href="${escapeHtml(url)}" target="_blank" rel="noopener">查看</a>` : '<span class="text-[11px] text-gray-400">N/A</span>'}
+        </td>
+      `;
+      sourcesBody.appendChild(tr);
+    });
   }
-  
-  // 监听自定义事件，由 SidePanel 触发
-  document.addEventListener('research:start', runPipeline);
+
+  function updateHeroStatus(text) {
+    if (heroTaskValue) {
+      heroTaskValue.textContent = text || translate(translationKeys.heroIdle, {}, 'Idle');
+    }
+  }
+
+  function handleResearchStart(event) {
+    const detail = event?.detail || {};
+    const mode = detail.mode === 'deep' ? 'deep' : 'legacy';
+    const query = detail.query || '';
+    state.mode = mode;
+    setPipeline(mode);
+    resetUI(query);
+    updateHeroStatus(query || translate(translationKeys.heroIdle, {}, 'Idle'));
+    if (latestOutputValue) latestOutputValue.textContent = '—';
+    renderResults();
+    renderSources();
+  }
+
+  function handleResearchUpdate(event) {
+    const detail = event?.detail || {};
+    const payload = typeof detail.data === 'string' ? { raw: detail.data } : (detail.data || {});
+    const stepType = payload.stepType || detail.stepType || detail.stepId;
+    if (!stepType) return;
+
+    const stepDef = getStepDefinition(stepType) || { stepType, key: '', fallback: stepType };
+    const label = translate(stepDef.key || '', {}, stepDef.fallback || stepType);
+    const step = ensureReasoningStep(stepType);
+    const message = resolveMessage(detail) || resolveMessage(payload);
+    const status = detail.status;
+
+    ensureReasoningPanelVisible();
+
+    if (status === 'start') {
+      step?.start?.();
+      stepStatus.set(stepType, 'active');
+      updateHeroStatus(label);
+    } else if (status === 'progress') {
+      if (message) step?.addLine?.(message);
+      stepStatus.set(stepType, 'active');
+      updateHeroStatus(message || label);
+    } else if (status === 'complete') {
+      step?.finish?.();
+      stepStatus.set(stepType, 'done');
+      if (payload.result) {
+        state.results[stepType] = payload.result;
+        if (stepType === 'deep_search') {
+          state.results.search = payload.result;
+        }
+        if (stepType === 'search' && !state.results.deep_search) {
+          state.results.deep_search = payload.result;
+        }
+        if (stepType === 'cluster' && !state.results.modeling) {
+          state.results.modeling = payload.result;
+        }
+        if (stepType === 'reporting') {
+          state.results.reporting = payload.result;
+          state.reportDraft = payload.result.markdown || state.reportDraft;
+        }
+        if (stepType === 'synthesis') {
+          state.results.reporting = payload.result;
+          if (typeof payload.result?.content === 'string') {
+            state.reportDraft = payload.result.content;
+          }
+        }
+        if (stepType === 'plan') {
+          state.results.plan = payload.result;
+        }
+        renderResults();
+        renderSources();
+      }
+      updateHeroStatus(label);
+      const finalStep = pipeline[pipeline.length - 1];
+      if (finalStep && (finalStep.stepType === stepType || finalStep.id === stepType)) {
+        updateHeroStatus(translate(translationKeys.heroComplete, {}, '研究完成'));
+        if (latestOutputValue) {
+          latestOutputValue.textContent = formatTimestamp(detail.timestamp || new Date());
+        }
+      }
+    } else if (status === 'error') {
+      const errorMessage = message || translate('researchFlow.detailError', {}, '发生错误');
+      step?.setError?.(errorMessage);
+      stepStatus.set(stepType, 'error');
+      appendSearchLog(`⚠️ ${errorMessage}`);
+      updateHeroStatus(errorMessage);
+    }
+
+    if (stepType === 'deep_search') {
+      if (status === 'progress' && message) {
+        appendSearchLog(message);
+      } else if (status === 'complete' && payload.result) {
+        const meta = payload.result.metadata;
+        const summary = meta?.resultsCount ? `完成深度搜索 · ${meta.resultsCount} 条结果` : '完成深度搜索';
+        appendSearchLog(summary);
+      }
+    }
+
+    if (stepType === 'reporting') {
+      if (payload.chunk) {
+        state.reportDraft += payload.chunk;
+        renderResults();
+      }
+    }
+  }
+
+  function handleResearchStop() {
+    updateHeroStatus(translate('researchFlow.stopped', {}, '已停止'));
+  }
+
+  function handleResearchComplete() {
+    updateHeroStatus(translate(translationKeys.heroComplete, {}, '研究完成'));
+    if (latestOutputValue) {
+      latestOutputValue.textContent = formatTimestamp(new Date());
+    }
+  }
+
+  function handleResearchError(event) {
+    const message = event?.detail?.message || translate('researchFlow.detailError', {}, '发生错误');
+    updateHeroStatus(message);
+    appendSearchLog(`⚠️ ${message}`);
+  }
+
+  document.addEventListener('research:start', handleResearchStart);
+  document.addEventListener('research-update', handleResearchUpdate);
+  document.addEventListener('research:stop', handleResearchStop);
+  document.addEventListener('research:complete', handleResearchComplete);
+  document.addEventListener('research:error', handleResearchError);
 
   if (steadyI18n && typeof steadyI18n.onLocaleChange === 'function') {
     steadyI18n.onLocaleChange(() => {
-      renderTimeline(typeof activeTimelineStep === 'number' ? activeTimelineStep : -1);
+      renderResults();
+      renderSources();
     });
   }
 </script>

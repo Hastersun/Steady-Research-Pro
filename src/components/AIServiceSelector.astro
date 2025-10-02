@@ -50,6 +50,30 @@
             <option value="" data-i18n="aiService.modelLoading">加载中...</option>
           </select>
         </div>
+        <div class="field field--deep-agent" data-provider="ollama">
+          <div class="deep-agent-header">
+            <span class="deep-agent-title" data-i18n="aiService.deepAgentTitle">深度代理模型映射</span>
+            <label class="deep-agent-toggle">
+              <input type="checkbox" id="ollamaDeepAgentEnabled" />
+              <span data-i18n="aiService.deepAgentToggle">启用针对该服务的深度代理</span>
+            </label>
+          </div>
+          <div class="deep-agent-grid" id="ollamaDeepAgentGrid">
+            <div class="deep-agent-item">
+              <span data-i18n="aiService.deepAgentSearch">搜索阶段</span>
+              <select id="ollamaDeepAgentSearch" class="input-control"></select>
+            </div>
+            <div class="deep-agent-item">
+              <span data-i18n="aiService.deepAgentModeling">建模阶段</span>
+              <select id="ollamaDeepAgentModeling" class="input-control"></select>
+            </div>
+            <div class="deep-agent-item">
+              <span data-i18n="aiService.deepAgentReport">报告阶段</span>
+              <select id="ollamaDeepAgentReport" class="input-control"></select>
+            </div>
+          </div>
+          <p class="deep-agent-hint" id="ollamaDeepAgentHint" data-i18n="aiService.deepAgentHint">留空将沿用上方选择的默认模型。</p>
+        </div>
       </div>
       <footer class="config-card__footer">
         <button id="testOllama" class="action-button" data-i18n="aiService.testButton">测试连接</button>
@@ -74,6 +98,30 @@
           <select id="apiModel" class="input-control">
             <option value="" data-i18n="aiService.remoteModelPlaceholder">请选择模型</option>
           </select>
+        </div>
+        <div class="field field--deep-agent" data-provider="remote">
+          <div class="deep-agent-header">
+            <span class="deep-agent-title" data-i18n="aiService.deepAgentTitle">深度代理模型映射</span>
+            <label class="deep-agent-toggle">
+              <input type="checkbox" id="remoteDeepAgentEnabled" />
+              <span data-i18n="aiService.deepAgentToggle">启用针对该服务的深度代理</span>
+            </label>
+          </div>
+          <div class="deep-agent-grid" id="remoteDeepAgentGrid">
+            <div class="deep-agent-item">
+              <span data-i18n="aiService.deepAgentSearch">搜索阶段</span>
+              <select id="remoteDeepAgentSearch" class="input-control"></select>
+            </div>
+            <div class="deep-agent-item">
+              <span data-i18n="aiService.deepAgentModeling">建模阶段</span>
+              <select id="remoteDeepAgentModeling" class="input-control"></select>
+            </div>
+            <div class="deep-agent-item">
+              <span data-i18n="aiService.deepAgentReport">报告阶段</span>
+              <select id="remoteDeepAgentReport" class="input-control"></select>
+            </div>
+          </div>
+          <p class="deep-agent-hint" id="remoteDeepAgentHint" data-i18n="aiService.deepAgentHint">留空将沿用上方选择的默认模型。</p>
         </div>
       </div>
       <footer class="config-card__footer">
@@ -154,7 +202,13 @@
       url: 'http://localhost:11434',
       model: '',
       available: false,
-      models: []
+      models: [],
+      deepAgent: {
+        enabled: false,
+        search: '',
+        modeling: '',
+        report: ''
+      }
     },
     deepseek: {
       type: 'remote',
@@ -163,7 +217,13 @@
       apiKey: '',
       model: remoteProviders.deepseek.defaultModel,
       available: false,
-      models: [...remoteProviders.deepseek.models]
+      models: [...remoteProviders.deepseek.models],
+      deepAgent: {
+        enabled: false,
+        search: remoteProviders.deepseek.defaultModel,
+        modeling: remoteProviders.deepseek.defaultModel,
+        report: remoteProviders.deepseek.defaultModel
+      }
     },
     openai: {
       type: 'remote',
@@ -172,7 +232,13 @@
       apiKey: '',
       model: remoteProviders.openai.defaultModel,
       available: false,
-      models: [...remoteProviders.openai.models]
+      models: [...remoteProviders.openai.models],
+      deepAgent: {
+        enabled: false,
+        search: remoteProviders.openai.defaultModel,
+        modeling: remoteProviders.openai.defaultModel,
+        report: remoteProviders.openai.defaultModel
+      }
     },
     claude: {
       type: 'remote',
@@ -181,7 +247,13 @@
       apiKey: '',
       model: remoteProviders.claude.defaultModel,
       available: false,
-      models: [...remoteProviders.claude.models]
+      models: [...remoteProviders.claude.models],
+      deepAgent: {
+        enabled: false,
+        search: remoteProviders.claude.defaultModel,
+        modeling: remoteProviders.claude.defaultModel,
+        report: remoteProviders.claude.defaultModel
+      }
     },
     gemini: {
       type: 'remote',
@@ -190,7 +262,13 @@
       apiKey: '',
       model: remoteProviders.gemini.defaultModel,
       available: false,
-      models: [...remoteProviders.gemini.models]
+      models: [...remoteProviders.gemini.models],
+      deepAgent: {
+        enabled: false,
+        search: remoteProviders.gemini.defaultModel,
+        modeling: remoteProviders.gemini.defaultModel,
+        report: remoteProviders.gemini.defaultModel
+      }
     }
   };
 
@@ -221,6 +299,28 @@
     badges: {
       ollama: document.getElementById('ollamaStatus'),
       remote: document.getElementById('httpApiStatus')
+    },
+    deepAgent: {
+      ollama: {
+        toggle: document.getElementById('ollamaDeepAgentEnabled'),
+        grid: document.getElementById('ollamaDeepAgentGrid'),
+        selects: {
+          search: document.getElementById('ollamaDeepAgentSearch'),
+          modeling: document.getElementById('ollamaDeepAgentModeling'),
+          report: document.getElementById('ollamaDeepAgentReport')
+        },
+        hint: document.getElementById('ollamaDeepAgentHint')
+      },
+      remote: {
+        toggle: document.getElementById('remoteDeepAgentEnabled'),
+        grid: document.getElementById('remoteDeepAgentGrid'),
+        selects: {
+          search: document.getElementById('remoteDeepAgentSearch'),
+          modeling: document.getElementById('remoteDeepAgentModeling'),
+          report: document.getElementById('remoteDeepAgentReport')
+        },
+        hint: document.getElementById('remoteDeepAgentHint')
+      }
     }
   };
 
@@ -229,6 +329,200 @@
       i18n.applyTranslations(refs.root || document);
     }
   };
+
+  const DEEP_AGENT_FIELDS = ['search', 'modeling', 'report'];
+
+  const getDeepAgentControls = (provider) => {
+    if (provider === 'ollama') return refs.deepAgent.ollama;
+    return refs.deepAgent.remote;
+  };
+
+  function getProviderModels(provider) {
+    const config = providerConfigs[provider];
+    if (!config) return [];
+    if (Array.isArray(config.models) && config.models.length) {
+      return [...new Set(config.models)]
+        .filter((model) => typeof model === 'string' && model.trim().length)
+        .map((model) => model.trim());
+    }
+    if (provider !== 'ollama') {
+      const meta = remoteProviders[provider];
+      if (meta?.models) return [...meta.models];
+    }
+    return [];
+  }
+
+  function sanitizeDeepAgent(provider, source = {}) {
+    const models = getProviderModels(provider);
+    const normalize = (value) => {
+      if (!value || typeof value !== 'string') return '';
+      if (!models.length) return value;
+      return models.includes(value) ? value : '';
+    };
+    return {
+      enabled: Boolean(source.enabled),
+      search: normalize(source.search),
+      modeling: normalize(source.modeling),
+      report: normalize(source.report)
+    };
+  }
+
+  function ensureDeepAgentConfig(provider, overrides = {}) {
+    if (!providerConfigs[provider]) return {
+      enabled: false,
+      search: '',
+      modeling: '',
+      report: ''
+    };
+    const base = providerConfigs[provider].deepAgent || {};
+    const merged = { ...base, ...overrides };
+    const sanitized = sanitizeDeepAgent(provider, merged);
+    providerConfigs[provider].deepAgent = sanitized;
+    return sanitized;
+  }
+
+  function toggleDeepAgentGrid(controls, enabled) {
+    if (!controls) return;
+    if (controls.grid) {
+      controls.grid.classList.toggle('deep-agent-grid--disabled', !enabled);
+    }
+  }
+
+  function populateDeepAgentSelect(select, models, value) {
+    if (!select) return;
+    const current = typeof value === 'string' ? value : '';
+    select.innerHTML = '';
+    const inheritOption = document.createElement('option');
+    inheritOption.value = '';
+    inheritOption.textContent = translate('aiService.deepAgentInherit', {}, '沿用主模型');
+    inheritOption.dataset.i18n = 'aiService.deepAgentInherit';
+    select.appendChild(inheritOption);
+
+    models.forEach((model) => {
+      const option = document.createElement('option');
+      option.value = model;
+      option.textContent = model;
+      select.appendChild(option);
+    });
+
+    if (current && models.length && !models.includes(current)) {
+      const fallbackOption = document.createElement('option');
+      fallbackOption.value = current;
+      fallbackOption.textContent = current;
+      select.appendChild(fallbackOption);
+    }
+
+    if (current) {
+      select.value = current;
+      if (select.value !== current) {
+        select.value = '';
+      }
+    } else {
+      select.value = '';
+    }
+  }
+
+  function populateDeepAgentSelects(controls, models, deepAgent) {
+    if (!controls) return;
+    DEEP_AGENT_FIELDS.forEach((field) => {
+      populateDeepAgentSelect(controls.selects?.[field], models, deepAgent[field]);
+    });
+    if (i18n && typeof i18n.applyTranslations === 'function') {
+      const nodes = [controls.grid, controls.hint].filter(Boolean);
+      nodes.forEach((node) => i18n.applyTranslations(node));
+    }
+  }
+
+  function updateDeepAgentHint(provider, controls, deepAgent) {
+    if (!controls?.hint) return;
+    if (!deepAgent.enabled) {
+      controls.hint.textContent = translate('aiService.deepAgentHintDisabled', {}, '未启用深度代理映射，将使用主模型。');
+      return;
+    }
+    const primaryModel = providerConfigs[provider]?.model || '';
+    const fallbackMessage = primaryModel
+      ? `未设置的阶段将沿用主模型：${primaryModel}`
+      : '未设置的阶段将沿用主模型。';
+    controls.hint.textContent = translate('aiService.deepAgentHintActive', { model: primaryModel }, fallbackMessage);
+  }
+
+  function populateDeepAgentUI(provider) {
+    const controls = getDeepAgentControls(provider);
+    const config = providerConfigs[provider];
+    if (!controls || !config) return;
+    const deepAgent = ensureDeepAgentConfig(provider);
+    if (controls.toggle) {
+      controls.toggle.checked = Boolean(deepAgent.enabled);
+    }
+    toggleDeepAgentGrid(controls, deepAgent.enabled);
+    const models = getProviderModels(provider);
+    populateDeepAgentSelects(controls, models, deepAgent);
+    updateDeepAgentHint(provider, controls, deepAgent);
+  }
+
+  function buildProviderMapping() {
+    const mapping = {};
+    Object.entries(providerConfigs).forEach(([provider, config]) => {
+      if (!config) return;
+      mapping[provider] = sanitizeDeepAgent(provider, config.deepAgent || {});
+    });
+    return mapping;
+  }
+
+  function broadcastProviderMapping() {
+    const mapping = buildProviderMapping();
+    if (typeof window !== 'undefined') {
+      window.steadyResearchConfig = window.steadyResearchConfig || {};
+      window.steadyResearchConfig.providerDeepAgent = mapping;
+      window.dispatchEvent(new CustomEvent('deepAgent:providerMapping', { detail: mapping }));
+    }
+  }
+
+  function handleDeepAgentToggle(provider, enabled) {
+    const deepAgent = ensureDeepAgentConfig(provider, { enabled: Boolean(enabled) });
+    populateDeepAgentUI(provider);
+    saveState();
+    if (provider === currentProvider) {
+      dispatchChange();
+    } else {
+      broadcastProviderMapping();
+    }
+  }
+
+  function handleDeepAgentSelectChange(provider, key, value) {
+    if (!DEEP_AGENT_FIELDS.includes(key)) return;
+    const deepAgent = ensureDeepAgentConfig(provider, { [key]: value || '' });
+    ensureDeepAgentConfig(provider, deepAgent);
+    updateDeepAgentHint(provider, getDeepAgentControls(provider), deepAgent);
+    saveState();
+    if (provider === currentProvider) {
+      dispatchChange();
+    } else {
+      broadcastProviderMapping();
+    }
+  }
+
+  function propagatePrimaryModel(provider, newModel, previousModel) {
+    const config = providerConfigs[provider];
+    if (!config) return;
+    const deepAgent = ensureDeepAgentConfig(provider);
+    const modelValue = typeof newModel === 'string' ? newModel : '';
+    const previous = typeof previousModel === 'string' ? previousModel : '';
+    DEEP_AGENT_FIELDS.forEach((field) => {
+      const current = deepAgent[field];
+      if (!current || current === previous) {
+        deepAgent[field] = modelValue;
+      }
+    });
+    ensureDeepAgentConfig(provider, deepAgent);
+    populateDeepAgentUI(provider);
+    saveState();
+    if (provider === currentProvider) {
+      dispatchChange();
+    } else {
+      broadcastProviderMapping();
+    }
+  }
 
   function init() {
     if (initialized) return;
@@ -257,8 +551,9 @@
     });
 
     refs.inputs.ollamaModel?.addEventListener('change', (event) => {
+      const previous = providerConfigs.ollama.model;
       providerConfigs.ollama.model = (event.target || {}).value || '';
-      saveState();
+      propagatePrimaryModel('ollama', providerConfigs.ollama.model, previous);
     });
 
     refs.inputs.apiKey?.addEventListener('input', (event) => {
@@ -275,13 +570,44 @@
       const value = (event.target || {}).value || '';
       const config = providerConfigs[currentProvider];
       if (config && config.type === 'remote') {
+        const previous = config.model;
         config.model = value;
-        saveState();
+        propagatePrimaryModel(currentProvider, value, previous);
       }
     });
 
     refs.buttons.testOllama?.addEventListener('click', handleTestOllama);
     refs.buttons.testHttp?.addEventListener('click', handleTestHttpApi);
+
+    const ollamaControls = refs.deepAgent.ollama;
+    if (ollamaControls?.toggle) {
+      ollamaControls.toggle.addEventListener('change', (event) => {
+        handleDeepAgentToggle('ollama', event.target?.checked);
+      });
+    }
+    if (ollamaControls?.selects) {
+      Object.entries(ollamaControls.selects).forEach(([key, select]) => {
+        select?.addEventListener('change', (event) => {
+          handleDeepAgentSelectChange('ollama', key, event.target?.value || '');
+        });
+      });
+    }
+
+    const remoteControls = refs.deepAgent.remote;
+    if (remoteControls?.toggle) {
+      remoteControls.toggle.addEventListener('change', (event) => {
+        if (currentProvider === 'ollama') return;
+        handleDeepAgentToggle(currentProvider, event.target?.checked);
+      });
+    }
+    if (remoteControls?.selects) {
+      Object.entries(remoteControls.selects).forEach(([key, select]) => {
+        select?.addEventListener('change', (event) => {
+          if (currentProvider === 'ollama') return;
+          handleDeepAgentSelectChange(currentProvider, key, event.target?.value || '');
+        });
+      });
+    }
   }
 
   function loadSavedState() {
@@ -300,6 +626,11 @@
             if (Array.isArray(saved?.models)) {
               next.models = [...saved.models];
             }
+            if (saved?.deepAgent) {
+              next.deepAgent = sanitizeDeepAgent(key, saved.deepAgent);
+            } else {
+              next.deepAgent = sanitizeDeepAgent(key, next.deepAgent || providerConfigs[key].deepAgent || {});
+            }
             providerConfigs[key] = next;
           }
         });
@@ -313,6 +644,7 @@
     }
 
     populateInputs();
+    broadcastProviderMapping();
   }
 
   function populateInputs() {
@@ -338,6 +670,10 @@
       }
     }
     updateHttpButtonState();
+    populateDeepAgentUI('ollama');
+    if (currentProvider !== 'ollama') {
+      populateDeepAgentUI(currentProvider);
+    }
   }
 
   function updateUI() {
@@ -406,6 +742,9 @@
       providerConfigs[provider].models = [...meta.models];
     }
     applyPanelTranslations();
+    if (currentProvider === provider) {
+      populateDeepAgentUI(provider);
+    }
   }
 
   function saveState() {
@@ -537,6 +876,12 @@
       providerConfigs.ollama.available = false;
       providerConfigs.ollama.models = [];
     } finally {
+      populateDeepAgentUI('ollama');
+      if (currentProvider === 'ollama') {
+        dispatchChange();
+      } else {
+        broadcastProviderMapping();
+      }
       saveState();
     }
   }
@@ -625,14 +970,21 @@
 
   function dispatchChange() {
     const baseConfig = providerConfigs[currentProvider];
+    if (!baseConfig) return;
     const models = Array.isArray(baseConfig?.models) ? [...baseConfig.models] : [];
-    const config = { ...baseConfig, models };
+    const deepAgent = sanitizeDeepAgent(currentProvider, baseConfig?.deepAgent || {});
+    if (providerConfigs[currentProvider]) {
+      providerConfigs[currentProvider].deepAgent = deepAgent;
+    }
+    const config = { ...baseConfig, models, deepAgent };
     const detail = {
       provider: currentProvider,
       config,
-      models
+      models,
+      deepAgent
     };
     window.dispatchEvent(new CustomEvent('aiProviderChanged', { detail }));
+    broadcastProviderMapping();
   }
 
   window.getAIServiceSelector = () => ({
@@ -648,6 +1000,9 @@
       const next = { ...providerConfigs[provider], ...config };
       if (Array.isArray(config?.models)) {
         next.models = [...config.models];
+      }
+      if (config?.deepAgent) {
+        next.deepAgent = sanitizeDeepAgent(provider, config.deepAgent);
       }
       providerConfigs[provider] = next;
       if (provider === currentProvider) {
@@ -751,6 +1106,71 @@
   font-size: 0.95rem;
   font-weight: 500;
   color: rgba(129, 230, 217, 0.9);
+}
+
+.field--deep-agent {
+  padding: 16px;
+  border: 1px dashed rgba(148, 163, 184, 0.28);
+  border-radius: 16px;
+  background: rgba(30, 41, 59, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deep-agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.deep-agent-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.95);
+}
+
+.deep-agent-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.deep-agent-toggle input {
+  width: 16px;
+  height: 16px;
+}
+
+.deep-agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.deep-agent-grid--disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.deep-agent-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deep-agent-item span {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.deep-agent-hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: rgba(148, 163, 184, 0.7);
 }
 
 .field-group {
