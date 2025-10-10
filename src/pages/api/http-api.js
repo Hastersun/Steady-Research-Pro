@@ -3,7 +3,16 @@ import httpApiClient from '../../lib/http-api.js';
 
 export async function POST({ request }) {
   try {
-    const { message, provider, systemPrompt, stream = false } = await request.json();
+    const {
+      message,
+      provider,
+      systemPrompt,
+      stream = false,
+      apiKey,
+      model,
+      sampling,
+      messages
+    } = await request.json();
 
     if (!message) {
       return new Response(
@@ -25,6 +34,20 @@ export async function POST({ request }) {
       );
     }
 
+    if (typeof apiKey === 'string' && apiKey.trim().length > 0) {
+      try {
+        httpApiClient.setApiKey(provider, apiKey.trim());
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ error: error.message, provider }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+      }
+    }
+
     // 检查是否支持流式响应
     if (stream && (provider === 'deepseek' || provider === 'openai')) {
       // 流式响应
@@ -33,7 +56,14 @@ export async function POST({ request }) {
           try {
             await httpApiClient.sendStreamingRequest(
               message,
-              { provider, systemPrompt },
+              {
+                service: provider,
+                systemPrompt,
+                model,
+                sampling,
+                messages,
+                mode: Array.isArray(messages) ? 'chat' : 'generate'
+              },
               (chunk) => {
                 // 发送流式数据
                 const data = `data: ${JSON.stringify({ chunk })}\n\n`;
@@ -63,8 +93,12 @@ export async function POST({ request }) {
     } else {
       // 常规响应
       const response = await httpApiClient.sendRequest(message, {
-        provider,
-        systemPrompt
+        service: provider,
+        systemPrompt,
+        model,
+        sampling,
+        messages,
+        mode: Array.isArray(messages) ? 'chat' : 'generate'
       });
 
       return new Response(

@@ -155,54 +155,140 @@ class HttpApiClient {
    * @param {string} systemPrompt - System prompt (optional)
    * @returns {object} Formatted request payload
    */
-  formatRequest(service, message, systemPrompt = null) {
-    const model = DEFAULT_MODELS[service];
+  formatRequest(service, {
+    message = '',
+    systemPrompt = null,
+    model,
+    sampling = {},
+    messages = [],
+    mode = 'generate'
+  } = {}) {
+    const resolvedModel = typeof model === 'string' && model.trim().length
+      ? model
+      : DEFAULT_MODELS[service];
+
+    const ensureNumber = (value) => (typeof value === 'number' && Number.isFinite(value) ? value : undefined);
+    const normalizeMessages = (rawMessages = []) => {
+      if (!Array.isArray(rawMessages) || rawMessages.length === 0) {
+        return [];
+      }
+      return rawMessages
+        .map((item) => {
+          if (!item) return null;
+          if (typeof item === 'string') {
+            return { role: 'user', content: item };
+          }
+          const role = typeof item.role === 'string' ? item.role : 'user';
+          const content = typeof item.content === 'string' ? item.content : '';
+          if (!content) return null;
+          return { role, content };
+        })
+        .filter(Boolean);
+    };
+
+    const toClaudeContent = (rawMessages, fallback) => {
+      const normalized = normalizeMessages(rawMessages);
+      if (normalized.length) {
+        return normalized.map((item) => ({
+          role: item.role === 'assistant' ? 'assistant' : 'user',
+          content: item.content
+        }));
+      }
+      if (fallback) {
+        return [{ role: 'user', content: fallback }];
+      }
+      return [];
+    };
+
+    const combineForGemini = (rawMessages, fallback) => {
+      const normalized = normalizeMessages(rawMessages);
+      if (normalized.length) {
+        return normalized.map(({ role, content }) => ({ text: `${role}: ${content}` }));
+      }
+      return [{ text: fallback }];
+    };
 
     switch (service) {
       case 'deepseek':
-      case 'openai':
-        const messages = [];
+      case 'openai': {
+        const chatMessages = [];
         if (systemPrompt) {
-          messages.push({ role: 'system', content: systemPrompt });
+          chatMessages.push({ role: 'system', content: systemPrompt });
         }
-        messages.push({ role: 'user', content: message });
+        const normalized = normalizeMessages(messages);
+        if (normalized.length) {
+          chatMessages.push(...normalized);
+        } else {
+          chatMessages.push({ role: 'user', content: message });
+        }
 
-        return {
-          model: model,
-          messages: messages,
-          temperature: 0.7,
-          max_tokens: 4000
+        const payload = {
+          model: resolvedModel,
+          messages: chatMessages,
+          temperature: ensureNumber(sampling.temperature) ?? 0.7,
+          max_tokens: ensureNumber(sampling.maxTokens) ?? 4000
         };
 
-      case 'claude':
-        return {
-          model: model,
-          max_tokens: 4000,
-          messages: [
-            { role: 'user', content: message }
-          ],
+        const topP = ensureNumber(sampling.top_p ?? sampling.topP);
+        if (typeof topP === 'number') {
+          payload.top_p = topP;
+        }
+
+        const presencePenalty = ensureNumber(sampling.presence_penalty ?? sampling.presencePenalty);
+        if (typeof presencePenalty === 'number') {
+          payload.presence_penalty = presencePenalty;
+        }
+
+        const frequencyPenalty = ensureNumber(sampling.frequency_penalty ?? sampling.frequencyPenalty);
+        if (typeof frequencyPenalty === 'number') {
+          payload.frequency_penalty = frequencyPenalty;
+        }
+
+        return payload;
+      }
+
+      case 'claude': {
+        const payload = {
+          model: resolvedModel,
+          max_tokens: ensureNumber(sampling.maxTokens) ?? 4000,
+          messages: toClaudeContent(messages, message),
           system: systemPrompt || 'You are a helpful AI assistant.'
         };
 
-      case 'gemini':
-        const parts = [];
-        if (systemPrompt) {
-          parts.push({ text: `System: ${systemPrompt}\n\nUser: ${message}` });
-        } else {
-          parts.push({ text: message });
+        const temperature = ensureNumber(sampling.temperature);
+        if (typeof temperature === 'number') {
+          payload.temperature = temperature;
+        }
+
+        return payload;
+      }
+
+      case 'gemini': {
+        const parts = combineForGemini(messages, message);
+        const temperature = ensureNumber(sampling.temperature) ?? 0.7;
+        const topP = ensureNumber(sampling.top_p ?? sampling.topP);
+        const topK = ensureNumber(sampling.top_k ?? sampling.topK);
+        const generationConfig = {
+          temperature,
+          maxOutputTokens: ensureNumber(sampling.maxTokens) ?? 4000
+        };
+
+        if (typeof topP === 'number') {
+          generationConfig.topP = topP;
+        }
+        if (typeof topK === 'number') {
+          generationConfig.topK = topK;
         }
 
         return {
           contents: [
             {
-              parts: parts
+              parts
             }
           ],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 4000
-          }
+          generationConfig
         };
+      }
 
       default:
         throw new Error(`Unsupported service: ${service}`);
@@ -267,6 +353,10 @@ class HttpApiClient {
     const {
       service = this.defaultService,
       systemPrompt = null,
+      model = null,
+      sampling = {},
+      messages = null,
+      mode = 'generate',
       stream = false
     } = options;
 
@@ -281,7 +371,14 @@ class HttpApiClient {
         { 'Content-Type': 'application/json' } : 
         this.buildHeaders(service);
       
-      const payload = this.formatRequest(service, message, systemPrompt);
+      const payload = this.formatRequest(service, {
+        message,
+        systemPrompt,
+        model,
+        sampling,
+        messages,
+        mode
+      });
       
       // Add streaming support for compatible services
       if (stream && (service === 'deepseek' || service === 'openai')) {
@@ -318,13 +415,20 @@ class HttpApiClient {
   async sendStreamingRequest(message, options = {}, onChunk = null) {
     const {
       service = this.defaultService,
-      systemPrompt = null
+      systemPrompt = null,
+      model = null,
+      sampling = {},
+      messages = null,
+      mode = 'generate'
     } = options;
 
     // Only DeepSeek and OpenAI support streaming
     if (service !== 'deepseek' && service !== 'openai') {
       // Fall back to regular request
-      return this.sendRequest(message, { ...options, stream: false });
+      return this.sendRequest(message, {
+        ...options,
+        stream: false
+      });
     }
 
     if (!this.hasApiKey(service)) {
@@ -336,7 +440,14 @@ class HttpApiClient {
       const url = this.buildUrl(service, endpoint);
       const headers = this.buildHeaders(service);
       
-      const payload = this.formatRequest(service, message, systemPrompt);
+      const payload = this.formatRequest(service, {
+        message,
+        systemPrompt,
+        model,
+        sampling,
+        messages,
+        mode
+      });
       payload.stream = true;
 
       const response = await fetch(url, {
