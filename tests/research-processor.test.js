@@ -6,6 +6,7 @@ const createProcessor = () =>
     llmClient: {},
     searchClient: {},
     agents: {
+      planningAgent: {},
       searchAgent: {},
       modelingAgent: {},
       reportAgent: {}
@@ -86,7 +87,7 @@ describe('ResearchTaskProcessor executePipeline', () => {
     const processor = createProcessor();
     const context = processor.buildExecutionContext('测试主题', 'base-model', {}, { enabled: true });
     const pipeline = [
-      { id: 'search', label: '搜索', weight: 1 }
+      { id: 'search', stepType: 'deep_search', label: '搜索', weight: 1 }
     ];
 
     const events = [];
@@ -112,7 +113,28 @@ describe('ResearchTaskProcessor executePipeline', () => {
     const completeEvent = events.find((event) => event.status === 'complete');
     expect(completeEvent).toBeDefined();
     expect(completeEvent.payload.fallback).toBe(true);
-    expect(completeEvent.payload.result.output).toBe('result-for-search');
-    expect(context.results.search.output).toBe('result-for-search');
+    expect(completeEvent.payload.result).toBe('result-for-search');
+    expect(context.results.search).toBe('result-for-search');
+    expect(context.results.deep_search).toBe('result-for-search');
+  });
+});
+
+describe('ResearchTaskProcessor pipeline defaults', () => {
+  it('returns a default pipeline including plan and synthesis steps', () => {
+    const processor = createProcessor();
+    const pipeline = processor.createDefaultPipeline();
+    expect(pipeline[0]).toMatchObject({ id: 'plan', stepType: 'plan' });
+    const finalStep = pipeline[pipeline.length - 1];
+    expect(finalStep).toMatchObject({ id: 'synthesis', stepType: 'reporting', resultKey: 'reporting' });
+  });
+
+  it('falls back to heuristic plan when LLM client is missing', async () => {
+    const processor = new ResearchTaskProcessor({ searchClient: {}, agents: {} });
+    const context = processor.buildExecutionContext('缺少LLM的主题', 'base-model');
+    const step = { id: 'plan', stepType: 'plan', label: '计划' };
+    const result = await processor.executeStep(step, context, () => {});
+    expect(result.metadata.isFallback).toBe(true);
+    expect(result.output.content).toContain('缺少LLM的主题');
+    expect(result.output.metadata.depth).toBeDefined();
   });
 });
