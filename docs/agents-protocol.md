@@ -6,12 +6,12 @@
 
 研究后端由统一的 `ResearchTaskProcessor` 调度，串联以下步骤：
 
-| 步骤 ID | Agent | 职责 | 关键产出 |
-|---------|-------|------|----------|
-| `plan` | 内置 Planner | 整体研究目标与维度拆分 | `research_plan`（简要文本） |
-| `deep_search` | `SearchAgent` | 生成检索策略、调用搜索 API、整理证据 | 结构化 `search_notes` |
-| `modeling` | `ModelingAgent` | 基于证据构建主题/因果模型 | 结构化 `model_blueprint` |
-| `reporting` | `ReportAgent` | 汇总模型与证据生成最终报告 | Markdown + 元数据 |
+| 步骤 ID       | Agent           | 职责                                 | 关键产出                    |
+| ------------- | --------------- | ------------------------------------ | --------------------------- |
+| `plan`        | 内置 Planner    | 整体研究目标与维度拆分               | `research_plan`（简要文本） |
+| `deep_search` | `SearchAgent`   | 生成检索策略、调用搜索 API、整理证据 | 结构化 `search_notes`       |
+| `modeling`    | `ModelingAgent` | 基于证据构建主题/因果模型            | 结构化 `model_blueprint`    |
+| `reporting`   | `ReportAgent`   | 汇总模型与证据生成最终报告           | Markdown + 元数据           |
 
 每个 Agent 均实现统一的 `run({ query, context, options, onToken })` 接口，返回 `{ content, metadata }`。
 
@@ -114,9 +114,7 @@
       "confidence": 0.5
     }
   ],
-  "metrics": [
-    { "name": "MarketShare", "estimate": 0.24, "unit": "%", "confidence": 0.6 }
-  ],
+  "metrics": [{ "name": "MarketShare", "estimate": 0.24, "unit": "%", "confidence": 0.6 }],
   "metadata": {
     "durationMs": 0,
     "tokens": 0,
@@ -146,12 +144,8 @@
 ```json
 {
   "markdown": "# 标题...",
-  "outline": [
-    { "heading": "执行摘要", "bullets": ["string"] }
-  ],
-  "sources": [
-    { "title": "string", "url": "https://...", "noteIndex": 3 }
-  ],
+  "outline": [{ "heading": "执行摘要", "bullets": ["string"] }],
+  "sources": [{ "title": "string", "url": "https://...", "noteIndex": 3 }],
   "metadata": {
     "durationMs": 0,
     "tokens": 0,
@@ -173,7 +167,9 @@
   "label": "多源深度搜索",
   "payload": {
     "chunk": "增量文本，可选",
-    "result": { /* 对应 Agent 输出 */ },
+    "result": {
+      /* 对应 Agent 输出 */
+    },
     "metadata": {
       "tokens": 1024,
       "durationMs": 12650
@@ -183,7 +179,8 @@
 ```
 
 约定：
-  - `stepId` 为兼容旧版 UI 的别名，`stepType` 表示真实的管线步骤；新前端可直接使用 `stepType`。
+
+- `stepId` 为兼容旧版 UI 的别名，`stepType` 表示真实的管线步骤；新前端可直接使用 `stepType`。
 - `progress` 采用 0-1 浮点值，由 `ResearchTaskProcessor` 累计权重计算。
 - 对于流式步骤（典型为 `reporting`），`payload.chunk` 将多次发送，最终一次必须携带 `payload.result`。
 - 错误时 `status=error`，并携带 `payload.error`, `payload.result=null`。
