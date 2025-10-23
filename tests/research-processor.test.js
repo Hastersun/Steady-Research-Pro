@@ -8,8 +8,8 @@ const createProcessor = () =>
     agents: {
       searchAgent: {},
       modelingAgent: {},
-      reportAgent: {}
-    }
+      reportAgent: {},
+    },
   });
 
 afterEach(() => {
@@ -23,14 +23,14 @@ describe('ResearchTaskProcessor deep agent configuration', () => {
       {
         sampling: {
           temperature: 3.4,
-          topP: 1.5
+          topP: 1.5,
         },
         providerMapping: {
           enabled: true,
           search: 'mapped-search-model',
           modeling: 'mapped-modeling-model',
-          report: 'mapped-report-model'
-        }
+          report: 'mapped-report-model',
+        },
       },
       'fallback-model'
     );
@@ -51,14 +51,14 @@ describe('ResearchTaskProcessor deep agent configuration', () => {
         models: {
           search: 'coarse-search-model',
           modeling: 'coarse-modeling-model',
-          report: 'coarse-report-model'
+          report: 'coarse-report-model',
         },
         providerMapping: {
           enabled: true,
           search: 'mapped-search-model',
           modeling: 'mapped-modeling-model',
-          report: 'mapped-report-model'
-        }
+          report: 'mapped-report-model',
+        },
       },
       'fallback-model'
     );
@@ -84,10 +84,13 @@ describe('ResearchTaskProcessor deep agent configuration', () => {
 describe('ResearchTaskProcessor executePipeline', () => {
   it('marks completion payload when step metadata indicates fallback', async () => {
     const processor = createProcessor();
-    const context = processor.buildExecutionContext('测试主题', 'base-model', {}, { enabled: true });
-    const pipeline = [
-      { id: 'search', label: '搜索', weight: 1 }
-    ];
+    const context = processor.buildExecutionContext(
+      '测试主题',
+      'base-model',
+      {},
+      { enabled: true }
+    );
+    const pipeline = [{ id: 'search', label: '搜索', weight: 1 }];
 
     const events = [];
     vi.spyOn(processor, 'executeStep').mockImplementation(async (step, ctx, emitProgress) => {
@@ -96,20 +99,24 @@ describe('ResearchTaskProcessor executePipeline', () => {
         output: `result-for-${step.id}`,
         metadata: {
           isFallback: true,
-          fallbackReason: 'api_error'
-        }
+          fallbackReason: 'api_error',
+        },
       };
     });
 
-    await processor.executePipeline(pipeline, context, (stepId, status, progress, message, payload) => {
-      events.push({ stepId, status, progress, message, payload });
-    });
+    await processor.executePipeline(
+      pipeline,
+      context,
+      (stepId, status, progress, message, payload) => {
+        events.push({ stepId, status, progress, message, payload });
+      }
+    );
 
-    const progressEvent = events.find((event) => event.status === 'progress');
+    const progressEvent = events.find(event => event.status === 'progress');
     expect(progressEvent).toBeDefined();
     expect(progressEvent.payload.message).toBe('halfway');
 
-    const completeEvent = events.find((event) => event.status === 'complete');
+    const completeEvent = events.find(event => event.status === 'complete');
     expect(completeEvent).toBeDefined();
     expect(completeEvent.payload.fallback).toBe(true);
     expect(completeEvent.payload.result.output).toBe('result-for-search');

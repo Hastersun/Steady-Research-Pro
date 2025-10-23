@@ -16,12 +16,7 @@ export default class ModelingAgent extends BaseAgent {
    */
   async run(payload = {}, runtime = {}) {
     const startedAt = Date.now();
-    const {
-      query,
-      evidence = [],
-      strategy = {},
-      modelOverride
-    } = payload;
+    const { query, evidence = [], strategy = {}, modelOverride } = payload;
 
     if (!query) {
       throw new Error('[ModelingAgent] 缺少 query');
@@ -30,13 +25,17 @@ export default class ModelingAgent extends BaseAgent {
     const resolvedModel = modelOverride || runtime.model || this.getDefaultModel();
     const sampling = this.getSamplingOptions({ ...runtime.sampling, ...payload.sampling });
 
-    const evidenceSnapshot = evidence.slice(0, 12).map((item, index) => (
-      `${index + 1}. 摘要: ${truncate(item.summary, 280)}\n   来源: ${item.sourceUrl || 'N/A'}\n   主题: ${item.topic || '未指定'}\n`
-    )).join('\n');
+    const evidenceSnapshot = evidence
+      .slice(0, 12)
+      .map(
+        (item, index) =>
+          `${index + 1}. 摘要: ${truncate(item.summary, 280)}\n   来源: ${item.sourceUrl || 'N/A'}\n   主题: ${item.topic || '未指定'}\n`
+      )
+      .join('\n');
 
     const strategyFocus = Array.isArray(strategy?.focusAreas)
       ? strategy.focusAreas.join(', ')
-      : (strategy?.notes || '');
+      : strategy?.notes || '';
 
     const modelingPrompt = `你是一名分析师，根据提供的证据构建研究模型。
 
@@ -74,7 +73,7 @@ ${truncate(evidenceSnapshot, 3600)}
       rawText = await this.invokeLLM({
         model: resolvedModel,
         prompt: modelingPrompt,
-        options: sampling
+        options: sampling,
       });
       modelJson = extractJson(rawText);
     } catch (error) {
@@ -90,7 +89,7 @@ ${truncate(evidenceSnapshot, 3600)}
           name: item.topic || `要点 ${index + 1}`,
           description: item.summary || '',
           evidenceRefs: [index],
-          weight: 0.5
+          weight: 0.5,
         })),
         relationships: [],
         scenarios: [],
@@ -100,8 +99,8 @@ ${truncate(evidenceSnapshot, 3600)}
         metadata: {
           durationMs: finishedAt - startedAt,
           warnings: ['LLM 输出解析失败，已回退至基于证据的简单模型'],
-          rawText
-        }
+          rawText,
+        },
       };
     }
 
@@ -117,8 +116,8 @@ ${truncate(evidenceSnapshot, 3600)}
         durationMs: finishedAt - startedAt,
         method: modelJson.metadata?.method || 'llm_structured_modeling',
         coverage: modelJson.metadata?.coverage || '',
-        rawText
-      }
+        rawText,
+      },
     };
   }
 }

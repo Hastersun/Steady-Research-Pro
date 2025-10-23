@@ -8,13 +8,13 @@ const SEARCH_ENGINES = {
   bing: {
     endpoint: 'https://api.bing.microsoft.com/v7.0/search',
     headers: {
-      'Ocp-Apim-Subscription-Key': '{{API_KEY}}'
-    }
+      'Ocp-Apim-Subscription-Key': '{{API_KEY}}',
+    },
   },
   google: {
     endpoint: 'https://www.googleapis.com/customsearch/v1',
     // Google 需要在 URL 参数中传递 API Key
-  }
+  },
 };
 
 /**
@@ -37,7 +37,7 @@ class SearchEngineClient {
   constructor() {
     this.apiKeys = {
       bing: null,
-      google: null
+      google: null,
     };
     this.googleCseId = null; // Google Custom Search Engine ID
   }
@@ -74,7 +74,7 @@ class SearchEngineClient {
       market = 'zh-CN',
       safeSearch = 'Moderate',
       textDecorations = false,
-      textFormat = 'Raw'
+      textFormat = 'Raw',
     } = options;
 
     const params = new URLSearchParams({
@@ -84,15 +84,15 @@ class SearchEngineClient {
       mkt: market,
       safeSearch,
       textDecorations: textDecorations.toString(),
-      textFormat
+      textFormat,
     });
 
     try {
       const response = await fetch(`${SEARCH_ENGINES.bing.endpoint}?${params}`, {
         headers: {
           'Ocp-Apim-Subscription-Key': this.apiKeys.bing,
-          'Accept': 'application/json'
-        }
+          Accept: 'application/json',
+        },
       });
 
       if (!response.ok) {
@@ -117,13 +117,7 @@ class SearchEngineClient {
       throw new Error('未设置 Google API 密钥或 CSE ID');
     }
 
-    const {
-      num = 10,
-      start = 1,
-      lr = 'lang_zh-CN',
-      safe = 'medium',
-      dateRestrict = ''
-    } = options;
+    const { num = 10, start = 1, lr = 'lang_zh-CN', safe = 'medium', dateRestrict = '' } = options;
 
     const params = new URLSearchParams({
       key: this.apiKeys.google,
@@ -132,7 +126,7 @@ class SearchEngineClient {
       num: num.toString(),
       start: start.toString(),
       lr,
-      safe
+      safe,
     });
 
     if (dateRestrict) {
@@ -166,10 +160,10 @@ class SearchEngineClient {
       engines: [],
       results: [],
       errors: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
-    const searchPromises = engines.map(async (engine) => {
+    const searchPromises = engines.map(async engine => {
       try {
         let searchResults;
         switch (engine) {
@@ -185,7 +179,7 @@ class SearchEngineClient {
 
         results.engines.push(engine);
         results.results.push(...searchResults.results.map(r => ({ ...r, source: engine })));
-        
+
         return { engine, success: true, count: searchResults.results.length };
       } catch (error) {
         results.errors.push({ engine, error: error.message });
@@ -194,11 +188,11 @@ class SearchEngineClient {
     });
 
     const searchOutcomes = await Promise.allSettled(searchPromises);
-    
+
     // 去重处理（基于 URL）
     const uniqueResults = [];
     const urlSet = new Set();
-    
+
     for (const result of results.results) {
       if (!urlSet.has(result.url)) {
         urlSet.add(result.url);
@@ -218,15 +212,10 @@ class SearchEngineClient {
    */
   normalizeBingResults(data) {
     const results = [];
-    
+
     if (data.webPages && data.webPages.value) {
       for (const item of data.webPages.value) {
-        results.push(new SearchResult(
-          item.name,
-          item.url,
-          item.snippet,
-          item.displayUrl
-        ));
+        results.push(new SearchResult(item.name, item.url, item.snippet, item.displayUrl));
       }
     }
 
@@ -235,7 +224,7 @@ class SearchEngineClient {
       query: data.queryContext?.originalQuery || '',
       totalEstimated: data.webPages?.totalEstimatedMatches || 0,
       results,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -245,15 +234,10 @@ class SearchEngineClient {
    */
   normalizeGoogleResults(data) {
     const results = [];
-    
+
     if (data.items) {
       for (const item of data.items) {
-        results.push(new SearchResult(
-          item.title,
-          item.link,
-          item.snippet,
-          item.displayLink
-        ));
+        results.push(new SearchResult(item.title, item.link, item.snippet, item.displayLink));
       }
     }
 
@@ -262,7 +246,7 @@ class SearchEngineClient {
       query: data.queries?.request?.[0]?.searchTerms || '',
       totalEstimated: parseInt(data.searchInformation?.totalResults || '0'),
       results,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -273,18 +257,18 @@ class SearchEngineClient {
    */
   generateSearchQueries(query, domain = 'general') {
     const baseQueries = [query];
-    
+
     // 根据领域添加专业搜索词
     const domainKeywords = {
       tech: ['技术', '开发', 'API', '文档', '教程'],
       business: ['商业', '市场', '分析', '报告', '趋势'],
       academic: ['学术', '论文', '研究', '期刊', '学者'],
       news: ['新闻', '最新', '动态', '报道', '事件'],
-      general: ['信息', '详细', '介绍', '概述']
+      general: ['信息', '详细', '介绍', '概述'],
     };
 
     const keywords = domainKeywords[domain] || domainKeywords.general;
-    
+
     // 生成变体查询
     const variations = [
       `${query} ${keywords[0]}`,

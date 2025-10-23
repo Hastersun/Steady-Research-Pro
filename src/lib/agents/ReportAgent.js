@@ -2,11 +2,13 @@ import BaseAgent from './BaseAgent.js';
 import { buildOutline, truncate } from './utils.js';
 
 const buildSourceList = (evidence = []) => {
-  return evidence.map((item, index) => ({
-    title: item.topic || item.summary?.slice(0, 60) || `来源 ${index + 1}`,
-    url: item.sourceUrl || item.url || '',
-    noteIndex: index
-  })).filter((source) => !!source.url);
+  return evidence
+    .map((item, index) => ({
+      title: item.topic || item.summary?.slice(0, 60) || `来源 ${index + 1}`,
+      url: item.sourceUrl || item.url || '',
+      noteIndex: index,
+    }))
+    .filter(source => !!source.url);
 };
 
 export default class ReportAgent extends BaseAgent {
@@ -24,13 +26,7 @@ export default class ReportAgent extends BaseAgent {
    */
   async run(payload = {}, runtime = {}) {
     const startedAt = Date.now();
-    const {
-      query,
-      model: modelBlueprint,
-      evidence = [],
-      options = {},
-      modelOverride
-    } = payload;
+    const { query, model: modelBlueprint, evidence = [], options = {}, modelOverride } = payload;
 
     if (!query) {
       throw new Error('[ReportAgent] 缺少 query');
@@ -39,16 +35,26 @@ export default class ReportAgent extends BaseAgent {
     const resolvedModel = modelOverride || runtime.model || this.getDefaultModel();
     const sampling = this.getSamplingOptions({ ...runtime.sampling, ...options.sampling });
 
-    const evidenceSummary = evidence.slice(0, 10).map((item, index) => (
-      `${index + 1}. 主题: ${item.topic || 'N/A'}\n   发现: ${truncate(item.summary, 220)}\n   来源: ${item.sourceUrl || '未知'}\n`
-    )).join('\n');
+    const evidenceSummary = evidence
+      .slice(0, 10)
+      .map(
+        (item, index) =>
+          `${index + 1}. 主题: ${item.topic || 'N/A'}\n   发现: ${truncate(item.summary, 220)}\n   来源: ${item.sourceUrl || '未知'}\n`
+      )
+      .join('\n');
 
-    const modelDigest = modelBlueprint ? JSON.stringify({
-      modelType: modelBlueprint.modelType,
-      coreDrivers: modelBlueprint.coreDrivers?.slice(0, 5),
-      relationships: modelBlueprint.relationships?.slice(0, 5),
-      scenarios: modelBlueprint.scenarios?.slice(0, 3)
-    }, null, 2) : '';
+    const modelDigest = modelBlueprint
+      ? JSON.stringify(
+          {
+            modelType: modelBlueprint.modelType,
+            coreDrivers: modelBlueprint.coreDrivers?.slice(0, 5),
+            relationships: modelBlueprint.relationships?.slice(0, 5),
+            scenarios: modelBlueprint.scenarios?.slice(0, 3),
+          },
+          null,
+          2
+        )
+      : '';
 
     const format = options.format || 'markdown';
     const audience = options.audience || 'executive';
@@ -101,14 +107,14 @@ ${truncate(evidenceSummary, 3200)}
             runtime.onToken?.({ chunk: '', done: true });
           }
         },
-        options: sampling
+        options: sampling,
       });
       markdown = chunks.join('');
     } else {
       markdown = await this.invokeLLM({
         model: resolvedModel,
         prompt: reportPrompt,
-        options: sampling
+        options: sampling,
       });
     }
 
@@ -124,8 +130,8 @@ ${truncate(evidenceSummary, 3200)}
         durationMs: finishedAt - startedAt,
         streamed: Boolean(supportsStreaming),
         format,
-        audience
-      }
+        audience,
+      },
     };
   }
 }

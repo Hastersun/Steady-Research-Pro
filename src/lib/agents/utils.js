@@ -54,7 +54,7 @@ export function buildOutline(markdown = '') {
   const outline = [];
   let current = null;
 
-  lines.forEach((line) => {
+  lines.forEach(line => {
     const headingMatch = line.match(/^(#{1,3})\s+(.*)$/);
     if (headingMatch) {
       const level = headingMatch[1].length;

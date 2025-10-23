@@ -9,30 +9,30 @@ const AI_SERVICES = {
     baseUrl: 'https://api.deepseek.com/v1',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer {{API_KEY}}'
-    }
+      Authorization: 'Bearer {{API_KEY}}',
+    },
   },
   openai: {
     baseUrl: 'https://api.openai.com/v1',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer {{API_KEY}}'
-    }
+      Authorization: 'Bearer {{API_KEY}}',
+    },
   },
   claude: {
     baseUrl: 'https://api.anthropic.com/v1',
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': '{{API_KEY}}',
-      'anthropic-version': '2023-06-01'
-    }
+      'anthropic-version': '2023-06-01',
+    },
   },
   gemini: {
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
     headers: {
-      'Content-Type': 'application/json'
-    }
-  }
+      'Content-Type': 'application/json',
+    },
+  },
 };
 
 /**
@@ -42,7 +42,7 @@ const DEFAULT_MODELS = {
   deepseek: 'deepseek-chat',
   openai: 'gpt-3.5-turbo',
   claude: 'claude-3-haiku-20240307',
-  gemini: 'gemini-1.5-flash-latest'
+  gemini: 'gemini-1.5-flash-latest',
 };
 
 /**
@@ -135,7 +135,7 @@ class HttpApiClient {
       if (!apiKey) {
         throw new Error(`API key not set for service: ${service}`);
       }
-      
+
       const urlParams = new URLSearchParams({ key: apiKey });
       if (Object.keys(params).length > 0) {
         Object.entries(params).forEach(([key, value]) => {
@@ -155,25 +155,28 @@ class HttpApiClient {
    * @param {string} systemPrompt - System prompt (optional)
    * @returns {object} Formatted request payload
    */
-  formatRequest(service, {
-    message = '',
-    systemPrompt = null,
-    model,
-    sampling = {},
-    messages = [],
-    mode = 'generate'
-  } = {}) {
-    const resolvedModel = typeof model === 'string' && model.trim().length
-      ? model
-      : DEFAULT_MODELS[service];
+  formatRequest(
+    service,
+    {
+      message = '',
+      systemPrompt = null,
+      model,
+      sampling = {},
+      messages = [],
+      mode = 'generate',
+    } = {}
+  ) {
+    const resolvedModel =
+      typeof model === 'string' && model.trim().length ? model : DEFAULT_MODELS[service];
 
-    const ensureNumber = (value) => (typeof value === 'number' && Number.isFinite(value) ? value : undefined);
+    const ensureNumber = value =>
+      typeof value === 'number' && Number.isFinite(value) ? value : undefined;
     const normalizeMessages = (rawMessages = []) => {
       if (!Array.isArray(rawMessages) || rawMessages.length === 0) {
         return [];
       }
       return rawMessages
-        .map((item) => {
+        .map(item => {
           if (!item) return null;
           if (typeof item === 'string') {
             return { role: 'user', content: item };
@@ -189,9 +192,9 @@ class HttpApiClient {
     const toClaudeContent = (rawMessages, fallback) => {
       const normalized = normalizeMessages(rawMessages);
       if (normalized.length) {
-        return normalized.map((item) => ({
+        return normalized.map(item => ({
           role: item.role === 'assistant' ? 'assistant' : 'user',
-          content: item.content
+          content: item.content,
         }));
       }
       if (fallback) {
@@ -226,7 +229,7 @@ class HttpApiClient {
           model: resolvedModel,
           messages: chatMessages,
           temperature: ensureNumber(sampling.temperature) ?? 0.7,
-          max_tokens: ensureNumber(sampling.maxTokens) ?? 4000
+          max_tokens: ensureNumber(sampling.maxTokens) ?? 4000,
         };
 
         const topP = ensureNumber(sampling.top_p ?? sampling.topP);
@@ -239,7 +242,9 @@ class HttpApiClient {
           payload.presence_penalty = presencePenalty;
         }
 
-        const frequencyPenalty = ensureNumber(sampling.frequency_penalty ?? sampling.frequencyPenalty);
+        const frequencyPenalty = ensureNumber(
+          sampling.frequency_penalty ?? sampling.frequencyPenalty
+        );
         if (typeof frequencyPenalty === 'number') {
           payload.frequency_penalty = frequencyPenalty;
         }
@@ -252,7 +257,7 @@ class HttpApiClient {
           model: resolvedModel,
           max_tokens: ensureNumber(sampling.maxTokens) ?? 4000,
           messages: toClaudeContent(messages, message),
-          system: systemPrompt || 'You are a helpful AI assistant.'
+          system: systemPrompt || 'You are a helpful AI assistant.',
         };
 
         const temperature = ensureNumber(sampling.temperature);
@@ -270,7 +275,7 @@ class HttpApiClient {
         const topK = ensureNumber(sampling.top_k ?? sampling.topK);
         const generationConfig = {
           temperature,
-          maxOutputTokens: ensureNumber(sampling.maxTokens) ?? 4000
+          maxOutputTokens: ensureNumber(sampling.maxTokens) ?? 4000,
         };
 
         if (typeof topP === 'number') {
@@ -283,10 +288,10 @@ class HttpApiClient {
         return {
           contents: [
             {
-              parts
-            }
+              parts,
+            },
           ],
-          generationConfig
+          generationConfig,
         };
       }
 
@@ -357,7 +362,7 @@ class HttpApiClient {
       sampling = {},
       messages = null,
       mode = 'generate',
-      stream = false
+      stream = false,
     } = options;
 
     if (!this.hasApiKey(service)) {
@@ -367,19 +372,18 @@ class HttpApiClient {
     try {
       const endpoint = this.getEndpoint(service);
       const url = this.buildUrl(service, endpoint);
-      const headers = service === 'gemini' ? 
-        { 'Content-Type': 'application/json' } : 
-        this.buildHeaders(service);
-      
+      const headers =
+        service === 'gemini' ? { 'Content-Type': 'application/json' } : this.buildHeaders(service);
+
       const payload = this.formatRequest(service, {
         message,
         systemPrompt,
         model,
         sampling,
         messages,
-        mode
+        mode,
       });
-      
+
       // Add streaming support for compatible services
       if (stream && (service === 'deepseek' || service === 'openai')) {
         payload.stream = true;
@@ -388,7 +392,7 @@ class HttpApiClient {
       const response = await fetch(url, {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -398,7 +402,6 @@ class HttpApiClient {
 
       const data = await response.json();
       return this.parseResponse(service, data);
-
     } catch (error) {
       console.error(`Error calling ${service} API:`, error);
       throw error;
@@ -419,7 +422,7 @@ class HttpApiClient {
       model = null,
       sampling = {},
       messages = null,
-      mode = 'generate'
+      mode = 'generate',
     } = options;
 
     // Only DeepSeek and OpenAI support streaming
@@ -427,7 +430,7 @@ class HttpApiClient {
       // Fall back to regular request
       return this.sendRequest(message, {
         ...options,
-        stream: false
+        stream: false,
       });
     }
 
@@ -439,21 +442,21 @@ class HttpApiClient {
       const endpoint = this.getEndpoint(service);
       const url = this.buildUrl(service, endpoint);
       const headers = this.buildHeaders(service);
-      
+
       const payload = this.formatRequest(service, {
         message,
         systemPrompt,
         model,
         sampling,
         messages,
-        mode
+        mode,
       });
       payload.stream = true;
 
       const response = await fetch(url, {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -494,7 +497,6 @@ class HttpApiClient {
       }
 
       return fullResponse;
-
     } catch (error) {
       console.error(`Error calling ${service} streaming API:`, error);
       throw error;
@@ -528,12 +530,12 @@ class HttpApiClient {
       if (this.hasApiKey(service)) {
         status[service] = {
           hasApiKey: true,
-          connected: await this.testConnection(service)
+          connected: await this.testConnection(service),
         };
       } else {
         status[service] = {
           hasApiKey: false,
-          connected: false
+          connected: false,
         };
       }
     }

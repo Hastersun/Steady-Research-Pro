@@ -18,9 +18,9 @@ export default class BaseAgent {
       sampling: {
         temperature: config?.sampling?.temperature ?? 0.3,
         topP: config?.sampling?.topP ?? 0.85,
-        ...config?.sampling
+        ...config?.sampling,
       },
-      ...config
+      ...config,
     };
   }
 
@@ -47,7 +47,7 @@ export default class BaseAgent {
   getSamplingOptions(overrides = {}) {
     return {
       ...this.config.sampling,
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -76,7 +76,7 @@ export default class BaseAgent {
     messages = [],
     stream = false,
     onToken,
-    options = {}
+    options = {},
   } = {}) {
     if (!this.llm) {
       throw new Error(`[${this.name}] 尚未注入 llmClient`);
@@ -124,7 +124,7 @@ export default class BaseAgent {
     return {
       name: this.name,
       config: this.config,
-      state
+      state,
     };
   }
 

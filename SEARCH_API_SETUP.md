@@ -31,7 +31,7 @@ import searchApiClient from '../lib/search-api-client.js';
 await searchApiClient.setApiKeys({
   bing: 'your-bing-api-key',
   google: 'your-google-api-key',
-  googleCseId: 'your-google-cse-id'
+  googleCseId: 'your-google-cse-id',
 });
 
 // 执行搜索
@@ -66,7 +66,7 @@ const processor = new ResearchTaskProcessor();
 await processor.configureSearchAPIs({
   bing: 'your-bing-api-key',
   google: 'your-google-api-key',
-  googleCseId: 'your-google-cse-id'
+  googleCseId: 'your-google-cse-id',
 });
 
 // 执行研究任务（现在会使用真实搜索）
@@ -82,19 +82,23 @@ const result = await processor.processResearchTask(
 ## 支持的操作
 
 ### 1. 多引擎搜索
+
 - `action: "search"`
 - 同时使用 Bing 和 Google 搜索
 - 自动去重和结果合并
 
 ### 2. 单引擎搜索
+
 - `action: "bing-only"` - 仅使用 Bing
 - `action: "google-only"` - 仅使用 Google
 
 ### 3. 查询生成
+
 - `action: "generate-queries"`
 - 为研究主题生成多个搜索查询变体
 
 ### 4. 智能研究搜索
+
 - 使用前端客户端的 `researchSearch()` 方法
 - 自动生成多个相关查询
 - 汇总和去重结果
@@ -102,6 +106,7 @@ const result = await processor.processResearchTask(
 ## 搜索选项
 
 ### Bing 选项
+
 ```javascript
 {
   count: 10,        // 返回结果数量
@@ -112,6 +117,7 @@ const result = await processor.processResearchTask(
 ```
 
 ### Google 选项
+
 ```javascript
 {
   num: 10,          // 返回结果数量

@@ -1,63 +1,135 @@
 ---
 // ResearchAgentUI: Deep Research Agent 界面骨架（静态版，后续可接入逻辑）
-import SidePanel from './agent/SidePanel.astro'
-import ResultsGrid from './agent/ResultsGrid.astro'
+import SidePanel from './agent/SidePanel.astro';
+import ResultsGrid from './agent/ResultsGrid.astro';
 ---
+
 <section class="min-h-screen flex flex-col lg:flex-row gap-6">
   <SidePanel />
   <div class="flex-1 space-y-6">
-    <div class="relative overflow-hidden rounded-2xl glass-card border border-white/10 px-6 py-8 md:px-8 md:py-9 text-slate-100">
+    <div
+      class="relative overflow-hidden rounded-2xl glass-card border border-white/10 px-6 py-8 md:px-8 md:py-9 text-slate-100"
+    >
       <span class="card-accent-gradient"></span>
       <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center">
         <div class="flex-1 space-y-4">
           <span class="badge-soft" data-i18n="hero.realtimeBadge">Realtime orchestration</span>
           <div class="space-y-2">
-            <h1 class="text-3xl font-semibold tracking-tight" data-i18n="hero.title">Deep Research Agent</h1>
-            <p class="text-sm text-slate-200/80 max-w-xl" data-i18n="hero.description">智能聚合多源信息，驱动可视化推理与搜索日志。通过事件总线与流式后端协作，实现由浅到深的洞察生成。</p>
+            <h1 class="text-3xl font-semibold tracking-tight" data-i18n="hero.title">
+              Deep Research Agent
+            </h1>
+            <p class="text-sm text-slate-200/80 max-w-xl" data-i18n="hero.description">
+              智能聚合多源信息，驱动可视化推理与搜索日志。通过事件总线与流式后端协作，实现由浅到深的洞察生成。
+            </p>
           </div>
           <div class="flex flex-wrap gap-2 text-[11px] text-slate-200/80">
-            <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1" data-i18n="hero.capabilitySse">⚡ SSE 推理</span>
-            <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1" data-i18n="hero.capabilitySearch">🔎 多源搜索</span>
-            <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1" data-i18n="hero.capabilityTimeline">🧭 时间线追踪</span>
-            <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1" data-i18n="hero.capabilityReport">🗂️ 聚合报告</span>
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1"
+              data-i18n="hero.capabilitySse">⚡ SSE 推理</span
+            >
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1"
+              data-i18n="hero.capabilitySearch">🔎 多源搜索</span
+            >
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1"
+              data-i18n="hero.capabilityTimeline">🧭 时间线追踪</span
+            >
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1"
+              data-i18n="hero.capabilityReport">🗂️ 聚合报告</span
+            >
           </div>
         </div>
         <dl class="grid grid-cols-2 gap-4 lg:w-72">
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <dt class="text-[10px] uppercase tracking-[0.28em] text-slate-400" data-i18n="hero.currentTask">当前任务</dt>
-            <dd id="current-task-value" class="mt-2 text-2xl font-semibold text-white" data-i18n="hero.currentTaskIdle">Idle</dd>
-            <dd class="mt-1 text-[11px] text-slate-300/80" data-i18n="hero.currentTaskHint">等待研究主题</dd>
+            <dt
+              class="text-[10px] uppercase tracking-[0.28em] text-slate-400"
+              data-i18n="hero.currentTask"
+            >
+              当前任务
+            </dt>
+            <dd
+              id="current-task-value"
+              class="mt-2 text-2xl font-semibold text-white"
+              data-i18n="hero.currentTaskIdle"
+            >
+              Idle
+            </dd>
+            <dd class="mt-1 text-[11px] text-slate-300/80" data-i18n="hero.currentTaskHint">
+              等待研究主题
+            </dd>
           </div>
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <dt class="text-[10px] uppercase tracking-[0.28em] text-slate-400" data-i18n="hero.latestOutput">最新输出</dt>
+            <dt
+              class="text-[10px] uppercase tracking-[0.28em] text-slate-400"
+              data-i18n="hero.latestOutput"
+            >
+              最新输出
+            </dt>
             <dd id="latest-output-value" class="mt-2 text-2xl font-semibold text-white">—</dd>
-            <dd class="mt-1 text-[11px] text-slate-300/80" data-i18n="hero.latestOutputHint">最近一次完成时间</dd>
+            <dd class="mt-1 text-[11px] text-slate-300/80" data-i18n="hero.latestOutputHint">
+              最近一次完成时间
+            </dd>
           </div>
         </dl>
       </div>
     </div>
     <div class="grid gap-4 md:grid-cols-3">
-      <div class="glass-card glass-card--muted rounded-2xl border border-white/10 px-4 py-5 text-xs text-slate-200/85">
-        <p class="text-sm font-semibold text-white/90" data-i18n="hero.quickStartTitle">🎯 快速开始</p>
-        <p class="mt-2 leading-relaxed" data-i18n="hero.quickStartDescription">在左侧填写主题并选择模型，系统将自动规整研究流程并同步推理轨迹。</p>
+      <div
+        class="glass-card glass-card--muted rounded-2xl border border-white/10 px-4 py-5 text-xs text-slate-200/85"
+      >
+        <p class="text-sm font-semibold text-white/90" data-i18n="hero.quickStartTitle">
+          🎯 快速开始
+        </p>
+        <p class="mt-2 leading-relaxed" data-i18n="hero.quickStartDescription">
+          在左侧填写主题并选择模型，系统将自动规整研究流程并同步推理轨迹。
+        </p>
       </div>
-      <div class="glass-card glass-card--muted rounded-2xl border border-white/10 px-4 py-5 text-xs text-slate-200/85">
-        <p class="text-sm font-semibold text-white/90" data-i18n="hero.staySyncedTitle">🔁 保持同步</p>
-        <p class="mt-2 leading-relaxed" data-i18n="hero.staySyncedDescription">Settings 中切换服务后，SidePanel 会自动刷新可用模型列表并提示联机状态。</p>
+      <div
+        class="glass-card glass-card--muted rounded-2xl border border-white/10 px-4 py-5 text-xs text-slate-200/85"
+      >
+        <p class="text-sm font-semibold text-white/90" data-i18n="hero.staySyncedTitle">
+          🔁 保持同步
+        </p>
+        <p class="mt-2 leading-relaxed" data-i18n="hero.staySyncedDescription">
+          Settings 中切换服务后，SidePanel 会自动刷新可用模型列表并提示联机状态。
+        </p>
       </div>
-      <div class="glass-card glass-card--muted rounded-2xl border border-white/10 px-4 py-5 text-xs text-slate-200/85">
+      <div
+        class="glass-card glass-card--muted rounded-2xl border border-white/10 px-4 py-5 text-xs text-slate-200/85"
+      >
         <p class="text-sm font-semibold text-white/90" data-i18n="hero.exportTitle">📦 导出结果</p>
-        <p class="mt-2 leading-relaxed" data-i18n="hero.exportDescription">完成后可在结果卡片中扩展详情，整理结构化结论与引用来源。</p>
+        <p class="mt-2 leading-relaxed" data-i18n="hero.exportDescription">
+          完成后可在结果卡片中扩展详情，整理结构化结论与引用来源。
+        </p>
       </div>
     </div>
-    <div id="reasoning-panel" class="rounded-2xl border border-brand-300/35 bg-slate-900/55 px-5 py-4 space-y-3 text-xs text-slate-200/80 backdrop-blur hidden animate-fade-in">
-      <h2 class="text-xs font-semibold tracking-wide text-brand-200 flex items-center gap-1 uppercase" data-i18n="hero.reasoningTitle">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+    <div
+      id="reasoning-panel"
+      class="rounded-2xl border border-brand-300/35 bg-slate-900/55 px-5 py-4 space-y-3 text-xs text-slate-200/80 backdrop-blur hidden animate-fade-in"
+    >
+      <h2
+        class="text-xs font-semibold tracking-wide text-brand-200 flex items-center gap-1 uppercase"
+        data-i18n="hero.reasoningTitle"
+      >
+        <svg
+          class="w-3.5 h-3.5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          ><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"></path></svg
+        >
         推理轨迹
       </h2>
       <ol id="reasoning-steps" class="space-y-2"></ol>
     </div>
-    <div id="search-log" class="rounded-2xl border border-white/10 bg-slate-900/55 px-5 py-4 hidden text-[11px] leading-relaxed space-y-1 font-mono text-slate-200/70 overflow-auto max-h-56 backdrop-blur"></div>
+    <div
+      id="search-log"
+      class="rounded-2xl border border-white/10 bg-slate-900/55 px-5 py-4 hidden text-[11px] leading-relaxed space-y-1 font-mono text-slate-200/70 overflow-auto max-h-56 backdrop-blur"
+    >
+    </div>
     <ResultsGrid />
   </div>
 </section>
@@ -77,7 +149,7 @@ import ResultsGrid from './agent/ResultsGrid.astro'
   const sourcesEmptyDefault = sourcesEmptyCell ? sourcesEmptyCell.textContent : '';
   const sourcesHintDefault = sourcesHint ? sourcesHint.textContent : '';
 
-  const steadyI18n = (window).__steadyI18n || {};
+  const steadyI18n = window.__steadyI18n || {};
   const translate = (key, params, fallback) => {
     try {
       if (steadyI18n && typeof steadyI18n.t === 'function') {
@@ -90,18 +162,63 @@ import ResultsGrid from './agent/ResultsGrid.astro'
   };
 
   const LEGACY_PIPELINE = [
-    { id: 'plan', stepType: 'plan', key: 'researchFlow.pipelinePlan', fallback: '生成初步研究计划' },
-    { id: 'search', stepType: 'search', key: 'researchFlow.pipelineSearch', fallback: '多源搜索与抓取' },
-    { id: 'extract', stepType: 'extract', key: 'researchFlow.pipelineExtract', fallback: '内容清洗与摘要抽取' },
-    { id: 'cluster', stepType: 'cluster', key: 'researchFlow.pipelineCluster', fallback: '主题聚类与归纳' },
-    { id: 'synthesis', stepType: 'synthesis', key: 'researchFlow.pipelineSynthesis', fallback: '综合分析与洞察输出' }
+    {
+      id: 'plan',
+      stepType: 'plan',
+      key: 'researchFlow.pipelinePlan',
+      fallback: '生成初步研究计划',
+    },
+    {
+      id: 'search',
+      stepType: 'search',
+      key: 'researchFlow.pipelineSearch',
+      fallback: '多源搜索与抓取',
+    },
+    {
+      id: 'extract',
+      stepType: 'extract',
+      key: 'researchFlow.pipelineExtract',
+      fallback: '内容清洗与摘要抽取',
+    },
+    {
+      id: 'cluster',
+      stepType: 'cluster',
+      key: 'researchFlow.pipelineCluster',
+      fallback: '主题聚类与归纳',
+    },
+    {
+      id: 'synthesis',
+      stepType: 'synthesis',
+      key: 'researchFlow.pipelineSynthesis',
+      fallback: '综合分析与洞察输出',
+    },
   ];
 
   const DEEP_PIPELINE = [
-    { id: 'plan', stepType: 'plan', key: 'researchFlow.pipelinePlan', fallback: '生成初步研究计划' },
-    { id: 'deep_search', stepType: 'deep_search', key: 'researchFlow.pipelineDeepSearch', fallback: '多源深度搜索' },
-    { id: 'modeling', stepType: 'modeling', key: 'researchFlow.pipelineModeling', fallback: '结构化建模' },
-    { id: 'reporting', stepType: 'reporting', key: 'researchFlow.pipelineReporting', fallback: '智能报告生成' }
+    {
+      id: 'plan',
+      stepType: 'plan',
+      key: 'researchFlow.pipelinePlan',
+      fallback: '生成初步研究计划',
+    },
+    {
+      id: 'deep_search',
+      stepType: 'deep_search',
+      key: 'researchFlow.pipelineDeepSearch',
+      fallback: '多源深度搜索',
+    },
+    {
+      id: 'modeling',
+      stepType: 'modeling',
+      key: 'researchFlow.pipelineModeling',
+      fallback: '结构化建模',
+    },
+    {
+      id: 'reporting',
+      stepType: 'reporting',
+      key: 'researchFlow.pipelineReporting',
+      fallback: '智能报告生成',
+    },
   ];
 
   let pipeline = LEGACY_PIPELINE;
@@ -111,13 +228,13 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     mode: 'legacy',
     query: '',
     results: {},
-    reportDraft: ''
+    reportDraft: '',
   };
 
   const translationKeys = {
     heroIdle: 'hero.currentTaskIdle',
     heroWorking: 'hero.currentTaskWorking',
-    heroComplete: 'hero.currentTaskComplete'
+    heroComplete: 'hero.currentTaskComplete',
   };
 
   function setPipeline(mode) {
@@ -125,7 +242,7 @@ import ResultsGrid from './agent/ResultsGrid.astro'
   }
 
   function getStepDefinition(stepType) {
-    return pipeline.find((step) => step.stepType === stepType) || null;
+    return pipeline.find(step => step.stepType === stepType) || null;
   }
 
   function escapeHtml(value) {
@@ -149,7 +266,11 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     if (!update) return '';
     if (update.messageKey) {
       try {
-        return translate(update.messageKey, update.messageParams || {}, update.message || update.messageKey);
+        return translate(
+          update.messageKey,
+          update.messageParams || {},
+          update.message || update.messageKey
+        );
       } catch (error) {
         console.warn('[research-ui] translate message failed', error);
       }
@@ -168,14 +289,14 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     }
     if (resultsGrid) {
       const dynamicCards = resultsGrid.querySelectorAll('[data-dynamic-card="true"]');
-      dynamicCards.forEach((node) => node.remove());
+      dynamicCards.forEach(node => node.remove());
     }
     if (resultsEmpty) {
       resultsEmpty.classList.remove('hidden');
     }
     if (sourcesBody) {
       const dynamicRows = sourcesBody.querySelectorAll('[data-dynamic-row="true"]');
-      dynamicRows.forEach((row) => row.remove());
+      dynamicRows.forEach(row => row.remove());
     }
     if (sourcesEmptyRow) {
       sourcesEmptyRow.classList.remove('hidden');
@@ -204,7 +325,8 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     if (!stepsEl) return null;
     const index = stepsEl.children.length + 1;
     const li = document.createElement('li');
-    li.className = 'rounded-xl border border-brand-300/30 bg-slate-900/55 shadow-soft backdrop-blur animate-slide-up';
+    li.className =
+      'rounded-xl border border-brand-300/30 bg-slate-900/55 shadow-soft backdrop-blur animate-slide-up';
     li.style.animationDelay = `${index * 40}ms`;
     li.dataset.stepType = stepType;
     const summaryId = `rs-summary-${stepType}-${index}`;
@@ -330,7 +452,8 @@ import ResultsGrid from './agent/ResultsGrid.astro'
 
   function createCard({ id, order, title, badge, bodyHtml, footerHtml }) {
     const article = document.createElement('article');
-    article.className = 'group relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/55 backdrop-blur p-6 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/40 hover:shadow-xl animate-slide-up';
+    article.className =
+      'group relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/55 backdrop-blur p-6 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/40 hover:shadow-xl animate-slide-up';
     article.dataset.dynamicCard = 'true';
     article.dataset.cardId = id;
     article.style.animationDelay = `${order * 70}ms`;
@@ -355,7 +478,7 @@ import ResultsGrid from './agent/ResultsGrid.astro'
   function renderResults() {
     if (!resultsGrid) return;
     const dynamicCards = resultsGrid.querySelectorAll('[data-dynamic-card="true"]');
-    dynamicCards.forEach((node) => node.remove());
+    dynamicCards.forEach(node => node.remove());
 
     const cards = [];
     const plan = state.results.plan;
@@ -364,28 +487,54 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     const reporting = state.results.reporting;
 
     if (plan?.content) {
-      const paragraphs = plan.content.split(/\n+/).filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join('');
+      const paragraphs = plan.content
+        .split(/\n+/)
+        .filter(Boolean)
+        .map(line => `<p>${escapeHtml(line)}</p>`)
+        .join('');
       cards.push({
         id: 'plan-card',
         title: translate('resultsGrid.planTitle', {}, '研究计划'),
         badge: 'PLAN',
         bodyHtml: `<div class="space-y-2">${paragraphs}</div>`,
-        footerHtml: plan.timestamp ? translate('resultsGrid.generatedAt', { time: formatTimestamp(plan.timestamp) }, `生成时间：${formatTimestamp(plan.timestamp)}`) : ''
+        footerHtml: plan.timestamp
+          ? translate(
+              'resultsGrid.generatedAt',
+              { time: formatTimestamp(plan.timestamp) },
+              `生成时间：${formatTimestamp(plan.timestamp)}`
+            )
+          : '',
       });
     }
 
     if (searchResult) {
-      const highlights = Array.isArray(searchResult.summary?.highlights) ? searchResult.summary.highlights.slice(0, 4) : [];
+      const highlights = Array.isArray(searchResult.summary?.highlights)
+        ? searchResult.summary.highlights.slice(0, 4)
+        : [];
       const notes = Array.isArray(searchResult.notes) ? searchResult.notes.slice(0, 3) : [];
       const metadata = searchResult.metadata || {};
-      const fallbackPrimaryMessage = metadata.fallbackMessage || translate('resultsGrid.fallbackDefault', {}, '搜索使用了回退策略。');
+      const fallbackPrimaryMessage =
+        metadata.fallbackMessage ||
+        translate('resultsGrid.fallbackDefault', {}, '搜索使用了回退策略。');
       let fallbackSecondaryMessage = '';
       if (metadata.fallbackReason === 'summarize_unavailable') {
-        fallbackSecondaryMessage = translate('resultsGrid.fallbackSummarize', {}, '摘要生成暂不可用，展示原始搜索结果。');
+        fallbackSecondaryMessage = translate(
+          'resultsGrid.fallbackSummarize',
+          {},
+          '摘要生成暂不可用，展示原始搜索结果。'
+        );
       } else if (metadata.fallbackReason === 'api_error') {
-        fallbackSecondaryMessage = translate('resultsGrid.fallbackApi', {}, '搜索接口异常，已展示可用的缓存或计划。');
+        fallbackSecondaryMessage = translate(
+          'resultsGrid.fallbackApi',
+          {},
+          '搜索接口异常，已展示可用的缓存或计划。'
+        );
       } else if (metadata.fallbackReason === 'no_results') {
-        fallbackSecondaryMessage = translate('resultsGrid.fallbackEmpty', {}, '未检索到可靠来源，展示基础策略供参考。');
+        fallbackSecondaryMessage = translate(
+          'resultsGrid.fallbackEmpty',
+          {},
+          '未检索到可靠来源，展示基础策略供参考。'
+        );
       }
       const fallbackNotice = metadata.isFallback
         ? `
@@ -399,15 +548,19 @@ import ResultsGrid from './agent/ResultsGrid.astro'
           `
         : '';
       const highlightHtml = highlights.length
-        ? `<ul class="list-disc ps-5 space-y-1">${highlights.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+        ? `<ul class="list-disc ps-5 space-y-1">${highlights.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
         : '';
       const noteHtml = notes.length
-        ? notes.map((note) => `
+        ? notes
+            .map(
+              note => `
             <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2">
               <p class="font-medium text-slate-100/90">${escapeHtml(note.topic || note.summary || '')}</p>
               <p class="text-[11px] text-slate-300/80 mt-1 line-clamp-3">${escapeHtml(note.summary || '')}</p>
             </div>
-          `).join('')
+          `
+            )
+            .join('')
         : '';
       const metaParts = [];
       if (Array.isArray(searchResult.strategy?.queries)) {
@@ -431,14 +584,16 @@ import ResultsGrid from './agent/ResultsGrid.astro'
         title: translate('resultsGrid.sectionBenchmark', {}, '搜索洞察'),
         badge: 'SEARCH',
         bodyHtml: `<div class="space-y-2">${combinedBody}</div>`,
-        footerHtml: metaParts.join(' · ')
+        footerHtml: metaParts.join(' · '),
       });
     }
 
     if (modeling) {
       const drivers = Array.isArray(modeling.coreDrivers) ? modeling.coreDrivers.slice(0, 4) : [];
       const driverHtml = drivers.length
-        ? drivers.map((driver, index) => `
+        ? drivers
+            .map(
+              (driver, index) => `
             <div class="flex items-start gap-2">
               <span class="mt-0.5 text-[11px] text-brand-200">${String(index + 1).padStart(2, '0')}</span>
               <div>
@@ -446,26 +601,36 @@ import ResultsGrid from './agent/ResultsGrid.astro'
                 <p class="text-[11px] text-slate-300/80 mt-0.5 line-clamp-3">${escapeHtml(driver.description || '')}</p>
               </div>
             </div>
-          `).join('')
+          `
+            )
+            .join('')
         : '<p class="text-[11px] text-slate-300/70">等待建模结果</p>';
       cards.push({
         id: 'model-card',
         title: translate('resultsGrid.sectionFramework', {}, '结构化模型'),
         badge: 'MODEL',
         bodyHtml: `<div class="space-y-2">${driverHtml}</div>`,
-        footerHtml: modeling.metadata?.method ? `Method · ${escapeHtml(modeling.metadata.method)}` : ''
+        footerHtml: modeling.metadata?.method
+          ? `Method · ${escapeHtml(modeling.metadata.method)}`
+          : '',
       });
     }
 
     const reportContent = reporting?.markdown || state.reportDraft;
     if (reportContent) {
-      const preview = reportContent.split('\n').slice(0, 8).map((line) => escapeHtml(line)).join('<br />');
+      const preview = reportContent
+        .split('\n')
+        .slice(0, 8)
+        .map(line => escapeHtml(line))
+        .join('<br />');
       cards.push({
         id: 'report-card',
         title: translate('resultsGrid.sectionAction', {}, '洞察报告'),
         badge: 'REPORT',
         bodyHtml: `<p class="font-mono text-[11px] leading-relaxed whitespace-pre-wrap">${preview}</p>`,
-        footerHtml: reporting?.metadata?.format ? `Format · ${escapeHtml(reporting.metadata.format)}` : ''
+        footerHtml: reporting?.metadata?.format
+          ? `Format · ${escapeHtml(reporting.metadata.format)}`
+          : '',
       });
     }
 
@@ -494,7 +659,7 @@ import ResultsGrid from './agent/ResultsGrid.astro'
   function renderSources() {
     if (!sourcesBody) return;
     const dynamicRows = sourcesBody.querySelectorAll('[data-dynamic-row="true"]');
-    dynamicRows.forEach((row) => row.remove());
+    dynamicRows.forEach(row => row.remove());
 
     const searchResult = state.results.deep_search || state.results.search;
     const metadata = searchResult?.metadata || {};
@@ -505,7 +670,11 @@ import ResultsGrid from './agent/ResultsGrid.astro'
 
     if (sourcesHint) {
       if (metadata.isFallback && metadata.fallbackReason === 'summarize_unavailable') {
-        sourcesHint.textContent = translate('sourcesTable.hintSummarizeFallback', {}, '摘要失败，已展示原始来源列表。');
+        sourcesHint.textContent = translate(
+          'sourcesTable.hintSummarizeFallback',
+          {},
+          '摘要失败，已展示原始来源列表。'
+        );
       } else if (metadata.isFallback && metadata.fallbackMessage) {
         sourcesHint.textContent = metadata.fallbackMessage;
       } else if (sourcesHintDefault) {
@@ -516,9 +685,17 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     if (!entries.length) {
       if (sourcesEmptyCell) {
         if (metadata.isFallback && metadata.fallbackReason === 'no_results') {
-          sourcesEmptyCell.textContent = translate('sourcesTable.emptyNoResults', {}, '搜索没有返回来源，保留策略建议供参考。');
+          sourcesEmptyCell.textContent = translate(
+            'sourcesTable.emptyNoResults',
+            {},
+            '搜索没有返回来源，保留策略建议供参考。'
+          );
         } else if (metadata.isFallback && metadata.fallbackReason === 'api_error') {
-          sourcesEmptyCell.textContent = translate('sourcesTable.emptyApiFallback', {}, '搜索接口异常，暂无法展示来源列表。');
+          sourcesEmptyCell.textContent = translate(
+            'sourcesTable.emptyApiFallback',
+            {},
+            '搜索接口异常，暂无法展示来源列表。'
+          );
         } else if (sourcesEmptyDefault) {
           sourcesEmptyCell.textContent = sourcesEmptyDefault;
         }
@@ -534,12 +711,17 @@ import ResultsGrid from './agent/ResultsGrid.astro'
     sourcesEmptyRow?.classList.add('hidden');
     sourcesHint?.classList.remove('hidden');
 
-    entries.slice(0, 10).forEach((item) => {
+    entries.slice(0, 10).forEach(item => {
       const title = item.title || item.summary || item.topic || '—';
       const url = item.sourceUrl || item.url || item.link || '';
-      const domain = url ? getDomain(url) : (item.domain || '—');
+      const domain = url ? getDomain(url) : item.domain || '—';
       const type = item.engine || item.type || 'Source';
-      const score = typeof item.confidence === 'number' ? item.confidence.toFixed(2) : (typeof item.score === 'number' ? item.score.toFixed(2) : '—');
+      const score =
+        typeof item.confidence === 'number'
+          ? item.confidence.toFixed(2)
+          : typeof item.score === 'number'
+            ? item.score.toFixed(2)
+            : '—';
 
       const tr = document.createElement('tr');
       tr.className = 'hover:bg-gray-50/70 animate-fade-in';
@@ -578,7 +760,7 @@ import ResultsGrid from './agent/ResultsGrid.astro'
 
   function handleResearchUpdate(event) {
     const detail = event?.detail || {};
-    const payload = typeof detail.data === 'string' ? { raw: detail.data } : (detail.data || {});
+    const payload = typeof detail.data === 'string' ? { raw: detail.data } : detail.data || {};
     const stepType = payload.stepType || detail.stepType || detail.stepId;
     if (!stepType) return;
 
@@ -649,7 +831,9 @@ import ResultsGrid from './agent/ResultsGrid.astro'
         appendSearchLog(message);
       } else if (status === 'complete' && payload.result) {
         const meta = payload.result.metadata;
-        const summary = meta?.resultsCount ? `完成深度搜索 · ${meta.resultsCount} 条结果` : '完成深度搜索';
+        const summary = meta?.resultsCount
+          ? `完成深度搜索 · ${meta.resultsCount} 条结果`
+          : '完成深度搜索';
         appendSearchLog(summary);
       }
     }

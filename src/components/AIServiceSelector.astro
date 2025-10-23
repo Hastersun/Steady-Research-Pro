@@ -17,7 +17,9 @@
     </div>
   </header>
 
-  <p class="panel-subtitle" id="selectionDetails" data-i18n="aiService.currentDetails">使用本地Ollama服务进行AI对话</p>
+  <p class="panel-subtitle" id="selectionDetails" data-i18n="aiService.currentDetails">
+    使用本地Ollama服务进行AI对话
+  </p>
 
   <div class="field-group">
     <label for="aiProvider" data-i18n="aiService.selectLabel">选择 AI 服务提供商</label>
@@ -37,7 +39,12 @@
           <h4 data-i18n="aiService.localTitle">本地 Ollama 服务</h4>
           <p data-i18n="aiService.localDescription">无需 API 密钥，直接连接本地部署模型</p>
         </div>
-        <span id="ollamaStatus" class="status-badge" data-tone="idle" data-i18n="aiService.statusDisconnected">未连接</span>
+        <span
+          id="ollamaStatus"
+          class="status-badge"
+          data-tone="idle"
+          data-i18n="aiService.statusDisconnected">未连接</span
+        >
       </header>
       <div class="config-card__body">
         <div class="field">
@@ -52,7 +59,9 @@
         </div>
         <div class="field field--deep-agent" data-provider="ollama">
           <div class="deep-agent-header">
-            <span class="deep-agent-title" data-i18n="aiService.deepAgentTitle">深度代理模型映射</span>
+            <span class="deep-agent-title" data-i18n="aiService.deepAgentTitle"
+              >深度代理模型映射</span
+            >
             <label class="deep-agent-toggle">
               <input type="checkbox" id="ollamaDeepAgentEnabled" />
               <span data-i18n="aiService.deepAgentToggle">启用针对该服务的深度代理</span>
@@ -72,11 +81,15 @@
               <select id="ollamaDeepAgentReport" class="input-control"></select>
             </div>
           </div>
-          <p class="deep-agent-hint" id="ollamaDeepAgentHint" data-i18n="aiService.deepAgentHint">留空将沿用上方选择的默认模型。</p>
+          <p class="deep-agent-hint" id="ollamaDeepAgentHint" data-i18n="aiService.deepAgentHint">
+            留空将沿用上方选择的默认模型。
+          </p>
         </div>
       </div>
       <footer class="config-card__footer">
-        <button id="testOllama" class="action-button" data-i18n="aiService.testButton">测试连接</button>
+        <button id="testOllama" class="action-button" data-i18n="aiService.testButton"
+          >测试连接</button
+        >
       </footer>
     </section>
 
@@ -84,14 +97,27 @@
       <header class="config-card__header">
         <div>
           <h4 id="providerName" data-i18n="aiService.remoteTitle">云端 API 服务</h4>
-          <p id="providerInfo" data-i18n="aiService.remoteDescription">请配置 API 密钥以使用此服务</p>
+          <p id="providerInfo" data-i18n="aiService.remoteDescription">
+            请配置 API 密钥以使用此服务
+          </p>
         </div>
-        <span id="httpApiStatus" class="status-badge" data-tone="idle" data-i18n="aiService.statusMissingKey">未配置</span>
+        <span
+          id="httpApiStatus"
+          class="status-badge"
+          data-tone="idle"
+          data-i18n="aiService.statusMissingKey">未配置</span
+        >
       </header>
       <div class="config-card__body">
         <div class="field">
           <label for="apiKey" data-i18n="aiService.remoteKeyLabel">API 密钥</label>
-          <input type="password" id="apiKey" class="input-control" placeholder="请输入 API 密钥" data-i18n-attrPlaceholder="aiService.remoteKeyPlaceholder" />
+          <input
+            type="password"
+            id="apiKey"
+            class="input-control"
+            placeholder="请输入 API 密钥"
+            data-i18n-attrPlaceholder="aiService.remoteKeyPlaceholder"
+          />
         </div>
         <div class="field">
           <label for="apiModel" data-i18n="aiService.remoteModelLabel">模型选择</label>
@@ -101,7 +127,9 @@
         </div>
         <div class="field field--deep-agent" data-provider="remote">
           <div class="deep-agent-header">
-            <span class="deep-agent-title" data-i18n="aiService.deepAgentTitle">深度代理模型映射</span>
+            <span class="deep-agent-title" data-i18n="aiService.deepAgentTitle"
+              >深度代理模型映射</span
+            >
             <label class="deep-agent-toggle">
               <input type="checkbox" id="remoteDeepAgentEnabled" />
               <span data-i18n="aiService.deepAgentToggle">启用针对该服务的深度代理</span>
@@ -121,1259 +149,1322 @@
               <select id="remoteDeepAgentReport" class="input-control"></select>
             </div>
           </div>
-          <p class="deep-agent-hint" id="remoteDeepAgentHint" data-i18n="aiService.deepAgentHint">留空将沿用上方选择的默认模型。</p>
+          <p class="deep-agent-hint" id="remoteDeepAgentHint" data-i18n="aiService.deepAgentHint">
+            留空将沿用上方选择的默认模型。
+          </p>
         </div>
       </div>
       <footer class="config-card__footer">
-        <button id="testHttpApi" class="action-button" disabled data-i18n="aiService.testButton">测试连接</button>
+        <button id="testHttpApi" class="action-button" disabled data-i18n="aiService.testButton"
+          >测试连接</button
+        >
       </footer>
     </section>
   </div>
 </div>
 
 <script>
-// @ts-nocheck
-(() => {
-  const i18n = (window).__steadyI18n || {};
-  const translate = (key, params, fallback) => {
-    if (i18n && typeof i18n.t === 'function') {
-      try {
-        const value = i18n.t(key, params);
-        if (value !== undefined && value !== null) {
-          return value;
+  // @ts-nocheck
+  (() => {
+    const i18n = window.__steadyI18n || {};
+    const translate = (key, params, fallback) => {
+      if (i18n && typeof i18n.t === 'function') {
+        try {
+          const value = i18n.t(key, params);
+          if (value !== undefined && value !== null) {
+            return value;
+          }
+        } catch (error) {
+          console.warn('[i18n] translate error', error);
         }
-      } catch (error) {
-        console.warn('[i18n] translate error', error);
       }
-    }
-    if (fallback !== undefined && fallback !== null) return fallback;
-    return key;
-  };
+      if (fallback !== undefined && fallback !== null) return fallback;
+      return key;
+    };
 
-  const STATUS_TONES = {
-    idle: 'idle',
-    success: 'success',
-    warning: 'warning',
-    error: 'error'
-  };
+    const STATUS_TONES = {
+      idle: 'idle',
+      success: 'success',
+      warning: 'warning',
+      error: 'error',
+    };
 
-  const STORAGE_KEY = 'steady-research-pro:ai-service';
+    const STORAGE_KEY = 'steady-research-pro:ai-service';
 
-  const remoteProviders = {
-    deepseek: {
-      name: 'DeepSeek',
-      nameKey: 'aiService.optionDeepseek',
-      info: '高性能大语言模型，支持中英文对话',
-      infoKey: 'aiService.remoteInfoDeepseek',
-      models: ['deepseek-chat', 'deepseek-coder'],
-      defaultModel: 'deepseek-chat'
-    },
-    openai: {
-      name: 'OpenAI',
-      nameKey: 'aiService.optionOpenai',
-      info: '领先的通用对话模型，可完成生成和分析任务',
-      infoKey: 'aiService.remoteInfoOpenai',
-      models: ['gpt-3.5-turbo', 'gpt-4', 'gpt-4o-mini'],
-      defaultModel: 'gpt-3.5-turbo'
-    },
-    claude: {
-      name: 'Claude (Anthropic)',
-      nameKey: 'aiService.optionClaude',
-      info: '擅长分析和推理的安全大模型',
-      infoKey: 'aiService.remoteInfoClaude',
-      models: ['claude-3-haiku-20240307', 'claude-3-sonnet-20240229', 'claude-3-opus-20240229'],
-      defaultModel: 'claude-3-haiku-20240307'
-    },
-    gemini: {
-      name: 'Google Gemini',
-      nameKey: 'aiService.optionGemini',
-      info: '谷歌最新多模态模型，擅长创意和多模态任务',
-      infoKey: 'aiService.remoteInfoGemini',
-      models: ['gemini-1.5-flash-latest', 'gemini-1.5-pro-latest', 'gemini-pro'],
-      defaultModel: 'gemini-1.5-flash-latest'
-    }
-  };
-
-  const providerConfigs = {
-    ollama: {
-      type: 'local',
-      name: '本地Ollama',
-      nameKey: 'aiService.optionOllama',
-      url: 'http://localhost:11434',
-      model: '',
-      available: false,
-      models: [],
-      deepAgent: {
-        enabled: false,
-        search: '',
-        modeling: '',
-        report: ''
-      }
-    },
-    deepseek: {
-      type: 'remote',
-      name: remoteProviders.deepseek.name,
-      nameKey: remoteProviders.deepseek.nameKey,
-      apiKey: '',
-      model: remoteProviders.deepseek.defaultModel,
-      available: false,
-      models: [...remoteProviders.deepseek.models],
-      deepAgent: {
-        enabled: false,
-        search: remoteProviders.deepseek.defaultModel,
-        modeling: remoteProviders.deepseek.defaultModel,
-        report: remoteProviders.deepseek.defaultModel
-      }
-    },
-    openai: {
-      type: 'remote',
-      name: remoteProviders.openai.name,
-      nameKey: remoteProviders.openai.nameKey,
-      apiKey: '',
-      model: remoteProviders.openai.defaultModel,
-      available: false,
-      models: [...remoteProviders.openai.models],
-      deepAgent: {
-        enabled: false,
-        search: remoteProviders.openai.defaultModel,
-        modeling: remoteProviders.openai.defaultModel,
-        report: remoteProviders.openai.defaultModel
-      }
-    },
-    claude: {
-      type: 'remote',
-      name: remoteProviders.claude.name,
-      nameKey: remoteProviders.claude.nameKey,
-      apiKey: '',
-      model: remoteProviders.claude.defaultModel,
-      available: false,
-      models: [...remoteProviders.claude.models],
-      deepAgent: {
-        enabled: false,
-        search: remoteProviders.claude.defaultModel,
-        modeling: remoteProviders.claude.defaultModel,
-        report: remoteProviders.claude.defaultModel
-      }
-    },
-    gemini: {
-      type: 'remote',
-      name: remoteProviders.gemini.name,
-      nameKey: remoteProviders.gemini.nameKey,
-      apiKey: '',
-      model: remoteProviders.gemini.defaultModel,
-      available: false,
-      models: [...remoteProviders.gemini.models],
-      deepAgent: {
-        enabled: false,
-        search: remoteProviders.gemini.defaultModel,
-        modeling: remoteProviders.gemini.defaultModel,
-        report: remoteProviders.gemini.defaultModel
-      }
-    }
-  };
-
-  let currentProvider = 'ollama';
-  let initialized = false;
-
-  const refs = {
-    root: document.querySelector('.ai-service-panel'),
-    currentSelection: document.getElementById('currentSelection'),
-    selectionDetails: document.getElementById('selectionDetails'),
-    providerSelect: document.getElementById('aiProvider'),
-    providerName: document.getElementById('providerName'),
-    providerInfo: document.getElementById('providerInfo'),
-    sections: {
-      ollama: document.getElementById('ollamaConfig'),
-      http: document.getElementById('httpApiConfig')
-    },
-    inputs: {
-      ollamaUrl: document.getElementById('ollamaUrl'),
-      ollamaModel: document.getElementById('ollamaModel'),
-      apiKey: document.getElementById('apiKey'),
-      apiModel: document.getElementById('apiModel')
-    },
-    buttons: {
-      testOllama: document.getElementById('testOllama'),
-      testHttp: document.getElementById('testHttpApi')
-    },
-    badges: {
-      ollama: document.getElementById('ollamaStatus'),
-      remote: document.getElementById('httpApiStatus')
-    },
-    deepAgent: {
-      ollama: {
-        toggle: document.getElementById('ollamaDeepAgentEnabled'),
-        grid: document.getElementById('ollamaDeepAgentGrid'),
-        selects: {
-          search: document.getElementById('ollamaDeepAgentSearch'),
-          modeling: document.getElementById('ollamaDeepAgentModeling'),
-          report: document.getElementById('ollamaDeepAgentReport')
-        },
-        hint: document.getElementById('ollamaDeepAgentHint')
+    const remoteProviders = {
+      deepseek: {
+        name: 'DeepSeek',
+        nameKey: 'aiService.optionDeepseek',
+        info: '高性能大语言模型，支持中英文对话',
+        infoKey: 'aiService.remoteInfoDeepseek',
+        models: ['deepseek-chat', 'deepseek-coder'],
+        defaultModel: 'deepseek-chat',
       },
-      remote: {
-        toggle: document.getElementById('remoteDeepAgentEnabled'),
-        grid: document.getElementById('remoteDeepAgentGrid'),
-        selects: {
-          search: document.getElementById('remoteDeepAgentSearch'),
-          modeling: document.getElementById('remoteDeepAgentModeling'),
-          report: document.getElementById('remoteDeepAgentReport')
+      openai: {
+        name: 'OpenAI',
+        nameKey: 'aiService.optionOpenai',
+        info: '领先的通用对话模型，可完成生成和分析任务',
+        infoKey: 'aiService.remoteInfoOpenai',
+        models: ['gpt-3.5-turbo', 'gpt-4', 'gpt-4o-mini'],
+        defaultModel: 'gpt-3.5-turbo',
+      },
+      claude: {
+        name: 'Claude (Anthropic)',
+        nameKey: 'aiService.optionClaude',
+        info: '擅长分析和推理的安全大模型',
+        infoKey: 'aiService.remoteInfoClaude',
+        models: ['claude-3-haiku-20240307', 'claude-3-sonnet-20240229', 'claude-3-opus-20240229'],
+        defaultModel: 'claude-3-haiku-20240307',
+      },
+      gemini: {
+        name: 'Google Gemini',
+        nameKey: 'aiService.optionGemini',
+        info: '谷歌最新多模态模型，擅长创意和多模态任务',
+        infoKey: 'aiService.remoteInfoGemini',
+        models: ['gemini-1.5-flash-latest', 'gemini-1.5-pro-latest', 'gemini-pro'],
+        defaultModel: 'gemini-1.5-flash-latest',
+      },
+    };
+
+    const providerConfigs = {
+      ollama: {
+        type: 'local',
+        name: '本地Ollama',
+        nameKey: 'aiService.optionOllama',
+        url: 'http://localhost:11434',
+        model: '',
+        available: false,
+        models: [],
+        deepAgent: {
+          enabled: false,
+          search: '',
+          modeling: '',
+          report: '',
         },
-        hint: document.getElementById('remoteDeepAgentHint')
+      },
+      deepseek: {
+        type: 'remote',
+        name: remoteProviders.deepseek.name,
+        nameKey: remoteProviders.deepseek.nameKey,
+        apiKey: '',
+        model: remoteProviders.deepseek.defaultModel,
+        available: false,
+        models: [...remoteProviders.deepseek.models],
+        deepAgent: {
+          enabled: false,
+          search: remoteProviders.deepseek.defaultModel,
+          modeling: remoteProviders.deepseek.defaultModel,
+          report: remoteProviders.deepseek.defaultModel,
+        },
+      },
+      openai: {
+        type: 'remote',
+        name: remoteProviders.openai.name,
+        nameKey: remoteProviders.openai.nameKey,
+        apiKey: '',
+        model: remoteProviders.openai.defaultModel,
+        available: false,
+        models: [...remoteProviders.openai.models],
+        deepAgent: {
+          enabled: false,
+          search: remoteProviders.openai.defaultModel,
+          modeling: remoteProviders.openai.defaultModel,
+          report: remoteProviders.openai.defaultModel,
+        },
+      },
+      claude: {
+        type: 'remote',
+        name: remoteProviders.claude.name,
+        nameKey: remoteProviders.claude.nameKey,
+        apiKey: '',
+        model: remoteProviders.claude.defaultModel,
+        available: false,
+        models: [...remoteProviders.claude.models],
+        deepAgent: {
+          enabled: false,
+          search: remoteProviders.claude.defaultModel,
+          modeling: remoteProviders.claude.defaultModel,
+          report: remoteProviders.claude.defaultModel,
+        },
+      },
+      gemini: {
+        type: 'remote',
+        name: remoteProviders.gemini.name,
+        nameKey: remoteProviders.gemini.nameKey,
+        apiKey: '',
+        model: remoteProviders.gemini.defaultModel,
+        available: false,
+        models: [...remoteProviders.gemini.models],
+        deepAgent: {
+          enabled: false,
+          search: remoteProviders.gemini.defaultModel,
+          modeling: remoteProviders.gemini.defaultModel,
+          report: remoteProviders.gemini.defaultModel,
+        },
+      },
+    };
+
+    let currentProvider = 'ollama';
+    let initialized = false;
+
+    const refs = {
+      root: document.querySelector('.ai-service-panel'),
+      currentSelection: document.getElementById('currentSelection'),
+      selectionDetails: document.getElementById('selectionDetails'),
+      providerSelect: document.getElementById('aiProvider'),
+      providerName: document.getElementById('providerName'),
+      providerInfo: document.getElementById('providerInfo'),
+      sections: {
+        ollama: document.getElementById('ollamaConfig'),
+        http: document.getElementById('httpApiConfig'),
+      },
+      inputs: {
+        ollamaUrl: document.getElementById('ollamaUrl'),
+        ollamaModel: document.getElementById('ollamaModel'),
+        apiKey: document.getElementById('apiKey'),
+        apiModel: document.getElementById('apiModel'),
+      },
+      buttons: {
+        testOllama: document.getElementById('testOllama'),
+        testHttp: document.getElementById('testHttpApi'),
+      },
+      badges: {
+        ollama: document.getElementById('ollamaStatus'),
+        remote: document.getElementById('httpApiStatus'),
+      },
+      deepAgent: {
+        ollama: {
+          toggle: document.getElementById('ollamaDeepAgentEnabled'),
+          grid: document.getElementById('ollamaDeepAgentGrid'),
+          selects: {
+            search: document.getElementById('ollamaDeepAgentSearch'),
+            modeling: document.getElementById('ollamaDeepAgentModeling'),
+            report: document.getElementById('ollamaDeepAgentReport'),
+          },
+          hint: document.getElementById('ollamaDeepAgentHint'),
+        },
+        remote: {
+          toggle: document.getElementById('remoteDeepAgentEnabled'),
+          grid: document.getElementById('remoteDeepAgentGrid'),
+          selects: {
+            search: document.getElementById('remoteDeepAgentSearch'),
+            modeling: document.getElementById('remoteDeepAgentModeling'),
+            report: document.getElementById('remoteDeepAgentReport'),
+          },
+          hint: document.getElementById('remoteDeepAgentHint'),
+        },
+      },
+    };
+
+    const applyPanelTranslations = () => {
+      if (i18n && typeof i18n.applyTranslations === 'function') {
+        i18n.applyTranslations(refs.root || document);
+      }
+    };
+
+    const DEEP_AGENT_FIELDS = ['search', 'modeling', 'report'];
+
+    const getDeepAgentControls = provider => {
+      if (provider === 'ollama') return refs.deepAgent.ollama;
+      return refs.deepAgent.remote;
+    };
+
+    function getProviderModels(provider) {
+      const config = providerConfigs[provider];
+      if (!config) return [];
+      if (Array.isArray(config.models) && config.models.length) {
+        return [...new Set(config.models)]
+          .filter(model => typeof model === 'string' && model.trim().length)
+          .map(model => model.trim());
+      }
+      if (provider !== 'ollama') {
+        const meta = remoteProviders[provider];
+        if (meta?.models) return [...meta.models];
+      }
+      return [];
+    }
+
+    function sanitizeDeepAgent(provider, source = {}) {
+      const models = getProviderModels(provider);
+      const normalize = value => {
+        if (!value || typeof value !== 'string') return '';
+        if (!models.length) return value;
+        return models.includes(value) ? value : '';
+      };
+      return {
+        enabled: Boolean(source.enabled),
+        search: normalize(source.search),
+        modeling: normalize(source.modeling),
+        report: normalize(source.report),
+      };
+    }
+
+    function ensureDeepAgentConfig(provider, overrides = {}) {
+      if (!providerConfigs[provider])
+        return {
+          enabled: false,
+          search: '',
+          modeling: '',
+          report: '',
+        };
+      const base = providerConfigs[provider].deepAgent || {};
+      const merged = { ...base, ...overrides };
+      const sanitized = sanitizeDeepAgent(provider, merged);
+      providerConfigs[provider].deepAgent = sanitized;
+      return sanitized;
+    }
+
+    function toggleDeepAgentGrid(controls, enabled) {
+      if (!controls) return;
+      if (controls.grid) {
+        controls.grid.classList.toggle('deep-agent-grid--disabled', !enabled);
       }
     }
-  };
 
-  const applyPanelTranslations = () => {
-    if (i18n && typeof i18n.applyTranslations === 'function') {
-      i18n.applyTranslations(refs.root || document);
-    }
-  };
+    function populateDeepAgentSelect(select, models, value) {
+      if (!select) return;
+      const current = typeof value === 'string' ? value : '';
+      select.innerHTML = '';
+      const inheritOption = document.createElement('option');
+      inheritOption.value = '';
+      inheritOption.textContent = translate('aiService.deepAgentInherit', {}, '沿用主模型');
+      inheritOption.dataset.i18n = 'aiService.deepAgentInherit';
+      select.appendChild(inheritOption);
 
-  const DEEP_AGENT_FIELDS = ['search', 'modeling', 'report'];
+      models.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        select.appendChild(option);
+      });
 
-  const getDeepAgentControls = (provider) => {
-    if (provider === 'ollama') return refs.deepAgent.ollama;
-    return refs.deepAgent.remote;
-  };
+      if (current && models.length && !models.includes(current)) {
+        const fallbackOption = document.createElement('option');
+        fallbackOption.value = current;
+        fallbackOption.textContent = current;
+        select.appendChild(fallbackOption);
+      }
 
-  function getProviderModels(provider) {
-    const config = providerConfigs[provider];
-    if (!config) return [];
-    if (Array.isArray(config.models) && config.models.length) {
-      return [...new Set(config.models)]
-        .filter((model) => typeof model === 'string' && model.trim().length)
-        .map((model) => model.trim());
-    }
-    if (provider !== 'ollama') {
-      const meta = remoteProviders[provider];
-      if (meta?.models) return [...meta.models];
-    }
-    return [];
-  }
-
-  function sanitizeDeepAgent(provider, source = {}) {
-    const models = getProviderModels(provider);
-    const normalize = (value) => {
-      if (!value || typeof value !== 'string') return '';
-      if (!models.length) return value;
-      return models.includes(value) ? value : '';
-    };
-    return {
-      enabled: Boolean(source.enabled),
-      search: normalize(source.search),
-      modeling: normalize(source.modeling),
-      report: normalize(source.report)
-    };
-  }
-
-  function ensureDeepAgentConfig(provider, overrides = {}) {
-    if (!providerConfigs[provider]) return {
-      enabled: false,
-      search: '',
-      modeling: '',
-      report: ''
-    };
-    const base = providerConfigs[provider].deepAgent || {};
-    const merged = { ...base, ...overrides };
-    const sanitized = sanitizeDeepAgent(provider, merged);
-    providerConfigs[provider].deepAgent = sanitized;
-    return sanitized;
-  }
-
-  function toggleDeepAgentGrid(controls, enabled) {
-    if (!controls) return;
-    if (controls.grid) {
-      controls.grid.classList.toggle('deep-agent-grid--disabled', !enabled);
-    }
-  }
-
-  function populateDeepAgentSelect(select, models, value) {
-    if (!select) return;
-    const current = typeof value === 'string' ? value : '';
-    select.innerHTML = '';
-    const inheritOption = document.createElement('option');
-    inheritOption.value = '';
-    inheritOption.textContent = translate('aiService.deepAgentInherit', {}, '沿用主模型');
-    inheritOption.dataset.i18n = 'aiService.deepAgentInherit';
-    select.appendChild(inheritOption);
-
-    models.forEach((model) => {
-      const option = document.createElement('option');
-      option.value = model;
-      option.textContent = model;
-      select.appendChild(option);
-    });
-
-    if (current && models.length && !models.includes(current)) {
-      const fallbackOption = document.createElement('option');
-      fallbackOption.value = current;
-      fallbackOption.textContent = current;
-      select.appendChild(fallbackOption);
-    }
-
-    if (current) {
-      select.value = current;
-      if (select.value !== current) {
+      if (current) {
+        select.value = current;
+        if (select.value !== current) {
+          select.value = '';
+        }
+      } else {
         select.value = '';
       }
-    } else {
-      select.value = '';
     }
-  }
 
-  function populateDeepAgentSelects(controls, models, deepAgent) {
-    if (!controls) return;
-    DEEP_AGENT_FIELDS.forEach((field) => {
-      populateDeepAgentSelect(controls.selects?.[field], models, deepAgent[field]);
-    });
-    if (i18n && typeof i18n.applyTranslations === 'function') {
-      const nodes = [controls.grid, controls.hint].filter(Boolean);
-      nodes.forEach((node) => i18n.applyTranslations(node));
-    }
-  }
-
-  function updateDeepAgentHint(provider, controls, deepAgent) {
-    if (!controls?.hint) return;
-    if (!deepAgent.enabled) {
-      controls.hint.textContent = translate('aiService.deepAgentHintDisabled', {}, '未启用深度代理映射，将使用主模型。');
-      return;
-    }
-    const primaryModel = providerConfigs[provider]?.model || '';
-    const fallbackMessage = primaryModel
-      ? `未设置的阶段将沿用主模型：${primaryModel}`
-      : '未设置的阶段将沿用主模型。';
-    controls.hint.textContent = translate('aiService.deepAgentHintActive', { model: primaryModel }, fallbackMessage);
-  }
-
-  function populateDeepAgentUI(provider) {
-    const controls = getDeepAgentControls(provider);
-    const config = providerConfigs[provider];
-    if (!controls || !config) return;
-    const deepAgent = ensureDeepAgentConfig(provider);
-    if (controls.toggle) {
-      controls.toggle.checked = Boolean(deepAgent.enabled);
-    }
-    toggleDeepAgentGrid(controls, deepAgent.enabled);
-    const models = getProviderModels(provider);
-    populateDeepAgentSelects(controls, models, deepAgent);
-    updateDeepAgentHint(provider, controls, deepAgent);
-  }
-
-  function buildProviderMapping() {
-    const mapping = {};
-    Object.entries(providerConfigs).forEach(([provider, config]) => {
-      if (!config) return;
-      mapping[provider] = sanitizeDeepAgent(provider, config.deepAgent || {});
-    });
-    return mapping;
-  }
-
-  function broadcastProviderMapping() {
-    const mapping = buildProviderMapping();
-    if (typeof window !== 'undefined') {
-      window.steadyResearchConfig = window.steadyResearchConfig || {};
-      window.steadyResearchConfig.providerDeepAgent = mapping;
-      window.dispatchEvent(new CustomEvent('deepAgent:providerMapping', { detail: mapping }));
-    }
-  }
-
-  function handleDeepAgentToggle(provider, enabled) {
-    const deepAgent = ensureDeepAgentConfig(provider, { enabled: Boolean(enabled) });
-    populateDeepAgentUI(provider);
-    saveState();
-    if (provider === currentProvider) {
-      dispatchChange();
-    } else {
-      broadcastProviderMapping();
-    }
-  }
-
-  function handleDeepAgentSelectChange(provider, key, value) {
-    if (!DEEP_AGENT_FIELDS.includes(key)) return;
-    const deepAgent = ensureDeepAgentConfig(provider, { [key]: value || '' });
-    ensureDeepAgentConfig(provider, deepAgent);
-    updateDeepAgentHint(provider, getDeepAgentControls(provider), deepAgent);
-    saveState();
-    if (provider === currentProvider) {
-      dispatchChange();
-    } else {
-      broadcastProviderMapping();
-    }
-  }
-
-  function propagatePrimaryModel(provider, newModel, previousModel) {
-    const config = providerConfigs[provider];
-    if (!config) return;
-    const deepAgent = ensureDeepAgentConfig(provider);
-    const modelValue = typeof newModel === 'string' ? newModel : '';
-    const previous = typeof previousModel === 'string' ? previousModel : '';
-    DEEP_AGENT_FIELDS.forEach((field) => {
-      const current = deepAgent[field];
-      if (!current || current === previous) {
-        deepAgent[field] = modelValue;
-      }
-    });
-    ensureDeepAgentConfig(provider, deepAgent);
-    populateDeepAgentUI(provider);
-    saveState();
-    if (provider === currentProvider) {
-      dispatchChange();
-    } else {
-      broadcastProviderMapping();
-    }
-  }
-
-  function init() {
-    if (initialized) return;
-    initialized = true;
-
-    bindEvents();
-    loadSavedState();
-    updateUI();
-    refreshStatuses();
-    loadOllamaModels();
-    applyPanelTranslations();
-  }
-
-  function bindEvents() {
-    refs.providerSelect?.addEventListener('change', (event) => {
-      const value = (event.target || {}).value;
-      if (value) {
-        switchProvider(value);
-      }
-    });
-
-    refs.inputs.ollamaUrl?.addEventListener('change', (event) => {
-      providerConfigs.ollama.url = (event.target || {}).value?.trim() || providerConfigs.ollama.url;
-      saveState();
-      updateSelectionDetails();
-    });
-
-    refs.inputs.ollamaModel?.addEventListener('change', (event) => {
-      const previous = providerConfigs.ollama.model;
-      providerConfigs.ollama.model = (event.target || {}).value || '';
-      propagatePrimaryModel('ollama', providerConfigs.ollama.model, previous);
-    });
-
-    refs.inputs.apiKey?.addEventListener('input', (event) => {
-      const value = (event.target || {}).value?.trim() || '';
-      const config = providerConfigs[currentProvider];
-      if (config && config.type === 'remote') {
-        config.apiKey = value;
-        updateHttpButtonState();
-        saveState();
-      }
-    });
-
-    refs.inputs.apiModel?.addEventListener('change', (event) => {
-      const value = (event.target || {}).value || '';
-      const config = providerConfigs[currentProvider];
-      if (config && config.type === 'remote') {
-        const previous = config.model;
-        config.model = value;
-        propagatePrimaryModel(currentProvider, value, previous);
-      }
-    });
-
-    refs.buttons.testOllama?.addEventListener('click', handleTestOllama);
-    refs.buttons.testHttp?.addEventListener('click', handleTestHttpApi);
-
-    const ollamaControls = refs.deepAgent.ollama;
-    if (ollamaControls?.toggle) {
-      ollamaControls.toggle.addEventListener('change', (event) => {
-        handleDeepAgentToggle('ollama', event.target?.checked);
+    function populateDeepAgentSelects(controls, models, deepAgent) {
+      if (!controls) return;
+      DEEP_AGENT_FIELDS.forEach(field => {
+        populateDeepAgentSelect(controls.selects?.[field], models, deepAgent[field]);
       });
-    }
-    if (ollamaControls?.selects) {
-      Object.entries(ollamaControls.selects).forEach(([key, select]) => {
-        select?.addEventListener('change', (event) => {
-          handleDeepAgentSelectChange('ollama', key, event.target?.value || '');
-        });
-      });
-    }
-
-    const remoteControls = refs.deepAgent.remote;
-    if (remoteControls?.toggle) {
-      remoteControls.toggle.addEventListener('change', (event) => {
-        if (currentProvider === 'ollama') return;
-        handleDeepAgentToggle(currentProvider, event.target?.checked);
-      });
-    }
-    if (remoteControls?.selects) {
-      Object.entries(remoteControls.selects).forEach(([key, select]) => {
-        select?.addEventListener('change', (event) => {
-          if (currentProvider === 'ollama') return;
-          handleDeepAgentSelectChange(currentProvider, key, event.target?.value || '');
-        });
-      });
-    }
-  }
-
-  function loadSavedState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (parsed?.currentProvider && providerConfigs[parsed.currentProvider]) {
-        currentProvider = parsed.currentProvider;
-      }
-      if (parsed?.providers) {
-        Object.keys(parsed.providers).forEach((key) => {
-          if (providerConfigs[key]) {
-            const saved = parsed.providers[key];
-            const next = { ...providerConfigs[key], ...saved };
-            if (Array.isArray(saved?.models)) {
-              next.models = [...saved.models];
-            }
-            if (saved?.deepAgent) {
-              next.deepAgent = sanitizeDeepAgent(key, saved.deepAgent);
-            } else {
-              next.deepAgent = sanitizeDeepAgent(key, next.deepAgent || providerConfigs[key].deepAgent || {});
-            }
-            providerConfigs[key] = next;
-          }
-        });
-      }
-    } catch (error) {
-      console.warn('加载 AI 服务配置失败:', error);
-    }
-
-    if (refs.providerSelect) {
-      (refs.providerSelect).value = currentProvider;
-    }
-
-    populateInputs();
-    broadcastProviderMapping();
-  }
-
-  function populateInputs() {
-    const config = providerConfigs[currentProvider];
-    if (!config) return;
-
-    if (currentProvider === 'ollama') {
-      if (refs.inputs.ollamaUrl) {
-        refs.inputs.ollamaUrl.value = config.url || '';
-      }
-      if (refs.inputs.ollamaModel) {
-        if (config.model) {
-          refs.inputs.ollamaModel.value = config.model;
-        }
-      }
-    } else {
-      if (refs.inputs.apiKey) {
-        refs.inputs.apiKey.value = config.apiKey || '';
-      }
-      populateModelOptions(currentProvider);
-      if (refs.inputs.apiModel && config.model) {
-        refs.inputs.apiModel.value = config.model;
-      }
-    }
-    updateHttpButtonState();
-    populateDeepAgentUI('ollama');
-    if (currentProvider !== 'ollama') {
-      populateDeepAgentUI(currentProvider);
-    }
-  }
-
-  function updateUI() {
-    updateSelectionDetails();
-    toggleSections();
-    populateInputs();
-    applyPanelTranslations();
-  }
-
-  function updateSelectionDetails() {
-    const config = providerConfigs[currentProvider];
-    if (!config) return;
-
-    if (refs.currentSelection) {
-      refs.currentSelection.textContent = translate(config.nameKey || '', {}, config.name || currentProvider);
-    }
-
-    if (refs.selectionDetails) {
-      if (currentProvider === 'ollama') {
-        const url = config.url || 'http://localhost:11434';
-        refs.selectionDetails.textContent = translate('aiService.currentDetailsWithUrl', { url }, `使用本地Ollama服务 (${url})`);
-      } else {
-        const meta = remoteProviders[currentProvider];
-        const providerName = translate(meta?.nameKey || '', {}, meta?.name || currentProvider);
-        const info = translate(meta?.infoKey || 'aiService.remoteDescription', { provider: providerName }, meta?.info || translate('aiService.remoteDescription', {}, '请配置 API 密钥以使用此服务'));
-        refs.selectionDetails.textContent = info;
+      if (i18n && typeof i18n.applyTranslations === 'function') {
+        const nodes = [controls.grid, controls.hint].filter(Boolean);
+        nodes.forEach(node => i18n.applyTranslations(node));
       }
     }
 
-    if (currentProvider !== 'ollama') {
-      const meta = remoteProviders[currentProvider];
-      const providerName = translate(meta?.nameKey || '', {}, meta?.name || '云端 API 服务');
-      const info = translate(meta?.infoKey || 'aiService.remoteDescription', { provider: providerName }, meta?.info || translate('aiService.remoteDescription', {}, '请配置 API 密钥以使用此服务'));
-      if (refs.providerName) refs.providerName.textContent = providerName;
-      if (refs.providerInfo) refs.providerInfo.textContent = info;
-    }
-  }
-
-  function toggleSections() {
-    if (currentProvider === 'ollama') {
-      refs.sections.ollama?.classList.remove('hidden');
-      refs.sections.http?.classList.add('hidden');
-    } else {
-      refs.sections.ollama?.classList.add('hidden');
-      refs.sections.http?.classList.remove('hidden');
-    }
-  }
-
-  function populateModelOptions(provider) {
-    const meta = remoteProviders[provider];
-    if (!meta || !refs.inputs.apiModel) return;
-
-    refs.inputs.apiModel.innerHTML = '';
-    const placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = translate('aiService.remoteModelPlaceholder', {}, '请选择模型');
-    placeholder.dataset.i18n = 'aiService.remoteModelPlaceholder';
-    refs.inputs.apiModel.appendChild(placeholder);
-    meta.models.forEach((model) => {
-      const option = document.createElement('option');
-      option.value = model;
-      option.textContent = model;
-      refs.inputs.apiModel.appendChild(option);
-    });
-    if (providerConfigs[provider]) {
-      providerConfigs[provider].models = [...meta.models];
-    }
-    applyPanelTranslations();
-    if (currentProvider === provider) {
-      populateDeepAgentUI(provider);
-    }
-  }
-
-  function saveState() {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          currentProvider,
-          providers: providerConfigs
-        })
+    function updateDeepAgentHint(provider, controls, deepAgent) {
+      if (!controls?.hint) return;
+      if (!deepAgent.enabled) {
+        controls.hint.textContent = translate(
+          'aiService.deepAgentHintDisabled',
+          {},
+          '未启用深度代理映射，将使用主模型。'
+        );
+        return;
+      }
+      const primaryModel = providerConfigs[provider]?.model || '';
+      const fallbackMessage = primaryModel
+        ? `未设置的阶段将沿用主模型：${primaryModel}`
+        : '未设置的阶段将沿用主模型。';
+      controls.hint.textContent = translate(
+        'aiService.deepAgentHintActive',
+        { model: primaryModel },
+        fallbackMessage
       );
-    } catch (error) {
-      console.warn('保存 AI 服务配置失败:', error);
     }
-  }
 
-  function setStatus(badge, tone, key, fallback, params) {
-    if (!badge) return;
-    badge.dataset.tone = tone;
-    badge.textContent = translate(key, params, fallback ?? key);
-  }
-
-  async function handleTestOllama() {
-    setStatus(refs.badges.ollama, STATUS_TONES.warning, 'aiService.statusTesting', '测试中');
-    try {
-      const response = await fetch('/api/ollama', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'health' })
-      });
-      const data = await response.json();
-      if (data.healthy) {
-        providerConfigs.ollama.available = true;
-        setStatus(refs.badges.ollama, STATUS_TONES.success, 'aiService.statusReady', '连接正常');
-      } else {
-        providerConfigs.ollama.available = false;
-        setStatus(refs.badges.ollama, STATUS_TONES.error, 'aiService.statusOffline', '服务离线');
+    function populateDeepAgentUI(provider) {
+      const controls = getDeepAgentControls(provider);
+      const config = providerConfigs[provider];
+      if (!controls || !config) return;
+      const deepAgent = ensureDeepAgentConfig(provider);
+      if (controls.toggle) {
+        controls.toggle.checked = Boolean(deepAgent.enabled);
       }
-    } catch (error) {
-      providerConfigs.ollama.available = false;
-      setStatus(refs.badges.ollama, STATUS_TONES.error, 'aiService.statusFailed', '连接失败');
+      toggleDeepAgentGrid(controls, deepAgent.enabled);
+      const models = getProviderModels(provider);
+      populateDeepAgentSelects(controls, models, deepAgent);
+      updateDeepAgentHint(provider, controls, deepAgent);
     }
-    saveState();
-    dispatchChange();
-  }
 
-  async function handleTestHttpApi() {
-    if (currentProvider === 'ollama') return;
-    const config = providerConfigs[currentProvider];
-    if (!config?.apiKey) return;
-
-    setStatus(refs.badges.remote, STATUS_TONES.warning, 'aiService.statusTesting', '测试中');
-    refs.buttons.testHttp?.setAttribute('data-loading', 'true');
-
-    try {
-      const response = await fetch('/api/http-api', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider: currentProvider,
-          message: 'status-check',
-          apiKey: config.apiKey,
-          model: config.model
-        })
+    function buildProviderMapping() {
+      const mapping = {};
+      Object.entries(providerConfigs).forEach(([provider, config]) => {
+        if (!config) return;
+        mapping[provider] = sanitizeDeepAgent(provider, config.deepAgent || {});
       });
+      return mapping;
+    }
 
-      if (!response.ok) throw new Error('请求失败');
-      const data = await response.json();
+    function broadcastProviderMapping() {
+      const mapping = buildProviderMapping();
+      if (typeof window !== 'undefined') {
+        window.steadyResearchConfig = window.steadyResearchConfig || {};
+        window.steadyResearchConfig.providerDeepAgent = mapping;
+        window.dispatchEvent(new CustomEvent('deepAgent:providerMapping', { detail: mapping }));
+      }
+    }
 
-      const connected = data?.success !== false;
-      providerConfigs[currentProvider].available = connected;
-      setStatus(refs.badges.remote, connected ? STATUS_TONES.success : STATUS_TONES.error, connected ? 'aiService.statusReady' : 'aiService.statusFailed', connected ? '连接正常' : '连接失败');
-    } catch (error) {
-      providerConfigs[currentProvider].available = false;
-      setStatus(refs.badges.remote, STATUS_TONES.error, 'aiService.statusError', '连接异常');
-    } finally {
-      refs.buttons.testHttp?.removeAttribute('data-loading');
+    function handleDeepAgentToggle(provider, enabled) {
+      const deepAgent = ensureDeepAgentConfig(provider, { enabled: Boolean(enabled) });
+      populateDeepAgentUI(provider);
       saveState();
-      dispatchChange();
-    }
-  }
-
-  async function loadOllamaModels() {
-    try {
-      const response = await fetch('/api/ollama', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'models' })
-      });
-      const data = await response.json();
-      if (Array.isArray(data?.models) && refs.inputs.ollamaModel) {
-        refs.inputs.ollamaModel.innerHTML = '';
-        if (data.models.length === 0) {
-          const emptyOption = document.createElement('option');
-          emptyOption.value = '';
-          emptyOption.dataset.i18n = 'aiService.noModels';
-          emptyOption.textContent = translate('aiService.noModels', {}, '暂无模型');
-          refs.inputs.ollamaModel.appendChild(emptyOption);
-          providerConfigs.ollama.available = false;
-          providerConfigs.ollama.models = [];
-          setStatus(refs.badges.ollama, STATUS_TONES.warning, 'aiService.statusNoModels', '暂无模型');
-        } else {
-          const placeholder = document.createElement('option');
-          placeholder.value = '';
-          placeholder.dataset.i18n = 'aiService.remoteModelPlaceholder';
-          placeholder.textContent = translate('aiService.remoteModelPlaceholder', {}, '请选择模型');
-          refs.inputs.ollamaModel.appendChild(placeholder);
-
-          data.models.forEach((model) => {
-            const option = document.createElement('option');
-            option.value = model.name;
-            option.textContent = model.name;
-            refs.inputs.ollamaModel.appendChild(option);
-          });
-          if (providerConfigs.ollama.model) {
-            refs.inputs.ollamaModel.value = providerConfigs.ollama.model;
-          }
-          providerConfigs.ollama.available = true;
-          providerConfigs.ollama.models = data.models.map((model) => model.name);
-          setStatus(refs.badges.ollama, STATUS_TONES.success, 'aiService.statusReady', '连接正常');
-        }
-        applyPanelTranslations();
-      } else {
-        providerConfigs.ollama.available = false;
-        setStatus(refs.badges.ollama, STATUS_TONES.error, 'aiService.statusError', '连接异常');
-      }
-    } catch (error) {
-      setStatus(refs.badges.ollama, STATUS_TONES.error, 'aiService.statusError', '连接异常');
-      providerConfigs.ollama.available = false;
-      providerConfigs.ollama.models = [];
-    } finally {
-      populateDeepAgentUI('ollama');
-      if (currentProvider === 'ollama') {
+      if (provider === currentProvider) {
         dispatchChange();
       } else {
         broadcastProviderMapping();
       }
+    }
+
+    function handleDeepAgentSelectChange(provider, key, value) {
+      if (!DEEP_AGENT_FIELDS.includes(key)) return;
+      const deepAgent = ensureDeepAgentConfig(provider, { [key]: value || '' });
+      ensureDeepAgentConfig(provider, deepAgent);
+      updateDeepAgentHint(provider, getDeepAgentControls(provider), deepAgent);
       saveState();
-    }
-  }
-
-  async function refreshStatuses() {
-    if (currentProvider === 'ollama') {
-      await checkOllamaStatus();
-    } else {
-      await checkRemoteStatus(currentProvider);
-    }
-  }
-
-  async function checkOllamaStatus() {
-    try {
-      const response = await fetch('/api/ollama', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'health' })
-      });
-      const data = await response.json();
-      providerConfigs.ollama.available = !!data?.healthy;
-      setStatus(
-        refs.badges.ollama,
-        data?.healthy ? STATUS_TONES.success : STATUS_TONES.error,
-        data?.healthy ? 'aiService.statusReady' : 'aiService.statusOffline',
-        data?.healthy ? '连接正常' : '服务离线'
-      );
-    } catch (error) {
-      providerConfigs.ollama.available = false;
-      setStatus(refs.badges.ollama, STATUS_TONES.error, 'aiService.statusError', '连接异常');
-    } finally {
-      saveState();
-    }
-  }
-
-  async function checkRemoteStatus(provider) {
-    const config = providerConfigs[provider];
-    if (!config) return;
-
-    if (!config.apiKey) {
-      setStatus(refs.badges.remote, STATUS_TONES.idle, 'aiService.statusMissingKey', '未配置');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/http-api');
-      const data = await response.json();
-      const status = data?.status?.[provider];
-      if (status?.hasApiKey && status?.connected) {
-        providerConfigs[provider].available = true;
-        setStatus(refs.badges.remote, STATUS_TONES.success, 'aiService.statusReady', '连接正常');
-      } else if (status?.hasApiKey) {
-        providerConfigs[provider].available = false;
-        setStatus(refs.badges.remote, STATUS_TONES.warning, 'aiService.statusPending', '待测试');
-      } else {
-        providerConfigs[provider].available = false;
-        setStatus(refs.badges.remote, STATUS_TONES.idle, 'aiService.statusMissingKey', '未配置');
-      }
-    } catch (error) {
-      providerConfigs[provider].available = false;
-      setStatus(refs.badges.remote, STATUS_TONES.error, 'aiService.statusError', '连接异常');
-    } finally {
-      saveState();
-    }
-  }
-
-  function updateHttpButtonState() {
-    const config = providerConfigs[currentProvider];
-    if (!refs.buttons.testHttp) return;
-    const disabled = !config || config.type !== 'remote' || !config.apiKey;
-    refs.buttons.testHttp.disabled = disabled;
-  }
-
-  function switchProvider(provider) {
-    if (!providerConfigs[provider]) return;
-    currentProvider = provider;
-    if (refs.providerSelect && refs.providerSelect.value !== provider) {
-      refs.providerSelect.value = provider;
-    }
-    updateUI();
-    saveState();
-    refreshStatuses();
-    applyPanelTranslations();
-    dispatchChange();
-  }
-
-  function dispatchChange() {
-    const baseConfig = providerConfigs[currentProvider];
-    if (!baseConfig) return;
-    const models = Array.isArray(baseConfig?.models) ? [...baseConfig.models] : [];
-    const deepAgent = sanitizeDeepAgent(currentProvider, baseConfig?.deepAgent || {});
-    if (providerConfigs[currentProvider]) {
-      providerConfigs[currentProvider].deepAgent = deepAgent;
-    }
-    const config = { ...baseConfig, models, deepAgent };
-    const detail = {
-      provider: currentProvider,
-      config,
-      models,
-      deepAgent
-    };
-    window.dispatchEvent(new CustomEvent('aiProviderChanged', { detail }));
-    broadcastProviderMapping();
-  }
-
-  window.getAIServiceSelector = () => ({
-    getCurrentProvider: () => {
-      const baseConfig = providerConfigs[currentProvider];
-      const models = Array.isArray(baseConfig?.models) ? [...baseConfig.models] : [];
-      return { provider: currentProvider, config: { ...baseConfig, models }, models };
-    },
-    setProvider: switchProvider,
-    refreshStatuses,
-    setConfig: (provider, config) => {
-      if (!providerConfigs[provider]) return;
-      const next = { ...providerConfigs[provider], ...config };
-      if (Array.isArray(config?.models)) {
-        next.models = [...config.models];
-      }
-      if (config?.deepAgent) {
-        next.deepAgent = sanitizeDeepAgent(provider, config.deepAgent);
-      }
-      providerConfigs[provider] = next;
       if (provider === currentProvider) {
-        populateInputs();
+        dispatchChange();
+      } else {
+        broadcastProviderMapping();
+      }
+    }
+
+    function propagatePrimaryModel(provider, newModel, previousModel) {
+      const config = providerConfigs[provider];
+      if (!config) return;
+      const deepAgent = ensureDeepAgentConfig(provider);
+      const modelValue = typeof newModel === 'string' ? newModel : '';
+      const previous = typeof previousModel === 'string' ? previousModel : '';
+      DEEP_AGENT_FIELDS.forEach(field => {
+        const current = deepAgent[field];
+        if (!current || current === previous) {
+          deepAgent[field] = modelValue;
+        }
+      });
+      ensureDeepAgentConfig(provider, deepAgent);
+      populateDeepAgentUI(provider);
+      saveState();
+      if (provider === currentProvider) {
+        dispatchChange();
+      } else {
+        broadcastProviderMapping();
+      }
+    }
+
+    function init() {
+      if (initialized) return;
+      initialized = true;
+
+      bindEvents();
+      loadSavedState();
+      updateUI();
+      refreshStatuses();
+      loadOllamaModels();
+      applyPanelTranslations();
+    }
+
+    function bindEvents() {
+      refs.providerSelect?.addEventListener('change', event => {
+        const value = (event.target || {}).value;
+        if (value) {
+          switchProvider(value);
+        }
+      });
+
+      refs.inputs.ollamaUrl?.addEventListener('change', event => {
+        providerConfigs.ollama.url =
+          (event.target || {}).value?.trim() || providerConfigs.ollama.url;
+        saveState();
         updateSelectionDetails();
+      });
+
+      refs.inputs.ollamaModel?.addEventListener('change', event => {
+        const previous = providerConfigs.ollama.model;
+        providerConfigs.ollama.model = (event.target || {}).value || '';
+        propagatePrimaryModel('ollama', providerConfigs.ollama.model, previous);
+      });
+
+      refs.inputs.apiKey?.addEventListener('input', event => {
+        const value = (event.target || {}).value?.trim() || '';
+        const config = providerConfigs[currentProvider];
+        if (config && config.type === 'remote') {
+          config.apiKey = value;
+          updateHttpButtonState();
+          saveState();
+        }
+      });
+
+      refs.inputs.apiModel?.addEventListener('change', event => {
+        const value = (event.target || {}).value || '';
+        const config = providerConfigs[currentProvider];
+        if (config && config.type === 'remote') {
+          const previous = config.model;
+          config.model = value;
+          propagatePrimaryModel(currentProvider, value, previous);
+        }
+      });
+
+      refs.buttons.testOllama?.addEventListener('click', handleTestOllama);
+      refs.buttons.testHttp?.addEventListener('click', handleTestHttpApi);
+
+      const ollamaControls = refs.deepAgent.ollama;
+      if (ollamaControls?.toggle) {
+        ollamaControls.toggle.addEventListener('change', event => {
+          handleDeepAgentToggle('ollama', event.target?.checked);
+        });
+      }
+      if (ollamaControls?.selects) {
+        Object.entries(ollamaControls.selects).forEach(([key, select]) => {
+          select?.addEventListener('change', event => {
+            handleDeepAgentSelectChange('ollama', key, event.target?.value || '');
+          });
+        });
+      }
+
+      const remoteControls = refs.deepAgent.remote;
+      if (remoteControls?.toggle) {
+        remoteControls.toggle.addEventListener('change', event => {
+          if (currentProvider === 'ollama') return;
+          handleDeepAgentToggle(currentProvider, event.target?.checked);
+        });
+      }
+      if (remoteControls?.selects) {
+        Object.entries(remoteControls.selects).forEach(([key, select]) => {
+          select?.addEventListener('change', event => {
+            if (currentProvider === 'ollama') return;
+            handleDeepAgentSelectChange(currentProvider, key, event.target?.value || '');
+          });
+        });
+      }
+    }
+
+    function loadSavedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed?.currentProvider && providerConfigs[parsed.currentProvider]) {
+          currentProvider = parsed.currentProvider;
+        }
+        if (parsed?.providers) {
+          Object.keys(parsed.providers).forEach(key => {
+            if (providerConfigs[key]) {
+              const saved = parsed.providers[key];
+              const next = { ...providerConfigs[key], ...saved };
+              if (Array.isArray(saved?.models)) {
+                next.models = [...saved.models];
+              }
+              if (saved?.deepAgent) {
+                next.deepAgent = sanitizeDeepAgent(key, saved.deepAgent);
+              } else {
+                next.deepAgent = sanitizeDeepAgent(
+                  key,
+                  next.deepAgent || providerConfigs[key].deepAgent || {}
+                );
+              }
+              providerConfigs[key] = next;
+            }
+          });
+        }
+      } catch (error) {
+        console.warn('加载 AI 服务配置失败:', error);
+      }
+
+      if (refs.providerSelect) {
+        refs.providerSelect.value = currentProvider;
+      }
+
+      populateInputs();
+      broadcastProviderMapping();
+    }
+
+    function populateInputs() {
+      const config = providerConfigs[currentProvider];
+      if (!config) return;
+
+      if (currentProvider === 'ollama') {
+        if (refs.inputs.ollamaUrl) {
+          refs.inputs.ollamaUrl.value = config.url || '';
+        }
+        if (refs.inputs.ollamaModel) {
+          if (config.model) {
+            refs.inputs.ollamaModel.value = config.model;
+          }
+        }
+      } else {
+        if (refs.inputs.apiKey) {
+          refs.inputs.apiKey.value = config.apiKey || '';
+        }
+        populateModelOptions(currentProvider);
+        if (refs.inputs.apiModel && config.model) {
+          refs.inputs.apiModel.value = config.model;
+        }
+      }
+      updateHttpButtonState();
+      populateDeepAgentUI('ollama');
+      if (currentProvider !== 'ollama') {
+        populateDeepAgentUI(currentProvider);
+      }
+    }
+
+    function updateUI() {
+      updateSelectionDetails();
+      toggleSections();
+      populateInputs();
+      applyPanelTranslations();
+    }
+
+    function updateSelectionDetails() {
+      const config = providerConfigs[currentProvider];
+      if (!config) return;
+
+      if (refs.currentSelection) {
+        refs.currentSelection.textContent = translate(
+          config.nameKey || '',
+          {},
+          config.name || currentProvider
+        );
+      }
+
+      if (refs.selectionDetails) {
+        if (currentProvider === 'ollama') {
+          const url = config.url || 'http://localhost:11434';
+          refs.selectionDetails.textContent = translate(
+            'aiService.currentDetailsWithUrl',
+            { url },
+            `使用本地Ollama服务 (${url})`
+          );
+        } else {
+          const meta = remoteProviders[currentProvider];
+          const providerName = translate(meta?.nameKey || '', {}, meta?.name || currentProvider);
+          const info = translate(
+            meta?.infoKey || 'aiService.remoteDescription',
+            { provider: providerName },
+            meta?.info ||
+              translate('aiService.remoteDescription', {}, '请配置 API 密钥以使用此服务')
+          );
+          refs.selectionDetails.textContent = info;
+        }
+      }
+
+      if (currentProvider !== 'ollama') {
+        const meta = remoteProviders[currentProvider];
+        const providerName = translate(meta?.nameKey || '', {}, meta?.name || '云端 API 服务');
+        const info = translate(
+          meta?.infoKey || 'aiService.remoteDescription',
+          { provider: providerName },
+          meta?.info || translate('aiService.remoteDescription', {}, '请配置 API 密钥以使用此服务')
+        );
+        if (refs.providerName) refs.providerName.textContent = providerName;
+        if (refs.providerInfo) refs.providerInfo.textContent = info;
+      }
+    }
+
+    function toggleSections() {
+      if (currentProvider === 'ollama') {
+        refs.sections.ollama?.classList.remove('hidden');
+        refs.sections.http?.classList.add('hidden');
+      } else {
+        refs.sections.ollama?.classList.add('hidden');
+        refs.sections.http?.classList.remove('hidden');
+      }
+    }
+
+    function populateModelOptions(provider) {
+      const meta = remoteProviders[provider];
+      if (!meta || !refs.inputs.apiModel) return;
+
+      refs.inputs.apiModel.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = translate('aiService.remoteModelPlaceholder', {}, '请选择模型');
+      placeholder.dataset.i18n = 'aiService.remoteModelPlaceholder';
+      refs.inputs.apiModel.appendChild(placeholder);
+      meta.models.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        refs.inputs.apiModel.appendChild(option);
+      });
+      if (providerConfigs[provider]) {
+        providerConfigs[provider].models = [...meta.models];
+      }
+      applyPanelTranslations();
+      if (currentProvider === provider) {
+        populateDeepAgentUI(provider);
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            currentProvider,
+            providers: providerConfigs,
+          })
+        );
+      } catch (error) {
+        console.warn('保存 AI 服务配置失败:', error);
+      }
+    }
+
+    function setStatus(badge, tone, key, fallback, params) {
+      if (!badge) return;
+      badge.dataset.tone = tone;
+      badge.textContent = translate(key, params, fallback ?? key);
+    }
+
+    async function handleTestOllama() {
+      setStatus(refs.badges.ollama, STATUS_TONES.warning, 'aiService.statusTesting', '测试中');
+      try {
+        const response = await fetch('/api/ollama', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'health' }),
+        });
+        const data = await response.json();
+        if (data.healthy) {
+          providerConfigs.ollama.available = true;
+          setStatus(refs.badges.ollama, STATUS_TONES.success, 'aiService.statusReady', '连接正常');
+        } else {
+          providerConfigs.ollama.available = false;
+          setStatus(refs.badges.ollama, STATUS_TONES.error, 'aiService.statusOffline', '服务离线');
+        }
+      } catch (error) {
+        providerConfigs.ollama.available = false;
+        setStatus(refs.badges.ollama, STATUS_TONES.error, 'aiService.statusFailed', '连接失败');
       }
       saveState();
       dispatchChange();
     }
-  });
 
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    init();
-  } else {
-    document.addEventListener('DOMContentLoaded', init);
-  }
-  document.addEventListener('astro:page-load', init);
-})();
+    async function handleTestHttpApi() {
+      if (currentProvider === 'ollama') return;
+      const config = providerConfigs[currentProvider];
+      if (!config?.apiKey) return;
+
+      setStatus(refs.badges.remote, STATUS_TONES.warning, 'aiService.statusTesting', '测试中');
+      refs.buttons.testHttp?.setAttribute('data-loading', 'true');
+
+      try {
+        const response = await fetch('/api/http-api', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            provider: currentProvider,
+            message: 'status-check',
+            apiKey: config.apiKey,
+            model: config.model,
+          }),
+        });
+
+        if (!response.ok) throw new Error('请求失败');
+        const data = await response.json();
+
+        const connected = data?.success !== false;
+        providerConfigs[currentProvider].available = connected;
+        setStatus(
+          refs.badges.remote,
+          connected ? STATUS_TONES.success : STATUS_TONES.error,
+          connected ? 'aiService.statusReady' : 'aiService.statusFailed',
+          connected ? '连接正常' : '连接失败'
+        );
+      } catch (error) {
+        providerConfigs[currentProvider].available = false;
+        setStatus(refs.badges.remote, STATUS_TONES.error, 'aiService.statusError', '连接异常');
+      } finally {
+        refs.buttons.testHttp?.removeAttribute('data-loading');
+        saveState();
+        dispatchChange();
+      }
+    }
+
+    async function loadOllamaModels() {
+      try {
+        const response = await fetch('/api/ollama', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'models' }),
+        });
+        const data = await response.json();
+        if (Array.isArray(data?.models) && refs.inputs.ollamaModel) {
+          refs.inputs.ollamaModel.innerHTML = '';
+          if (data.models.length === 0) {
+            const emptyOption = document.createElement('option');
+            emptyOption.value = '';
+            emptyOption.dataset.i18n = 'aiService.noModels';
+            emptyOption.textContent = translate('aiService.noModels', {}, '暂无模型');
+            refs.inputs.ollamaModel.appendChild(emptyOption);
+            providerConfigs.ollama.available = false;
+            providerConfigs.ollama.models = [];
+            setStatus(
+              refs.badges.ollama,
+              STATUS_TONES.warning,
+              'aiService.statusNoModels',
+              '暂无模型'
+            );
+          } else {
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.dataset.i18n = 'aiService.remoteModelPlaceholder';
+            placeholder.textContent = translate(
+              'aiService.remoteModelPlaceholder',
+              {},
+              '请选择模型'
+            );
+            refs.inputs.ollamaModel.appendChild(placeholder);
+
+            data.models.forEach(model => {
+              const option = document.createElement('option');
+              option.value = model.name;
+              option.textContent = model.name;
+              refs.inputs.ollamaModel.appendChild(option);
+            });
+            if (providerConfigs.ollama.model) {
+              refs.inputs.ollamaModel.value = providerConfigs.ollama.model;
+            }
+            providerConfigs.ollama.available = true;
+            providerConfigs.ollama.models = data.models.map(model => model.name);
+            setStatus(
+              refs.badges.ollama,
+              STATUS_TONES.success,
+              'aiService.statusReady',
+              '连接正常'
+            );
+          }
+          applyPanelTranslations();
+        } else {
+          providerConfigs.ollama.available = false;
+          setStatus(refs.badges.ollama, STATUS_TONES.error, 'aiService.statusError', '连接异常');
+        }
+      } catch (error) {
+        setStatus(refs.badges.ollama, STATUS_TONES.error, 'aiService.statusError', '连接异常');
+        providerConfigs.ollama.available = false;
+        providerConfigs.ollama.models = [];
+      } finally {
+        populateDeepAgentUI('ollama');
+        if (currentProvider === 'ollama') {
+          dispatchChange();
+        } else {
+          broadcastProviderMapping();
+        }
+        saveState();
+      }
+    }
+
+    async function refreshStatuses() {
+      if (currentProvider === 'ollama') {
+        await checkOllamaStatus();
+      } else {
+        await checkRemoteStatus(currentProvider);
+      }
+    }
+
+    async function checkOllamaStatus() {
+      try {
+        const response = await fetch('/api/ollama', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'health' }),
+        });
+        const data = await response.json();
+        providerConfigs.ollama.available = !!data?.healthy;
+        setStatus(
+          refs.badges.ollama,
+          data?.healthy ? STATUS_TONES.success : STATUS_TONES.error,
+          data?.healthy ? 'aiService.statusReady' : 'aiService.statusOffline',
+          data?.healthy ? '连接正常' : '服务离线'
+        );
+      } catch (error) {
+        providerConfigs.ollama.available = false;
+        setStatus(refs.badges.ollama, STATUS_TONES.error, 'aiService.statusError', '连接异常');
+      } finally {
+        saveState();
+      }
+    }
+
+    async function checkRemoteStatus(provider) {
+      const config = providerConfigs[provider];
+      if (!config) return;
+
+      if (!config.apiKey) {
+        setStatus(refs.badges.remote, STATUS_TONES.idle, 'aiService.statusMissingKey', '未配置');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/http-api');
+        const data = await response.json();
+        const status = data?.status?.[provider];
+        if (status?.hasApiKey && status?.connected) {
+          providerConfigs[provider].available = true;
+          setStatus(refs.badges.remote, STATUS_TONES.success, 'aiService.statusReady', '连接正常');
+        } else if (status?.hasApiKey) {
+          providerConfigs[provider].available = false;
+          setStatus(refs.badges.remote, STATUS_TONES.warning, 'aiService.statusPending', '待测试');
+        } else {
+          providerConfigs[provider].available = false;
+          setStatus(refs.badges.remote, STATUS_TONES.idle, 'aiService.statusMissingKey', '未配置');
+        }
+      } catch (error) {
+        providerConfigs[provider].available = false;
+        setStatus(refs.badges.remote, STATUS_TONES.error, 'aiService.statusError', '连接异常');
+      } finally {
+        saveState();
+      }
+    }
+
+    function updateHttpButtonState() {
+      const config = providerConfigs[currentProvider];
+      if (!refs.buttons.testHttp) return;
+      const disabled = !config || config.type !== 'remote' || !config.apiKey;
+      refs.buttons.testHttp.disabled = disabled;
+    }
+
+    function switchProvider(provider) {
+      if (!providerConfigs[provider]) return;
+      currentProvider = provider;
+      if (refs.providerSelect && refs.providerSelect.value !== provider) {
+        refs.providerSelect.value = provider;
+      }
+      updateUI();
+      saveState();
+      refreshStatuses();
+      applyPanelTranslations();
+      dispatchChange();
+    }
+
+    function dispatchChange() {
+      const baseConfig = providerConfigs[currentProvider];
+      if (!baseConfig) return;
+      const models = Array.isArray(baseConfig?.models) ? [...baseConfig.models] : [];
+      const deepAgent = sanitizeDeepAgent(currentProvider, baseConfig?.deepAgent || {});
+      if (providerConfigs[currentProvider]) {
+        providerConfigs[currentProvider].deepAgent = deepAgent;
+      }
+      const config = { ...baseConfig, models, deepAgent };
+      const detail = {
+        provider: currentProvider,
+        config,
+        models,
+        deepAgent,
+      };
+      window.dispatchEvent(new CustomEvent('aiProviderChanged', { detail }));
+      broadcastProviderMapping();
+    }
+
+    window.getAIServiceSelector = () => ({
+      getCurrentProvider: () => {
+        const baseConfig = providerConfigs[currentProvider];
+        const models = Array.isArray(baseConfig?.models) ? [...baseConfig.models] : [];
+        return { provider: currentProvider, config: { ...baseConfig, models }, models };
+      },
+      setProvider: switchProvider,
+      refreshStatuses,
+      setConfig: (provider, config) => {
+        if (!providerConfigs[provider]) return;
+        const next = { ...providerConfigs[provider], ...config };
+        if (Array.isArray(config?.models)) {
+          next.models = [...config.models];
+        }
+        if (config?.deepAgent) {
+          next.deepAgent = sanitizeDeepAgent(provider, config.deepAgent);
+        }
+        providerConfigs[provider] = next;
+        if (provider === currentProvider) {
+          populateInputs();
+          updateSelectionDetails();
+        }
+        saveState();
+        dispatchChange();
+      },
+    });
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      init();
+    } else {
+      document.addEventListener('DOMContentLoaded', init);
+    }
+    document.addEventListener('astro:page-load', init);
+  })();
 </script>
 
 <style>
-.ai-service-panel {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.68));
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  border-radius: 24px;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  box-shadow: 0 24px 60px -28px rgba(14, 116, 144, 0.55);
-  backdrop-filter: blur(26px);
-  color: rgba(226, 232, 240, 0.92);
-}
-
-.ai-service-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 60%);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.panel-header {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.header-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.header-meta .title h3 {
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #f8fafc;
-}
-
-.header-meta .title p {
-  margin: 6px 0 0;
-  font-size: 0.95rem;
-  color: rgba(226, 232, 240, 0.65);
-  max-width: 26rem;
-}
-
-.current-selection {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 14px 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(59, 130, 246, 0.2));
-  color: rgba(241, 245, 249, 0.92);
-  font-size: 0.85rem;
-  white-space: nowrap;
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-}
-
-.current-selection strong {
-  margin-top: 2px;
-  font-size: 1.1rem;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-.panel-subtitle {
-  position: relative;
-  z-index: 1;
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: rgba(129, 230, 217, 0.9);
-}
-
-.field--deep-agent {
-  padding: 16px;
-  border: 1px dashed rgba(148, 163, 184, 0.28);
-  border-radius: 16px;
-  background: rgba(30, 41, 59, 0.35);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.deep-agent-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.deep-agent-title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: rgba(226, 232, 240, 0.95);
-}
-
-.deep-agent-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.78rem;
-  color: rgba(148, 163, 184, 0.9);
-}
-
-.deep-agent-toggle input {
-  width: 16px;
-  height: 16px;
-}
-
-.deep-agent-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-}
-
-.deep-agent-grid--disabled {
-  opacity: 0.45;
-  pointer-events: none;
-}
-
-.deep-agent-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.deep-agent-item span {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: rgba(148, 163, 184, 0.95);
-}
-
-.deep-agent-hint {
-  margin: 0;
-  font-size: 0.72rem;
-  color: rgba(148, 163, 184, 0.7);
-}
-
-.field-group {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 10px;
-}
-
-.field-group label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: rgba(226, 232, 240, 0.75);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.input-control {
-  width: 100%;
-  padding: 12px 14px;
-  font-size: 0.95rem;
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.32);
-  background: rgba(15, 23, 42, 0.72);
-  color: rgba(248, 250, 252, 0.92);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.input-control::placeholder {
-  color: rgba(148, 163, 184, 0.55);
-}
-
-.input-control:focus {
-  outline: none;
-  border-color: rgba(56, 189, 248, 0.65);
-  background: rgba(15, 23, 42, 0.88);
-  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
-}
-
-.config-grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 22px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-@media (max-width: 1080px) {
-  .config-grid {
-    grid-template-columns: 1fr;
+  .ai-service-panel {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.68));
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 24px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    box-shadow: 0 24px 60px -28px rgba(14, 116, 144, 0.55);
+    backdrop-filter: blur(26px);
+    color: rgba(226, 232, 240, 0.92);
   }
-}
 
-.config-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.6));
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  box-shadow: inset 0 1px 0 rgba(241, 245, 249, 0.05);
-  backdrop-filter: blur(18px);
-}
+  .ai-service-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 60%);
+    opacity: 0.7;
+    pointer-events: none;
+  }
 
-.config-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at top right, rgba(45, 212, 191, 0.12), transparent 70%);
-  opacity: 0.35;
-  pointer-events: none;
-}
+  .panel-header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
 
-.config-card.hidden {
-  display: none;
-}
+  .header-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-.config-card__header,
-.config-card__body,
-.config-card__footer {
-  position: relative;
-  z-index: 1;
-}
+  .header-meta .title h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f8fafc;
+  }
 
-.config-card__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
+  .header-meta .title p {
+    margin: 6px 0 0;
+    font-size: 0.95rem;
+    color: rgba(226, 232, 240, 0.65);
+    max-width: 26rem;
+  }
 
-.config-card__header h4 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #f8fafc;
-}
+  .current-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(59, 130, 246, 0.2));
+    color: rgba(241, 245, 249, 0.92);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+  }
 
-.config-card__header p {
-  margin: 6px 0 0;
-  font-size: 0.85rem;
-  color: rgba(226, 232, 240, 0.6);
-}
+  .current-selection strong {
+    margin-top: 2px;
+    font-size: 1.1rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
 
-.config-card__body {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+  .panel-subtitle {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(129, 230, 217, 0.9);
+  }
 
-.field label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(203, 213, 225, 0.7);
-}
+  .field--deep-agent {
+    padding: 16px;
+    border: 1px dashed rgba(148, 163, 184, 0.28);
+    border-radius: 16px;
+    background: rgba(30, 41, 59, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-.config-card__footer {
-  display: flex;
-  justify-content: flex-end;
-}
+  .deep-agent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
 
-.action-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.92), rgba(14, 165, 233, 0.92));
-  color: #041823;
-  transition: transform 0.18s ease, box-shadow 0.22s ease;
-}
+  .deep-agent-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.95);
+  }
 
-.action-button[disabled] {
-  cursor: not-allowed;
-  opacity: 0.55;
-  background: linear-gradient(135deg, rgba(148, 163, 184, 0.45), rgba(100, 116, 139, 0.45));
-  box-shadow: none;
-}
+  .deep-agent-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: rgba(148, 163, 184, 0.9);
+  }
 
-.action-button:not([disabled]):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 30px -18px rgba(56, 189, 248, 0.6);
-}
+  .deep-agent-toggle input {
+    width: 16px;
+    height: 16px;
+  }
 
-.action-button[data-loading]::after {
-  content: '...';
-  margin-left: 6px;
-  animation: pulse 1s infinite ease-in-out;
-}
+  .deep-agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
 
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  background: rgba(148, 163, 184, 0.18);
-  color: rgba(226, 232, 240, 0.78);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-}
+  .deep-agent-grid--disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
 
-.status-badge[data-tone="success"] {
-  background: rgba(16, 185, 129, 0.18);
-  color: rgba(167, 243, 208, 0.95);
-  border-color: rgba(52, 211, 153, 0.35);
-}
+  .deep-agent-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
 
-.status-badge[data-tone="warning"] {
-  background: rgba(250, 204, 21, 0.16);
-  color: rgba(253, 224, 71, 0.92);
-  border-color: rgba(234, 179, 8, 0.35);
-}
+  .deep-agent-item span {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(148, 163, 184, 0.95);
+  }
 
-.status-badge[data-tone="error"] {
-  background: rgba(248, 113, 113, 0.2);
-  color: rgba(254, 226, 226, 0.95);
-  border-color: rgba(251, 113, 133, 0.4);
-}
+  .deep-agent-hint {
+    margin: 0;
+    font-size: 0.72rem;
+    color: rgba(148, 163, 184, 0.7);
+  }
 
-.status-badge[data-tone="idle"] {
-  background: rgba(148, 163, 184, 0.16);
-  color: rgba(226, 232, 240, 0.75);
-  border-color: rgba(148, 163, 184, 0.28);
-}
+  .field-group {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 10px;
+  }
 
-@keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
-}
+  .field-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.75);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .input-control {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.32);
+    background: rgba(15, 23, 42, 0.72);
+    color: rgba(248, 250, 252, 0.92);
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background 0.2s ease;
+  }
+
+  .input-control::placeholder {
+    color: rgba(148, 163, 184, 0.55);
+  }
+
+  .input-control:focus {
+    outline: none;
+    border-color: rgba(56, 189, 248, 0.65);
+    background: rgba(15, 23, 42, 0.88);
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
+  }
+
+  .config-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 22px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 1080px) {
+    .config-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .config-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.6));
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-shadow: inset 0 1px 0 rgba(241, 245, 249, 0.05);
+    backdrop-filter: blur(18px);
+  }
+
+  .config-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(45, 212, 191, 0.12), transparent 70%);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .config-card.hidden {
+    display: none;
+  }
+
+  .config-card__header,
+  .config-card__body,
+  .config-card__footer {
+    position: relative;
+    z-index: 1;
+  }
+
+  .config-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .config-card__header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f8fafc;
+  }
+
+  .config-card__header p {
+    margin: 6px 0 0;
+    font-size: 0.85rem;
+    color: rgba(226, 232, 240, 0.6);
+  }
+
+  .config-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(203, 213, 225, 0.7);
+  }
+
+  .config-card__footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.92), rgba(14, 165, 233, 0.92));
+    color: #041823;
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.22s ease;
+  }
+
+  .action-button[disabled] {
+    cursor: not-allowed;
+    opacity: 0.55;
+    background: linear-gradient(135deg, rgba(148, 163, 184, 0.45), rgba(100, 116, 139, 0.45));
+    box-shadow: none;
+  }
+
+  .action-button:not([disabled]):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 30px -18px rgba(56, 189, 248, 0.6);
+  }
+
+  .action-button[data-loading]::after {
+    content: '...';
+    margin-left: 6px;
+    animation: pulse 1s infinite ease-in-out;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: rgba(148, 163, 184, 0.18);
+    color: rgba(226, 232, 240, 0.78);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+  }
+
+  .status-badge[data-tone='success'] {
+    background: rgba(16, 185, 129, 0.18);
+    color: rgba(167, 243, 208, 0.95);
+    border-color: rgba(52, 211, 153, 0.35);
+  }
+
+  .status-badge[data-tone='warning'] {
+    background: rgba(250, 204, 21, 0.16);
+    color: rgba(253, 224, 71, 0.92);
+    border-color: rgba(234, 179, 8, 0.35);
+  }
+
+  .status-badge[data-tone='error'] {
+    background: rgba(248, 113, 113, 0.2);
+    color: rgba(254, 226, 226, 0.95);
+    border-color: rgba(251, 113, 133, 0.4);
+  }
+
+  .status-badge[data-tone='idle'] {
+    background: rgba(148, 163, 184, 0.16);
+    color: rgba(226, 232, 240, 0.75);
+    border-color: rgba(148, 163, 184, 0.28);
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 </style>

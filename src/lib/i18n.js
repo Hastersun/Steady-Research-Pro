@@ -12,7 +12,7 @@ const dictionaries = {
       statusIdle: '未连接',
       statusTesting: '测试中',
       statusReady: '连接正常',
-      statusError: '服务离线'
+      statusError: '服务离线',
     },
     layout: {
       researchControlBadge: 'Research Control',
@@ -26,7 +26,8 @@ const dictionaries = {
       researchBadge: 'Multi-source intelligence',
       researchSse: 'SSE streaming ready',
       researchHeadline: '多源智能研究工作台',
-      researchDescription: '从模型调度到搜索聚合，全程可视化研究流程。通过自定义事件驱动的 UI 外壳，实时感知研究状态。',
+      researchDescription:
+        '从模型调度到搜索聚合，全程可视化研究流程。通过自定义事件驱动的 UI 外壳，实时感知研究状态。',
       researchPlannerLabel: 'Planner',
       researchPlannerValue: '5-stage pipeline',
       researchPlannerHint: 'Plan → Search → Extract → Cluster → Synthesis',
@@ -35,23 +36,24 @@ const dictionaries = {
       researchLatencyHint: '基于最近 10 次研究的平均值',
       researchSourcesLabel: 'Sources',
       researchSourcesValue: '8 providers',
-      researchSourcesHint: '支持本地 Ollama 与主流云端 API'
+      researchSourcesHint: '支持本地 Ollama 与主流云端 API',
     },
     navigation: {
       research: 'Research 仪表盘',
       researchHint: 'Agent workflow',
       settings: 'Settings 设置',
-      settingsHint: 'Providers & 搜索'
+      settingsHint: 'Providers & 搜索',
     },
     languageSwitcher: {
       label: '界面语言',
       zh: '简体中文',
-      en: 'English'
+      en: 'English',
     },
     hero: {
       realtimeBadge: 'Realtime orchestration',
       title: 'Deep Research Agent',
-      description: '智能聚合多源信息，驱动可视化推理与搜索日志。通过事件总线与流式后端协作，实现由浅到深的洞察生成。',
+      description:
+        '智能聚合多源信息，驱动可视化推理与搜索日志。通过事件总线与流式后端协作，实现由浅到深的洞察生成。',
       capabilitySse: '⚡ SSE 推理',
       capabilitySearch: '🔎 多源搜索',
       capabilityTimeline: '🧭 时间线追踪',
@@ -64,10 +66,11 @@ const dictionaries = {
       quickStartTitle: '🎯 快速开始',
       quickStartDescription: '在左侧填写主题并选择模型，系统将自动规整研究流程并同步推理轨迹。',
       staySyncedTitle: '🔁 保持同步',
-      staySyncedDescription: 'Settings 中切换服务后，SidePanel 会自动刷新可用模型列表并提示联机状态。',
+      staySyncedDescription:
+        'Settings 中切换服务后，SidePanel 会自动刷新可用模型列表并提示联机状态。',
       exportTitle: '📦 导出结果',
       exportDescription: '完成后可在结果卡片中扩展详情，整理结构化结论与引用来源。',
-      reasoningTitle: '推理轨迹'
+      reasoningTitle: '推理轨迹',
     },
     sidePanel: {
       title: 'AI 研究配置',
@@ -87,9 +90,9 @@ const dictionaries = {
       start: '开始 AI 研究',
       progressTitle: '进度',
       progressIdle: '0% · 等待开始',
-  progressIdleLabel: '等待开始',
-  progressStopped: '已停止',
-  progressCompleted: '研究完成',
+      progressIdleLabel: '等待开始',
+      progressStopped: '已停止',
+      progressCompleted: '研究完成',
       providerMissing: '当前没有配置 AI 服务，请先前往 Settings 设置。',
       providerStatus: '当前服务：{name} · 状态：{status}{model}',
       providerStatusConnected: '已连接',
@@ -99,14 +102,14 @@ const dictionaries = {
       validationProvider: '请先在 Settings 页面配置 AI 服务',
       validationModel: '请选择或配置 AI 模型',
       validationOffline: '当前 AI 服务未连接，请先在 Settings 页面测试连接',
-  researchFailed: '研究失败: {message}',
+      researchFailed: '研究失败: {message}',
       stepPlan: '生成研究计划',
       stepSearch: '多源搜索',
       stepExtract: '内容提取',
       stepCluster: '主题聚类',
       stepSynthesis: '综合分析',
       stepComplete: '✓ 完成',
-      stepRunning: '🔄 进行中'
+      stepRunning: '🔄 进行中',
     },
     researchFlow: {
       pipelinePlan: '生成初步研究计划',
@@ -127,7 +130,7 @@ const dictionaries = {
       searchProgress: '搜索中',
       logPlaceholder: '搜索',
       logSearchLine: '[search] query#{index} 触发 -> 模拟结果 {token}',
-      logSearchLabel: '搜索'
+      logSearchLabel: '搜索',
     },
     resultsGrid: {
       title: '研究结果',
@@ -143,7 +146,7 @@ const dictionaries = {
       sectionExperiment: '实验设计建议',
       sectionRisk: '风险与限制',
       sectionTrend: '趋势洞察',
-      sectionAction: '行动清单'
+      sectionAction: '行动清单',
     },
     sourcesTable: {
       title: '来源快照',
@@ -160,7 +163,7 @@ const dictionaries = {
       badgeBlog: 'Blog',
       placeholderTitle: 'OpenAI 发布新评测基准集：更全面衡量 LLM 推理能力',
       viewLabel: '查看',
-      citeLabel: '引用'
+      citeLabel: '引用',
     },
     aiService: {
       badge: 'AI Routing',
@@ -189,22 +192,22 @@ const dictionaries = {
       remoteKeyPlaceholder: '请输入 API 密钥',
       remoteModelLabel: '模型选择',
       remoteModelPlaceholder: '请选择模型',
-  noModels: '暂无模型',
-  currentDetailsWithUrl: '使用本地Ollama服务 ({url})',
-  remoteInfoDeepseek: '高性能大语言模型，支持中英文对话',
-  remoteInfoOpenai: '领先的通用对话模型，可完成生成和分析任务',
-  remoteInfoClaude: '擅长分析和推理的安全大模型',
-  remoteInfoGemini: '谷歌最新多模态模型，擅长创意和多模态任务',
+      noModels: '暂无模型',
+      currentDetailsWithUrl: '使用本地Ollama服务 ({url})',
+      remoteInfoDeepseek: '高性能大语言模型，支持中英文对话',
+      remoteInfoOpenai: '领先的通用对话模型，可完成生成和分析任务',
+      remoteInfoClaude: '擅长分析和推理的安全大模型',
+      remoteInfoGemini: '谷歌最新多模态模型，擅长创意和多模态任务',
       statusTesting: '测试中',
       statusReady: '连接正常',
       statusOffline: '服务离线',
       statusMissingKey: '未配置',
-  statusFailed: '连接失败',
-  statusError: '连接异常',
-  statusPending: '待测试',
-  statusNoModels: '暂无模型',
+      statusFailed: '连接失败',
+      statusError: '连接异常',
+      statusPending: '待测试',
+      statusNoModels: '暂无模型',
       toastSuccess: '连接测试成功',
-      toastFailure: '连接测试失败'
+      toastFailure: '连接测试失败',
     },
     searchConfig: {
       badge: 'Search Orchestration',
@@ -237,8 +240,8 @@ const dictionaries = {
       toastSearchError: '搜索失败: {message}',
       toastSearchSuccess: '搜索完成，共返回 {count} 条结果',
       toastSaveError: '保存失败，请重试',
-      toastConfigLoaded: '已应用保存的搜索配置'
-    }
+      toastConfigLoaded: '已应用保存的搜索配置',
+    },
   },
   'en-US': {
     common: {
@@ -249,21 +252,23 @@ const dictionaries = {
       statusIdle: 'Disconnected',
       statusTesting: 'Testing',
       statusReady: 'Online',
-      statusError: 'Offline'
+      statusError: 'Offline',
     },
     layout: {
       researchControlBadge: 'Research Control',
       title: 'Steady Research Pro',
       subtitle: 'Deep Research Agent Suite',
       quickTipTitle: 'Keep research context in sync',
-      quickTipDescription: 'Once providers are configured in Settings, you can run planning, search, clustering, and synthesis in a single flow.',
+      quickTipDescription:
+        'Once providers are configured in Settings, you can run planning, search, clustering, and synthesis in a single flow.',
       footer: '© 2025 Steady Research Pro · Crafted with Astro & Tailwind',
       betaVersion: 'Beta build 0.3.2',
       betaYear: '2025',
       researchBadge: 'Multi-source intelligence',
       researchSse: 'SSE streaming ready',
       researchHeadline: 'Unified research workstation',
-      researchDescription: 'From orchestration to search aggregation, monitor every stage visually. The event-driven UI shell mirrors real-time research progress.',
+      researchDescription:
+        'From orchestration to search aggregation, monitor every stage visually. The event-driven UI shell mirrors real-time research progress.',
       researchPlannerLabel: 'Planner',
       researchPlannerValue: '5-stage pipeline',
       researchPlannerHint: 'Plan → Search → Extract → Cluster → Synthesis',
@@ -272,23 +277,24 @@ const dictionaries = {
       researchLatencyHint: 'Rolling average across the last 10 runs',
       researchSourcesLabel: 'Sources',
       researchSourcesValue: '8 providers',
-      researchSourcesHint: 'Works with local Ollama and major cloud APIs'
+      researchSourcesHint: 'Works with local Ollama and major cloud APIs',
     },
     navigation: {
       research: 'Research Dashboard',
       researchHint: 'Agent workflow',
       settings: 'Settings',
-      settingsHint: 'Providers & Search'
+      settingsHint: 'Providers & Search',
     },
     languageSwitcher: {
       label: 'Language',
       zh: '简体中文',
-      en: 'English'
+      en: 'English',
     },
     hero: {
       realtimeBadge: 'Realtime orchestration',
       title: 'Deep Research Agent',
-      description: 'Aggregate multi-source intelligence, drive visual reasoning and search logs. An event bus keeps the UI in sync with streaming backends.',
+      description:
+        'Aggregate multi-source intelligence, drive visual reasoning and search logs. An event bus keeps the UI in sync with streaming backends.',
       capabilitySse: '⚡ SSE inference',
       capabilitySearch: '🔎 Multi-source search',
       capabilityTimeline: '🧭 Timeline tracking',
@@ -299,12 +305,15 @@ const dictionaries = {
       latestOutput: 'Latest completion',
       latestOutputHint: 'Timestamp of the last run',
       quickStartTitle: '🎯 Quick start',
-      quickStartDescription: 'Provide a topic and pick a model on the left—everything else stays in sync automatically.',
+      quickStartDescription:
+        'Provide a topic and pick a model on the left—everything else stays in sync automatically.',
       staySyncedTitle: '🔁 Stay in sync',
-      staySyncedDescription: 'Updating providers in Settings refreshes available models and connection status in the SidePanel.',
+      staySyncedDescription:
+        'Updating providers in Settings refreshes available models and connection status in the SidePanel.',
       exportTitle: '📦 Export findings',
-      exportDescription: 'Open a result card for structured insights, key takeaways, and cited sources.',
-      reasoningTitle: 'Reasoning trail'
+      exportDescription:
+        'Open a result card for structured insights, key takeaways, and cited sources.',
+      reasoningTitle: 'Reasoning trail',
     },
     sidePanel: {
       title: 'Research setup',
@@ -324,9 +333,9 @@ const dictionaries = {
       start: 'Run research',
       progressTitle: 'Progress',
       progressIdle: '0% · Waiting to start',
-  progressIdleLabel: 'Waiting to start',
-  progressStopped: 'Stopped',
-  progressCompleted: 'Completed',
+      progressIdleLabel: 'Waiting to start',
+      progressStopped: 'Stopped',
+      progressCompleted: 'Completed',
       providerMissing: 'No provider configured. Please configure a service in Settings first.',
       providerStatus: 'Provider: {name} · Status: {status}{model}',
       providerStatusConnected: 'online',
@@ -336,14 +345,14 @@ const dictionaries = {
       validationProvider: 'Configure an AI provider in Settings first',
       validationModel: 'Select or configure an AI model',
       validationOffline: 'Provider is offline. Test the connection in Settings first.',
-  researchFailed: 'Research failed: {message}',
+      researchFailed: 'Research failed: {message}',
       stepPlan: 'Planning',
       stepSearch: 'Federated search',
       stepExtract: 'Content extraction',
       stepCluster: 'Topic clustering',
       stepSynthesis: 'Insight synthesis',
       stepComplete: '✓ Done',
-      stepRunning: '🔄 Running'
+      stepRunning: '🔄 Running',
     },
     researchFlow: {
       pipelinePlan: 'Drafting a research plan',
@@ -364,13 +373,14 @@ const dictionaries = {
       searchProgress: 'Searching',
       logPlaceholder: 'search',
       logSearchLine: '[search] query#{index} triggered → mock result {token}',
-      logSearchLabel: 'search'
+      logSearchLabel: 'search',
     },
     resultsGrid: {
       title: 'Research output',
       empty: 'Results will appear here once a run completes.',
       placeholderTitle: 'Result card placeholder',
-      placeholderDescription: 'After the run finishes you can expand cards for structured summaries and citations.',
+      placeholderDescription:
+        'After the run finishes you can expand cards for structured summaries and citations.',
       expand: 'Expand details',
       collapse: 'Collapse',
       moduleLabel: 'Module',
@@ -380,7 +390,7 @@ const dictionaries = {
       sectionExperiment: 'Experiment design ideas',
       sectionRisk: 'Risks & limitations',
       sectionTrend: 'Trend insights',
-      sectionAction: 'Action items'
+      sectionAction: 'Action items',
     },
     sourcesTable: {
       title: 'Source snapshots',
@@ -397,7 +407,7 @@ const dictionaries = {
       badgeBlog: 'Blog',
       placeholderTitle: 'OpenAI releases new benchmark suite for LLM reasoning',
       viewLabel: 'Preview',
-      citeLabel: 'Cite'
+      citeLabel: 'Cite',
     },
     aiService: {
       badge: 'AI Routing',
@@ -426,22 +436,22 @@ const dictionaries = {
       remoteKeyPlaceholder: 'Enter an API key',
       remoteModelLabel: 'Available models',
       remoteModelPlaceholder: 'Select a model',
-  noModels: 'No models available',
-  currentDetailsWithUrl: 'Local Ollama service ({url})',
-  remoteInfoDeepseek: 'High-performance bilingual model tuned for reasoning',
-  remoteInfoOpenai: 'Leading general-purpose models for generation and analysis',
-  remoteInfoClaude: 'Safety-first model family optimised for reasoning',
-  remoteInfoGemini: 'Google’s multimodal models built for creative tasks',
+      noModels: 'No models available',
+      currentDetailsWithUrl: 'Local Ollama service ({url})',
+      remoteInfoDeepseek: 'High-performance bilingual model tuned for reasoning',
+      remoteInfoOpenai: 'Leading general-purpose models for generation and analysis',
+      remoteInfoClaude: 'Safety-first model family optimised for reasoning',
+      remoteInfoGemini: 'Google’s multimodal models built for creative tasks',
       statusTesting: 'Testing',
       statusReady: 'Online',
       statusOffline: 'Offline',
       statusMissingKey: 'Not configured',
-  statusFailed: 'Connection failed',
-  statusError: 'Connection error',
-  statusPending: 'Pending test',
-  statusNoModels: 'No models',
+      statusFailed: 'Connection failed',
+      statusError: 'Connection error',
+      statusPending: 'Pending test',
+      statusNoModels: 'No models',
       toastSuccess: 'Connection test succeeded',
-      toastFailure: 'Connection test failed'
+      toastFailure: 'Connection test failed',
     },
     searchConfig: {
       badge: 'Search Orchestration',
@@ -474,9 +484,9 @@ const dictionaries = {
       toastSearchError: 'Search failed: {message}',
       toastSearchSuccess: 'Search completed with {count} results',
       toastSaveError: 'Failed to save. Try again.',
-      toastConfigLoaded: 'Loaded saved search configuration'
-    }
-  }
+      toastConfigLoaded: 'Loaded saved search configuration',
+    },
+  },
 };
 
 function hasWindow() {
@@ -485,7 +495,9 @@ function hasWindow() {
 
 function normaliseLocale(locale) {
   if (!locale) return DEFAULT_LOCALE;
-  const matched = SUPPORTED_LOCALES.find((item) => item.toLowerCase() === String(locale).toLowerCase());
+  const matched = SUPPORTED_LOCALES.find(
+    item => item.toLowerCase() === String(locale).toLowerCase()
+  );
   return matched || DEFAULT_LOCALE;
 }
 
@@ -530,7 +542,9 @@ function resolveKey(path, locale) {
 
 function formatTemplate(text, params = {}) {
   if (typeof text !== 'string') return text;
-  return text.replace(/\{(\w+)\}/g, (_, key) => (params[key] ?? params[key] === 0 ? params[key] : `{${key}}`));
+  return text.replace(/\{(\w+)\}/g, (_, key) =>
+    (params[key] ?? params[key] === 0) ? params[key] : `{${key}}`
+  );
 }
 
 export function getLocale() {
@@ -538,7 +552,10 @@ export function getLocale() {
 }
 
 export function t(key, params = {}, locale = currentLocale) {
-  const resolved = resolveKey(key, locale) ?? resolveKey(key, DEFAULT_LOCALE) ?? dictionaries[DEFAULT_LOCALE]?.common?.unknown;
+  const resolved =
+    resolveKey(key, locale) ??
+    resolveKey(key, DEFAULT_LOCALE) ??
+    dictionaries[DEFAULT_LOCALE]?.common?.unknown;
   return formatTemplate(resolved, params);
 }
 
@@ -562,7 +579,7 @@ export function applyTranslations(root) {
   const scope = root instanceof Element || root instanceof Document ? root : document;
   const locale = currentLocale;
   const elements = scope.querySelectorAll('[data-i18n], [data-i18n-html]');
-  elements.forEach((el) => {
+  elements.forEach(el => {
     if (!(el instanceof HTMLElement)) return;
     const key = el.dataset.i18n;
     const htmlKey = el.dataset.i18nHtml;
@@ -580,8 +597,8 @@ export function applyTranslations(root) {
       if (!attrKey) return;
       const attribute = name
         .replace('i18nAttr', '')
-        .replace(/^[A-Z]/, (match) => match.toLowerCase())
-        .replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
+        .replace(/^[A-Z]/, match => match.toLowerCase())
+        .replace(/[A-Z]/g, match => `-${match.toLowerCase()}`);
       if (!attribute) return;
       const translated = t(attrKey, {}, locale);
       if (translated !== null && translated !== undefined) {
@@ -593,7 +610,7 @@ export function applyTranslations(root) {
 
 export function onLocaleChange(callback) {
   if (!hasWindow() || typeof callback !== 'function') return () => {};
-  const handler = (event) => {
+  const handler = event => {
     const locale = event?.detail?.locale || currentLocale;
     callback(locale);
   };
@@ -615,7 +632,7 @@ export function initLocale() {
       applyTranslations,
       onLocaleChange,
       SUPPORTED_LOCALES,
-      initLocale
+      initLocale,
     };
   }
   const readyState = document.readyState;

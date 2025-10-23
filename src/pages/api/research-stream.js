@@ -8,7 +8,7 @@ export async function POST({ request }) {
   } catch (error) {
     return new Response('请求体格式错误', { status: 400 });
   }
-  
+
   const { query, model, options } = body;
 
   if (!query || !model) {
@@ -21,14 +21,14 @@ export async function POST({ request }) {
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
-      
+
       try {
         await processor.processResearchTask(
           query,
           model,
           (stepId, status, progress, message, data) => {
             // 发送进度更新
-            const payload = typeof data === 'string' ? { raw: data } : (data || {});
+            const payload = typeof data === 'string' ? { raw: data } : data || {};
             const update = {
               stepId,
               status,
@@ -36,7 +36,7 @@ export async function POST({ request }) {
               message,
               stepType: payload.stepType || stepId,
               data: payload,
-              timestamp: new Date().toISOString()
+              timestamp: new Date().toISOString(),
             };
 
             try {
@@ -61,26 +61,30 @@ export async function POST({ request }) {
           options
         );
       } catch (error) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-          stepId: 'error',
-          status: 'error',
-          message: error.message,
-          timestamp: new Date().toISOString()
-        })}\n\n`));
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              stepId: 'error',
+              status: 'error',
+              message: error.message,
+              timestamp: new Date().toISOString(),
+            })}\n\n`
+          )
+        );
         controller.close();
       }
-    }
+    },
   });
 
   return new Response(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
-    }
+    },
   });
 }
 
@@ -90,6 +94,6 @@ export async function OPTIONS() {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
-    }
+    },
   });
 }

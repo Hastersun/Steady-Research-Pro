@@ -18,7 +18,7 @@ const normalizeSampling = (options = {}) => {
     frequency_penalty,
     frequencyPenalty,
     max_tokens,
-    maxTokens
+    maxTokens,
   } = options;
 
   const sampling = {};
@@ -27,47 +27,44 @@ const normalizeSampling = (options = {}) => {
     sampling.temperature = temperature;
   }
 
-  const resolvedTopP = typeof top_p === 'number'
-    ? top_p
-    : typeof topP === 'number'
-      ? topP
-      : undefined;
+  const resolvedTopP =
+    typeof top_p === 'number' ? top_p : typeof topP === 'number' ? topP : undefined;
   if (typeof resolvedTopP === 'number') {
     sampling.top_p = resolvedTopP;
   }
 
-  const resolvedTopK = typeof top_k === 'number'
-    ? top_k
-    : typeof topK === 'number'
-      ? topK
-      : undefined;
+  const resolvedTopK =
+    typeof top_k === 'number' ? top_k : typeof topK === 'number' ? topK : undefined;
   if (typeof resolvedTopK === 'number') {
     sampling.top_k = resolvedTopK;
   }
 
-  const resolvedPresence = typeof presence_penalty === 'number'
-    ? presence_penalty
-    : typeof presencePenalty === 'number'
-      ? presencePenalty
-      : undefined;
+  const resolvedPresence =
+    typeof presence_penalty === 'number'
+      ? presence_penalty
+      : typeof presencePenalty === 'number'
+        ? presencePenalty
+        : undefined;
   if (typeof resolvedPresence === 'number') {
     sampling.presence_penalty = resolvedPresence;
   }
 
-  const resolvedFrequency = typeof frequency_penalty === 'number'
-    ? frequency_penalty
-    : typeof frequencyPenalty === 'number'
-      ? frequencyPenalty
-      : undefined;
+  const resolvedFrequency =
+    typeof frequency_penalty === 'number'
+      ? frequency_penalty
+      : typeof frequencyPenalty === 'number'
+        ? frequencyPenalty
+        : undefined;
   if (typeof resolvedFrequency === 'number') {
     sampling.frequency_penalty = resolvedFrequency;
   }
 
-  const resolvedMaxTokens = typeof max_tokens === 'number'
-    ? max_tokens
-    : typeof maxTokens === 'number'
-      ? maxTokens
-      : undefined;
+  const resolvedMaxTokens =
+    typeof max_tokens === 'number'
+      ? max_tokens
+      : typeof maxTokens === 'number'
+        ? maxTokens
+        : undefined;
   if (typeof resolvedMaxTokens === 'number') {
     sampling.maxTokens = resolvedMaxTokens;
   }
@@ -78,12 +75,12 @@ const normalizeSampling = (options = {}) => {
 const buildChatMessages = (messages = [], fallback) => {
   if (Array.isArray(messages) && messages.length) {
     return messages
-      .filter((message) => message && typeof message === 'object')
-      .map((message) => ({
+      .filter(message => message && typeof message === 'object')
+      .map(message => ({
         role: typeof message.role === 'string' ? message.role : 'user',
-        content: typeof message.content === 'string' ? message.content : ''
+        content: typeof message.content === 'string' ? message.content : '',
       }))
-      .filter((message) => message.content.length > 0);
+      .filter(message => message.content.length > 0);
   }
 
   if (typeof fallback === 'string' && fallback.trim().length) {
@@ -96,7 +93,7 @@ const buildChatMessages = (messages = [], fallback) => {
 const joinMessages = (messages = [], fallback) => {
   if (Array.isArray(messages) && messages.length) {
     return messages
-      .map((message) => {
+      .map(message => {
         if (!message) return '';
         if (typeof message === 'string') return message;
         const role = typeof message.role === 'string' ? message.role : 'user';
@@ -122,21 +119,21 @@ class HttpLLMClient {
   get samplingDefaults() {
     return {
       temperature: 0.7,
-      top_p: 0.85
+      top_p: 0.85,
     };
   }
 
   async generate(model, prompt, options = {}) {
     const sampling = {
       ...this.samplingDefaults,
-      ...normalizeSampling(options)
+      ...normalizeSampling(options),
     };
 
     return await this.client.sendRequest(prompt, {
       service: this.provider,
       model,
       sampling,
-      mode: 'generate'
+      mode: 'generate',
     });
   }
 
@@ -147,7 +144,7 @@ class HttpLLMClient {
 
     const sampling = {
       ...this.samplingDefaults,
-      ...normalizeSampling(options)
+      ...normalizeSampling(options),
     };
 
     if (!this.streamCapable || typeof this.client.sendStreamingRequest !== 'function') {
@@ -164,16 +161,20 @@ class HttpLLMClient {
     }
 
     try {
-      await this.client.sendStreamingRequest(prompt, {
-        service: this.provider,
-        model,
-        sampling,
-        mode: 'generate'
-      }, (chunk) => {
-        if (chunk) {
-          callback(chunk, false);
+      await this.client.sendStreamingRequest(
+        prompt,
+        {
+          service: this.provider,
+          model,
+          sampling,
+          mode: 'generate',
+        },
+        chunk => {
+          if (chunk) {
+            callback(chunk, false);
+          }
         }
-      });
+      );
       callback('', true);
     } catch (error) {
       callback('', true, error);
@@ -183,7 +184,7 @@ class HttpLLMClient {
   async chat(model, messages, options = {}) {
     const sampling = {
       ...this.samplingDefaults,
-      ...normalizeSampling(options)
+      ...normalizeSampling(options),
     };
 
     const payloadMessages = buildChatMessages(messages);
@@ -194,7 +195,7 @@ class HttpLLMClient {
       model,
       sampling,
       mode: 'chat',
-      messages: payloadMessages
+      messages: payloadMessages,
     });
   }
 
@@ -205,7 +206,7 @@ class HttpLLMClient {
 
     const sampling = {
       ...this.samplingDefaults,
-      ...normalizeSampling(options)
+      ...normalizeSampling(options),
     };
 
     const payloadMessages = buildChatMessages(messages);
@@ -218,7 +219,7 @@ class HttpLLMClient {
           model,
           sampling,
           mode: 'chat',
-          messages: payloadMessages
+          messages: payloadMessages,
         });
         if (response) {
           callback(response, false);
@@ -231,17 +232,21 @@ class HttpLLMClient {
     }
 
     try {
-      await this.client.sendStreamingRequest(fallbackPrompt, {
-        service: this.provider,
-        model,
-        sampling,
-        mode: 'chat',
-        messages: payloadMessages
-      }, (chunk) => {
-        if (chunk) {
-          callback(chunk, false);
+      await this.client.sendStreamingRequest(
+        fallbackPrompt,
+        {
+          service: this.provider,
+          model,
+          sampling,
+          mode: 'chat',
+          messages: payloadMessages,
+        },
+        chunk => {
+          if (chunk) {
+            callback(chunk, false);
+          }
         }
-      });
+      );
       callback('', true);
     } catch (error) {
       callback('', true, error);

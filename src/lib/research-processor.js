@@ -7,13 +7,13 @@ import ReportAgent from './agents/ReportAgent.js';
 
 const DEFAULT_SAMPLING = {
   temperature: 0.3,
-  topP: 0.85
+  topP: 0.85,
 };
 
 const STEP_MODEL_KEYS = {
   search: 'search',
   modeling: 'modeling',
-  report: 'report'
+  report: 'report',
 };
 
 const clampNumber = (value, min, max, fallback) => {
@@ -34,7 +34,7 @@ export default class ResearchTaskProcessor {
     this.agents = {
       searchAgent: agents.searchAgent || null,
       modelingAgent: agents.modelingAgent || null,
-      reportAgent: agents.reportAgent || null
+      reportAgent: agents.reportAgent || null,
     };
 
     this.status = {
@@ -42,7 +42,7 @@ export default class ResearchTaskProcessor {
       currentStep: null,
       startedAt: null,
       finishedAt: null,
-      completedSteps: []
+      completedSteps: [],
     };
 
     this.abortRequested = false;
@@ -54,7 +54,7 @@ export default class ResearchTaskProcessor {
       currentStep: this.status.currentStep,
       startedAt: this.status.startedAt,
       finishedAt: this.status.finishedAt,
-      completedSteps: [...this.status.completedSteps]
+      completedSteps: [...this.status.completedSteps],
     };
   }
 
@@ -69,39 +69,44 @@ export default class ResearchTaskProcessor {
       models: {
         search: baseModel,
         modeling: baseModel,
-        report: baseModel
+        report: baseModel,
       },
       sampling: { ...DEFAULT_SAMPLING },
-      providerMapping: { enabled: false }
+      providerMapping: { enabled: false },
     };
 
     if (!overrides || typeof overrides !== 'object') {
       return baseConfig;
     }
 
-    const explicitModels = typeof overrides.models === 'object' && overrides.models
-      ? overrides.models
-      : {};
+    const explicitModels =
+      typeof overrides.models === 'object' && overrides.models ? overrides.models : {};
 
-    const mapping = typeof overrides.providerMapping === 'object' && overrides.providerMapping
-      ? overrides.providerMapping
-      : {};
+    const mapping =
+      typeof overrides.providerMapping === 'object' && overrides.providerMapping
+        ? overrides.providerMapping
+        : {};
 
     const mappingEnabled = Boolean(mapping.enabled);
 
     const resolvedModels = {
-      search: ensureString(explicitModels.search, mappingEnabled ? mapping.search : baseModel) || baseModel,
-      modeling: ensureString(explicitModels.modeling, mappingEnabled ? mapping.modeling : baseModel) || baseModel,
-      report: ensureString(explicitModels.report, mappingEnabled ? mapping.report : baseModel) || baseModel
+      search:
+        ensureString(explicitModels.search, mappingEnabled ? mapping.search : baseModel) ||
+        baseModel,
+      modeling:
+        ensureString(explicitModels.modeling, mappingEnabled ? mapping.modeling : baseModel) ||
+        baseModel,
+      report:
+        ensureString(explicitModels.report, mappingEnabled ? mapping.report : baseModel) ||
+        baseModel,
     };
 
-    const rawSampling = typeof overrides.sampling === 'object' && overrides.sampling
-      ? overrides.sampling
-      : {};
+    const rawSampling =
+      typeof overrides.sampling === 'object' && overrides.sampling ? overrides.sampling : {};
 
     const resolvedSampling = {
       temperature: clampNumber(rawSampling.temperature, 0, 2, DEFAULT_SAMPLING.temperature),
-      topP: clampNumber(rawSampling.topP ?? rawSampling.top_p, 0, 1, DEFAULT_SAMPLING.topP)
+      topP: clampNumber(rawSampling.topP ?? rawSampling.top_p, 0, 1, DEFAULT_SAMPLING.topP),
     };
 
     const enabled = overrides.enabled ?? mappingEnabled ?? baseConfig.enabled;
@@ -115,8 +120,8 @@ export default class ResearchTaskProcessor {
       providerMapping: {
         ...baseConfig.providerMapping,
         ...mapping,
-        enabled: Boolean(mappingEnabled)
-      }
+        enabled: Boolean(mappingEnabled),
+      },
     };
   }
 
@@ -136,10 +141,10 @@ export default class ResearchTaskProcessor {
       runtime: {
         llmClient: runtime.llmClient || null,
         searchClient: runtime.searchClient || this.searchClient,
-        messages: Array.isArray(runtime.messages) ? [...runtime.messages] : []
+        messages: Array.isArray(runtime.messages) ? [...runtime.messages] : [],
       },
       results: {},
-      startedAt: Date.now()
+      startedAt: Date.now(),
     };
   }
 
@@ -151,7 +156,7 @@ export default class ResearchTaskProcessor {
     return [
       { id: 'search', label: '资料检索', weight: 0.35 },
       { id: 'modeling', label: '结构化建模', weight: 0.33 },
-      { id: 'report', label: '洞察报告', weight: 0.32 }
+      { id: 'report', label: '洞察报告', weight: 0.32 },
     ];
   }
 
@@ -173,13 +178,13 @@ export default class ResearchTaskProcessor {
         focus: options.focus,
         search: options.search,
         modeling: options.modeling,
-        report: options.report
+        report: options.report,
       },
       options.deepAgent,
       {
         llmClient,
         searchClient: this.searchClient,
-        messages: options.messages
+        messages: options.messages,
       }
     );
 
@@ -190,7 +195,7 @@ export default class ResearchTaskProcessor {
       currentStep: null,
       startedAt: new Date().toISOString(),
       finishedAt: null,
-      completedSteps: []
+      completedSteps: [],
     };
     this.abortRequested = false;
 
@@ -219,7 +224,7 @@ export default class ResearchTaskProcessor {
       if (this.abortRequested) {
         emit?.(step.id, 'error', accumulatedWeight / totalWeight, '任务已中断', {
           fallback: true,
-          reason: 'aborted'
+          reason: 'aborted',
         });
         break;
       }
@@ -230,7 +235,7 @@ export default class ResearchTaskProcessor {
 
       this.status.currentStep = step.id;
       emit?.(step.id, 'start', accumulatedWeight / totalWeight, step.label || step.id, {
-        stepType: step.stepType || step.id
+        stepType: step.stepType || step.id,
       });
 
       let result;
@@ -239,15 +244,15 @@ export default class ResearchTaskProcessor {
           const ratio = typeof progressPayload.ratio === 'number' ? progressPayload.ratio : 0;
           const absoluteProgress = (progressBase + ratio * progressStep) / totalWeight;
           emit?.(step.id, 'progress', absoluteProgress, progressPayload.message || '', {
-            ...progressPayload
+            ...progressPayload,
           });
         });
       } catch (error) {
         emit?.(step.id, 'error', progressBase / totalWeight, error.message || '步骤执行失败', {
           error: {
             message: error.message,
-            stack: error.stack
-          }
+            stack: error.stack,
+          },
         });
         throw error;
       }
@@ -259,7 +264,7 @@ export default class ResearchTaskProcessor {
       const completionPayload = {
         result,
         fallback,
-        fallbackReason: result?.metadata?.fallbackReason || null
+        fallbackReason: result?.metadata?.fallbackReason || null,
       };
 
       emit?.(
@@ -287,8 +292,8 @@ export default class ResearchTaskProcessor {
         output: null,
         metadata: {
           isFallback: true,
-          fallbackReason: 'missing_agent'
-        }
+          fallbackReason: 'missing_agent',
+        },
       };
     }
 
@@ -298,7 +303,7 @@ export default class ResearchTaskProcessor {
     const output = await agent.run(payload, runtime);
     return {
       output,
-      metadata: output?.metadata || {}
+      metadata: output?.metadata || {},
     };
   }
 
@@ -310,7 +315,7 @@ export default class ResearchTaskProcessor {
         this.agents.searchAgent = new SearchAgent({
           llmClient,
           config: context.task?.search || {},
-          searchClient: context.runtime?.searchClient || this.searchClient
+          searchClient: context.runtime?.searchClient || this.searchClient,
         });
       } else {
         if (!this.agents.searchAgent.llm && llmClient) {
@@ -319,7 +324,7 @@ export default class ResearchTaskProcessor {
         this.agents.searchAgent.searchClient = context.runtime?.searchClient || this.searchClient;
         this.agents.searchAgent.config = {
           ...this.agents.searchAgent.config,
-          ...(context.task?.search || {})
+          ...(context.task?.search || {}),
         };
       }
       return this.agents.searchAgent;
@@ -329,14 +334,14 @@ export default class ResearchTaskProcessor {
       if (!this.agents.modelingAgent) {
         this.agents.modelingAgent = new ModelingAgent({
           llmClient,
-          config: context.task?.modeling || {}
+          config: context.task?.modeling || {},
         });
       } else if (!this.agents.modelingAgent.llm && llmClient) {
         this.agents.modelingAgent.llm = llmClient;
       }
       this.agents.modelingAgent.config = {
         ...this.agents.modelingAgent.config,
-        ...(context.task?.modeling || {})
+        ...(context.task?.modeling || {}),
       };
       return this.agents.modelingAgent;
     }
@@ -345,14 +350,14 @@ export default class ResearchTaskProcessor {
       if (!this.agents.reportAgent) {
         this.agents.reportAgent = new ReportAgent({
           llmClient,
-          config: context.task?.report || {}
+          config: context.task?.report || {},
         });
       } else if (!this.agents.reportAgent.llm && llmClient) {
         this.agents.reportAgent.llm = llmClient;
       }
       this.agents.reportAgent.config = {
         ...this.agents.reportAgent.config,
-        ...(context.task?.report || {})
+        ...(context.task?.report || {}),
       };
       return this.agents.reportAgent;
     }
@@ -368,8 +373,8 @@ export default class ResearchTaskProcessor {
           config: context.task?.search || {},
           previous: {
             plan: context.results.plan?.output,
-            modeling: context.results.modeling?.output
-          }
+            modeling: context.results.modeling?.output,
+          },
         };
       case 'modeling':
         return {
@@ -377,7 +382,7 @@ export default class ResearchTaskProcessor {
           evidence: context.results.search?.output?.notes || [],
           strategy: context.results.search?.output?.strategy || {},
           modelOverride: context.task?.modeling?.model,
-          sampling: context.task?.modeling?.sampling
+          sampling: context.task?.modeling?.sampling,
         };
       case 'report':
         return {
@@ -385,12 +390,12 @@ export default class ResearchTaskProcessor {
           model: context.results.modeling?.output || {},
           evidence: context.results.search?.output?.notes || [],
           options: context.task?.report || {},
-          modelOverride: context.task?.report?.model
+          modelOverride: context.task?.report?.model,
         };
       default:
         return {
           query: context.topic,
-          context
+          context,
         };
     }
   }
@@ -404,9 +409,9 @@ export default class ResearchTaskProcessor {
       model: context.deepAgent?.models?.[modelKey] || context.baseModel,
       sampling: {
         ...baseSampling,
-        ...taskSampling
+        ...taskSampling,
       },
-      emitProgress
+      emitProgress,
     };
 
     if (stepId === 'report' && typeof context.task?.report?.onToken === 'function') {

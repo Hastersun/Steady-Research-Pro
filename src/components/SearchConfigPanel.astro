@@ -3,458 +3,464 @@
 ---
 
 <script type="module">
-// @ts-nocheck
-import { SearchAPIClient } from '../lib/search-api-client.js';
+  // @ts-nocheck
+  import { SearchAPIClient } from '../lib/search-api-client.js';
 
-(() => {
-  'use strict';
+  (() => {
+    'use strict';
 
-  const STORAGE_KEY = 'steady-research-pro:search-config';
-  const storage = typeof window !== 'undefined' ? window.localStorage : null;
+    const STORAGE_KEY = 'steady-research-pro:search-config';
+    const storage = typeof window !== 'undefined' ? window.localStorage : null;
 
-  const DEFAULT_AGENT_SETTINGS = {
-    enabled: false,
-    models: {
-      search: '',
-      modeling: '',
-      report: ''
-    },
-    sampling: {
-      temperature: 0.3,
-      topP: 0.85
-    }
-  };
-
-  const clamp = (value, min, max) => {
-    if (!Number.isFinite(value)) return value;
-    if (typeof min === 'number' && value < min) return min;
-    if (typeof max === 'number' && value > max) return max;
-    return value;
-  };
-
-  const normalizeDeepAgentConfig = (config) => {
-    const toFiniteNumber = (value) => {
-      if (typeof value === 'number') {
-        return Number.isFinite(value) ? value : null;
-      }
-      if (typeof value === 'string') {
-        const numeric = Number.parseFloat(value);
-        return Number.isFinite(numeric) ? numeric : null;
-      }
-      return null;
-    };
-
-    const normalized = {
-      enabled: Boolean(config?.enabled),
+    const DEFAULT_AGENT_SETTINGS = {
+      enabled: false,
       models: {
-        ...DEFAULT_AGENT_SETTINGS.models,
-        ...(config?.models || {})
+        search: '',
+        modeling: '',
+        report: '',
       },
       sampling: {
-        ...DEFAULT_AGENT_SETTINGS.sampling,
-        ...(config?.sampling || {})
+        temperature: 0.3,
+        topP: 0.85,
+      },
+    };
+
+    const clamp = (value, min, max) => {
+      if (!Number.isFinite(value)) return value;
+      if (typeof min === 'number' && value < min) return min;
+      if (typeof max === 'number' && value > max) return max;
+      return value;
+    };
+
+    const normalizeDeepAgentConfig = config => {
+      const toFiniteNumber = value => {
+        if (typeof value === 'number') {
+          return Number.isFinite(value) ? value : null;
+        }
+        if (typeof value === 'string') {
+          const numeric = Number.parseFloat(value);
+          return Number.isFinite(numeric) ? numeric : null;
+        }
+        return null;
+      };
+
+      const normalized = {
+        enabled: Boolean(config?.enabled),
+        models: {
+          ...DEFAULT_AGENT_SETTINGS.models,
+          ...(config?.models || {}),
+        },
+        sampling: {
+          ...DEFAULT_AGENT_SETTINGS.sampling,
+          ...(config?.sampling || {}),
+        },
+      };
+
+      normalized.models.search = (normalized.models.search || '').trim();
+      normalized.models.modeling = (
+        normalized.models.modeling ||
+        normalized.models.planning ||
+        ''
+      ).trim();
+      normalized.models.report = (normalized.models.report || '').trim();
+
+      const temperature = toFiniteNumber(normalized.sampling.temperature);
+      const topP = toFiniteNumber(normalized.sampling.topP ?? normalized.sampling.top_p);
+
+      normalized.sampling.temperature = clamp(
+        temperature ?? DEFAULT_AGENT_SETTINGS.sampling.temperature,
+        0,
+        2
+      );
+      normalized.sampling.topP = clamp(topP ?? DEFAULT_AGENT_SETTINGS.sampling.topP, 0, 1);
+
+      return normalized;
+    };
+
+    const computeConfigured = (config = {}) => ({
+      bing: Boolean(config.bing),
+      google: Boolean(config.google && config.googleCseId),
+      deepAgent: Boolean(config?.deepAgent?.enabled),
+    });
+
+    const buildConfiguredMessage = (status, fallback = '配置保存成功!') => {
+      if (!status) return fallback;
+      const enabled = [];
+      if (status.bing) enabled.push('Bing ✓');
+      if (status.google) enabled.push('Google ✓');
+      if (status.deepAgent) enabled.push('深度代理 ✓');
+      return enabled.length ? `已连接: ${enabled.join(' / ')}` : fallback;
+    };
+
+    const readStoredConfig = () => {
+      if (!storage) return null;
+      try {
+        const raw = storage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (error) {
+        console.warn('读取搜索配置失败:', error);
+        return null;
       }
     };
 
-    normalized.models.search = (normalized.models.search || '').trim();
-    normalized.models.modeling = (normalized.models.modeling || normalized.models.planning || '').trim();
-    normalized.models.report = (normalized.models.report || '').trim();
-
-    const temperature = toFiniteNumber(normalized.sampling.temperature);
-    const topP = toFiniteNumber(normalized.sampling.topP ?? normalized.sampling.top_p);
-
-    normalized.sampling.temperature = clamp(
-      temperature ?? DEFAULT_AGENT_SETTINGS.sampling.temperature,
-      0,
-      2
-    );
-    normalized.sampling.topP = clamp(
-      topP ?? DEFAULT_AGENT_SETTINGS.sampling.topP,
-      0,
-      1
-    );
-
-    return normalized;
-  };
-
-  const computeConfigured = (config = {}) => ({
-    bing: Boolean(config.bing),
-    google: Boolean(config.google && config.googleCseId),
-    deepAgent: Boolean(config?.deepAgent?.enabled)
-  });
-
-  const buildConfiguredMessage = (status, fallback = '配置保存成功!') => {
-    if (!status) return fallback;
-    const enabled = [];
-    if (status.bing) enabled.push('Bing ✓');
-    if (status.google) enabled.push('Google ✓');
-    if (status.deepAgent) enabled.push('深度代理 ✓');
-    return enabled.length ? `已连接: ${enabled.join(' / ')}` : fallback;
-  };
-
-  const readStoredConfig = () => {
-    if (!storage) return null;
-    try {
-      const raw = storage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (error) {
-      console.warn('读取搜索配置失败:', error);
-      return null;
-    }
-  };
-
-  const writeStoredConfig = (config) => {
-    if (!storage) return;
-    try {
-      storage.setItem(STORAGE_KEY, JSON.stringify(config));
-    } catch (error) {
-      console.warn('保存搜索配置失败:', error);
-    }
-  };
-
-  const refs = {
-    inputs: {},
-    toggles: {},
-    buttons: {},
-    sections: {},
-    status: null
-  };
-
-  const el = (id) => document.getElementById(id);
-
-  const assignRefs = () => {
-    refs.inputs = {
-      bingKey: el('bing-key'),
-      googleKey: el('google-key'),
-      googleCse: el('google-cse'),
-      searchQuery: el('search-query'),
-      searchAgentModel: el('search-agent-model'),
-      modelingAgentModel: el('modeling-agent-model'),
-      reportAgentModel: el('report-agent-model'),
-      agentTemperature: el('agent-temperature'),
-      agentTopP: el('agent-top-p')
+    const writeStoredConfig = config => {
+      if (!storage) return;
+      try {
+        storage.setItem(STORAGE_KEY, JSON.stringify(config));
+      } catch (error) {
+        console.warn('保存搜索配置失败:', error);
+      }
     };
 
-    refs.toggles = {
-      bing: el('use-bing'),
-      google: el('use-google'),
-      deepAgent: el('use-deep-agent')
+    const refs = {
+      inputs: {},
+      toggles: {},
+      buttons: {},
+      sections: {},
+      status: null,
     };
 
-    refs.buttons = {
-      saveConfig: el('save-config'),
-      testSearch: el('test-search')
+    const el = id => document.getElementById(id);
+
+    const assignRefs = () => {
+      refs.inputs = {
+        bingKey: el('bing-key'),
+        googleKey: el('google-key'),
+        googleCse: el('google-cse'),
+        searchQuery: el('search-query'),
+        searchAgentModel: el('search-agent-model'),
+        modelingAgentModel: el('modeling-agent-model'),
+        reportAgentModel: el('report-agent-model'),
+        agentTemperature: el('agent-temperature'),
+        agentTopP: el('agent-top-p'),
+      };
+
+      refs.toggles = {
+        bing: el('use-bing'),
+        google: el('use-google'),
+        deepAgent: el('use-deep-agent'),
+      };
+
+      refs.buttons = {
+        saveConfig: el('save-config'),
+        testSearch: el('test-search'),
+      };
+
+      refs.sections = {
+        searchResults: el('search-results'),
+        resultsContainer: el('results-container'),
+        agentAdvanced: el('agent-advanced-settings'),
+      };
+
+      refs.status = el('config-status');
     };
 
-    refs.sections = {
-      searchResults: el('search-results'),
-      resultsContainer: el('results-container'),
-      agentAdvanced: el('agent-advanced-settings')
+    const searchClient = new SearchAPIClient();
+    let isConfigured = false;
+    let cachedConfig = null;
+    let indicatorSnapshot = { message: '待配置', tone: 'idle' };
+
+    const getValue = input => (input && typeof input.value === 'string' ? input.value.trim() : '');
+    const setDisabled = (node, state) => {
+      if (node) node.disabled = !!state;
+    };
+    const toggleDisplay = (node, show, displayValue = 'block') => {
+      if (!node) return;
+      node.style.display = show ? displayValue : 'none';
     };
 
-    refs.status = el('config-status');
-  };
-
-  const searchClient = new SearchAPIClient();
-  let isConfigured = false;
-  let cachedConfig = null;
-  let indicatorSnapshot = { message: '待配置', tone: 'idle' };
-
-  const getValue = (input) => (input && typeof input.value === 'string' ? input.value.trim() : '');
-  const setDisabled = (node, state) => { if (node) node.disabled = !!state; };
-  const toggleDisplay = (node, show, displayValue = 'block') => {
-    if (!node) return;
-    node.style.display = show ? displayValue : 'none';
-  };
-
-  const parseNumericInput = (input, fallback, bounds = {}) => {
-    if (!input || typeof input.value !== 'string') return fallback;
-    if (!input.value.trim().length) return fallback;
-    const numeric = Number.parseFloat(input.value);
-    if (!Number.isFinite(numeric)) return fallback;
-    return clamp(numeric, bounds.min, bounds.max);
-  };
-
-  const setIndicator = (message, tone = 'idle') => {
-    if (!refs.status) return;
-    refs.status.textContent = message;
-    refs.status.dataset.tone = tone;
-  };
-
-  function showStatus(message, tone = 'idle', { persist = false } = {}) {
-    if (!refs.status) return;
-    if (persist) {
-      indicatorSnapshot = { message, tone };
-      setIndicator(message, tone);
-      return;
-    }
-
-    setIndicator(message || indicatorSnapshot.message, tone);
-    if (tone === 'success' || tone === 'error') {
-      setTimeout(() => {
-        setIndicator(indicatorSnapshot.message, indicatorSnapshot.tone);
-      }, 3000);
-    }
-  }
-
-  const getSelectedEngines = () =>
-    Object.entries(refs.toggles)
-      .filter(([engine, checkbox]) => engine !== 'deepAgent' && checkbox?.checked)
-      .map(([engine]) => engine);
-
-  function updateConfiguredState(config) {
-    const status = computeConfigured(config || {});
-    isConfigured = Boolean(status.bing || status.google);
-    const message = isConfigured ? buildConfiguredMessage(status, '已配置') : '待配置';
-    const tone = isConfigured ? 'success' : 'idle';
-    showStatus(message, tone, { persist: true });
-  }
-
-  const broadcastConfig = (config) => {
-    if (typeof window === 'undefined') return;
-    const deepAgent = normalizeDeepAgentConfig(config?.deepAgent);
-    const searchState = {
-      engines: Array.isArray(config?.engines) ? config.engines : [],
-      bing: config?.bing || '',
-      google: config?.google || '',
-      googleCseId: config?.googleCseId || ''
+    const parseNumericInput = (input, fallback, bounds = {}) => {
+      if (!input || typeof input.value !== 'string') return fallback;
+      if (!input.value.trim().length) return fallback;
+      const numeric = Number.parseFloat(input.value);
+      if (!Number.isFinite(numeric)) return fallback;
+      return clamp(numeric, bounds.min, bounds.max);
     };
 
-    window.steadyResearchConfig = window.steadyResearchConfig || {};
-    window.steadyResearchConfig.deepAgent = deepAgent;
-    window.steadyResearchConfig.search = searchState;
-
-    window.dispatchEvent(new CustomEvent('deepAgent:configChanged', { detail: deepAgent }));
-    window.dispatchEvent(new CustomEvent('searchConfig:updated', { detail: searchState }));
-  };
-
-  function hydrateFromConfig(config) {
-    cachedConfig = config || null;
-
-    if (refs.inputs.bingKey) refs.inputs.bingKey.value = config?.bing || '';
-    if (refs.inputs.googleKey) refs.inputs.googleKey.value = config?.google || '';
-    if (refs.inputs.googleCse) refs.inputs.googleCse.value = config?.googleCseId || '';
-    if (refs.inputs.searchQuery && !refs.inputs.searchQuery.value) {
-      refs.inputs.searchQuery.value = '人工智能行业最新趋势';
-    }
-
-    if (Array.isArray(config?.engines)) {
-      Object.entries(refs.toggles).forEach(([engine, checkbox]) => {
-        if (engine === 'deepAgent') return;
-        if (checkbox) checkbox.checked = config.engines.includes(engine);
-      });
-    } else {
-      Object.entries(refs.toggles).forEach(([engine, checkbox]) => {
-        if (engine === 'deepAgent' || !checkbox) return;
-        checkbox.checked = engine === 'bing';
-      });
-    }
-
-    const deepAgent = normalizeDeepAgentConfig(config?.deepAgent);
-
-    if (refs.toggles.deepAgent) {
-      refs.toggles.deepAgent.checked = deepAgent.enabled;
-    }
-
-    if (refs.inputs.searchAgentModel) refs.inputs.searchAgentModel.value = deepAgent.models.search || '';
-    if (refs.inputs.modelingAgentModel) refs.inputs.modelingAgentModel.value = deepAgent.models.modeling || '';
-    if (refs.inputs.reportAgentModel) refs.inputs.reportAgentModel.value = deepAgent.models.report || '';
-    if (refs.inputs.agentTemperature) refs.inputs.agentTemperature.value = deepAgent.sampling.temperature.toFixed(2);
-    if (refs.inputs.agentTopP) refs.inputs.agentTopP.value = deepAgent.sampling.topP.toFixed(2);
-
-    toggleDisplay(refs.sections.agentAdvanced, deepAgent.enabled);
-
-    broadcastConfig(config);
-    updateConfiguredState(config);
-  }
-
-  function collectAgentOptions() {
-    const enabled = Boolean(refs.toggles.deepAgent?.checked);
-    const models = {
-      search: getValue(refs.inputs.searchAgentModel),
-      modeling: getValue(refs.inputs.modelingAgentModel),
-      report: getValue(refs.inputs.reportAgentModel)
-    };
-    const sampling = {
-      temperature: parseNumericInput(
-        refs.inputs.agentTemperature,
-        DEFAULT_AGENT_SETTINGS.sampling.temperature,
-        { min: 0, max: 2 }
-      ),
-      topP: parseNumericInput(
-        refs.inputs.agentTopP,
-        DEFAULT_AGENT_SETTINGS.sampling.topP,
-        { min: 0, max: 1 }
-      )
+    const setIndicator = (message, tone = 'idle') => {
+      if (!refs.status) return;
+      refs.status.textContent = message;
+      refs.status.dataset.tone = tone;
     };
 
-    return normalizeDeepAgentConfig({
-      enabled,
-      models,
-      sampling
-    });
-  }
+    function showStatus(message, tone = 'idle', { persist = false } = {}) {
+      if (!refs.status) return;
+      if (persist) {
+        indicatorSnapshot = { message, tone };
+        setIndicator(message, tone);
+        return;
+      }
 
-  function collectConfig() {
-    return {
-      bing: getValue(refs.inputs.bingKey),
-      google: getValue(refs.inputs.googleKey),
-      googleCseId: getValue(refs.inputs.googleCse),
-      engines: getSelectedEngines(),
-      deepAgent: collectAgentOptions()
+      setIndicator(message || indicatorSnapshot.message, tone);
+      if (tone === 'success' || tone === 'error') {
+        setTimeout(() => {
+          setIndicator(indicatorSnapshot.message, indicatorSnapshot.tone);
+        }, 3000);
+      }
+    }
+
+    const getSelectedEngines = () =>
+      Object.entries(refs.toggles)
+        .filter(([engine, checkbox]) => engine !== 'deepAgent' && checkbox?.checked)
+        .map(([engine]) => engine);
+
+    function updateConfiguredState(config) {
+      const status = computeConfigured(config || {});
+      isConfigured = Boolean(status.bing || status.google);
+      const message = isConfigured ? buildConfiguredMessage(status, '已配置') : '待配置';
+      const tone = isConfigured ? 'success' : 'idle';
+      showStatus(message, tone, { persist: true });
+    }
+
+    const broadcastConfig = config => {
+      if (typeof window === 'undefined') return;
+      const deepAgent = normalizeDeepAgentConfig(config?.deepAgent);
+      const searchState = {
+        engines: Array.isArray(config?.engines) ? config.engines : [],
+        bing: config?.bing || '',
+        google: config?.google || '',
+        googleCseId: config?.googleCseId || '',
+      };
+
+      window.steadyResearchConfig = window.steadyResearchConfig || {};
+      window.steadyResearchConfig.deepAgent = deepAgent;
+      window.steadyResearchConfig.search = searchState;
+
+      window.dispatchEvent(new CustomEvent('deepAgent:configChanged', { detail: deepAgent }));
+      window.dispatchEvent(new CustomEvent('searchConfig:updated', { detail: searchState }));
     };
-  }
 
-  function validateConfigForEngines(config) {
-    const missing = [];
-    if (config.engines.includes('bing') && !config.bing) {
-      missing.push('Bing API 密钥');
-    }
-    if (config.engines.includes('google')) {
-      if (!config.google) missing.push('Google API 密钥');
-      if (!config.googleCseId) missing.push('Google CSE ID');
-    }
-    return missing;
-  }
+    function hydrateFromConfig(config) {
+      cachedConfig = config || null;
 
-  function saveConfig() {
-    const config = collectConfig();
-    writeStoredConfig(config);
-    hydrateFromConfig(config);
-    showStatus('配置保存成功!', 'success');
-  }
+      if (refs.inputs.bingKey) refs.inputs.bingKey.value = config?.bing || '';
+      if (refs.inputs.googleKey) refs.inputs.googleKey.value = config?.google || '';
+      if (refs.inputs.googleCse) refs.inputs.googleCse.value = config?.googleCseId || '';
+      if (refs.inputs.searchQuery && !refs.inputs.searchQuery.value) {
+        refs.inputs.searchQuery.value = '人工智能行业最新趋势';
+      }
 
-  async function testSearch() {
-    const config = collectConfig();
+      if (Array.isArray(config?.engines)) {
+        Object.entries(refs.toggles).forEach(([engine, checkbox]) => {
+          if (engine === 'deepAgent') return;
+          if (checkbox) checkbox.checked = config.engines.includes(engine);
+        });
+      } else {
+        Object.entries(refs.toggles).forEach(([engine, checkbox]) => {
+          if (engine === 'deepAgent' || !checkbox) return;
+          checkbox.checked = engine === 'bing';
+        });
+      }
 
-    if (!config.engines.length) {
-      showStatus('请至少选择一个搜索引擎', 'error');
-      return;
-    }
+      const deepAgent = normalizeDeepAgentConfig(config?.deepAgent);
 
-    const missing = validateConfigForEngines(config);
-    if (missing.length) {
-      showStatus(`缺少必要配置: ${missing.join('、')}`, 'error');
-      return;
-    }
+      if (refs.toggles.deepAgent) {
+        refs.toggles.deepAgent.checked = deepAgent.enabled;
+      }
 
-    const query = getValue(refs.inputs.searchQuery);
-    if (!query) {
-      showStatus('请输入搜索查询', 'error');
-      return;
-    }
+      if (refs.inputs.searchAgentModel)
+        refs.inputs.searchAgentModel.value = deepAgent.models.search || '';
+      if (refs.inputs.modelingAgentModel)
+        refs.inputs.modelingAgentModel.value = deepAgent.models.modeling || '';
+      if (refs.inputs.reportAgentModel)
+        refs.inputs.reportAgentModel.value = deepAgent.models.report || '';
+      if (refs.inputs.agentTemperature)
+        refs.inputs.agentTemperature.value = deepAgent.sampling.temperature.toFixed(2);
+      if (refs.inputs.agentTopP) refs.inputs.agentTopP.value = deepAgent.sampling.topP.toFixed(2);
 
-    showStatus('正在发起搜索...', 'idle');
-    setDisabled(refs.buttons.testSearch, true);
+      toggleDisplay(refs.sections.agentAdvanced, deepAgent.enabled);
 
-    try {
-      const results = await searchClient.testSearch({
-        query,
-        engines: config.engines,
-        bing: config.bing,
-        google: config.google,
-        googleCseId: config.googleCseId
-      });
-
-      cachedConfig = config;
+      broadcastConfig(config);
       updateConfiguredState(config);
-      renderResults(results, config.engines);
+    }
+
+    function collectAgentOptions() {
+      const enabled = Boolean(refs.toggles.deepAgent?.checked);
+      const models = {
+        search: getValue(refs.inputs.searchAgentModel),
+        modeling: getValue(refs.inputs.modelingAgentModel),
+        report: getValue(refs.inputs.reportAgentModel),
+      };
+      const sampling = {
+        temperature: parseNumericInput(
+          refs.inputs.agentTemperature,
+          DEFAULT_AGENT_SETTINGS.sampling.temperature,
+          { min: 0, max: 2 }
+        ),
+        topP: parseNumericInput(refs.inputs.agentTopP, DEFAULT_AGENT_SETTINGS.sampling.topP, {
+          min: 0,
+          max: 1,
+        }),
+      };
+
+      return normalizeDeepAgentConfig({
+        enabled,
+        models,
+        sampling,
+      });
+    }
+
+    function collectConfig() {
+      return {
+        bing: getValue(refs.inputs.bingKey),
+        google: getValue(refs.inputs.googleKey),
+        googleCseId: getValue(refs.inputs.googleCse),
+        engines: getSelectedEngines(),
+        deepAgent: collectAgentOptions(),
+      };
+    }
+
+    function validateConfigForEngines(config) {
+      const missing = [];
+      if (config.engines.includes('bing') && !config.bing) {
+        missing.push('Bing API 密钥');
+      }
+      if (config.engines.includes('google')) {
+        if (!config.google) missing.push('Google API 密钥');
+        if (!config.googleCseId) missing.push('Google CSE ID');
+      }
+      return missing;
+    }
+
+    function saveConfig() {
+      const config = collectConfig();
+      writeStoredConfig(config);
+      hydrateFromConfig(config);
+      showStatus('配置保存成功!', 'success');
+    }
+
+    async function testSearch() {
+      const config = collectConfig();
+
+      if (!config.engines.length) {
+        showStatus('请至少选择一个搜索引擎', 'error');
+        return;
+      }
+
+      const missing = validateConfigForEngines(config);
+      if (missing.length) {
+        showStatus(`缺少必要配置: ${missing.join('、')}`, 'error');
+        return;
+      }
+
+      const query = getValue(refs.inputs.searchQuery);
+      if (!query) {
+        showStatus('请输入搜索查询', 'error');
+        return;
+      }
+
+      showStatus('正在发起搜索...', 'idle');
+      setDisabled(refs.buttons.testSearch, true);
+
+      try {
+        const results = await searchClient.testSearch({
+          query,
+          engines: config.engines,
+          bing: config.bing,
+          google: config.google,
+          googleCseId: config.googleCseId,
+        });
+
+        cachedConfig = config;
+        updateConfiguredState(config);
+        renderResults(results, config.engines);
         broadcastConfig(config);
 
-      const count = Array.isArray(results) ? results.length : 0;
-      showStatus(`搜索完成，共返回 ${count} 条结果`, 'success');
-    } catch (error) {
-      const message = error?.message || '未知错误';
-      showStatus(`搜索失败: ${message}`, 'error');
-    } finally {
-      setDisabled(refs.buttons.testSearch, false);
+        const count = Array.isArray(results) ? results.length : 0;
+        showStatus(`搜索完成，共返回 ${count} 条结果`, 'success');
+      } catch (error) {
+        const message = error?.message || '未知错误';
+        showStatus(`搜索失败: ${message}`, 'error');
+      } finally {
+        setDisabled(refs.buttons.testSearch, false);
+      }
     }
-  }
 
-  function renderResults(results, engines) {
-    const container = refs.sections.resultsContainer;
-    if (!container) return;
+    function renderResults(results, engines) {
+      const container = refs.sections.resultsContainer;
+      if (!container) return;
 
-    const activeEngines = Array.isArray(engines) && engines.length
-      ? engines.map((engine) => engine.toUpperCase()).join(' / ')
-      : 'N/A';
+      const activeEngines =
+        Array.isArray(engines) && engines.length
+          ? engines.map(engine => engine.toUpperCase()).join(' / ')
+          : 'N/A';
 
-    container.innerHTML = '';
+      container.innerHTML = '';
 
-    const header = document.createElement('div');
-    header.className = 'results-meta';
-    header.textContent = `ACTIVE ENGINES · ${activeEngines}`;
-    container.appendChild(header);
+      const header = document.createElement('div');
+      header.className = 'results-meta';
+      header.textContent = `ACTIVE ENGINES · ${activeEngines}`;
+      container.appendChild(header);
 
-    if (!results || !results.length) {
-      container.insertAdjacentHTML('beforeend', '<div class="results-empty">暂无结果</div>');
+      if (!results || !results.length) {
+        container.insertAdjacentHTML('beforeend', '<div class="results-empty">暂无结果</div>');
+        toggleDisplay(refs.sections.searchResults, true);
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+      results.forEach(item => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'result-item';
+
+        const title = document.createElement('div');
+        title.className = 'result-title';
+        title.textContent = item.title || '无标题';
+        wrapper.appendChild(title);
+
+        if (item.snippet) {
+          const snippet = document.createElement('div');
+          snippet.className = 'result-snippet';
+          snippet.textContent = item.snippet;
+          wrapper.appendChild(snippet);
+        }
+
+        if (item.link || item.url) {
+          const link = document.createElement('a');
+          link.href = item.link || item.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.className = 'result-link';
+          link.textContent = '访问';
+          wrapper.appendChild(link);
+        }
+
+        fragment.appendChild(wrapper);
+      });
+
+      container.appendChild(fragment);
       toggleDisplay(refs.sections.searchResults, true);
-      return;
     }
 
-    const fragment = document.createDocumentFragment();
-    results.forEach((item) => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'result-item';
+    function init() {
+      assignRefs();
 
-      const title = document.createElement('div');
-      title.className = 'result-title';
-      title.textContent = item.title || '无标题';
-      wrapper.appendChild(title);
-
-      if (item.snippet) {
-        const snippet = document.createElement('div');
-        snippet.className = 'result-snippet';
-        snippet.textContent = item.snippet;
-        wrapper.appendChild(snippet);
+      const stored = readStoredConfig();
+      if (stored) {
+        hydrateFromConfig(stored);
+      } else {
+        updateConfiguredState(null);
+        broadcastConfig({ deepAgent: DEFAULT_AGENT_SETTINGS });
       }
 
-      if (item.link || item.url) {
-        const link = document.createElement('a');
-        link.href = item.link || item.url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.className = 'result-link';
-        link.textContent = '访问';
-        wrapper.appendChild(link);
-      }
+      toggleDisplay(refs.sections.searchResults, false);
 
-      fragment.appendChild(wrapper);
-    });
+      refs.buttons.saveConfig?.addEventListener('click', saveConfig);
+      refs.buttons.testSearch?.addEventListener('click', testSearch);
+      refs.toggles.deepAgent?.addEventListener('change', () => {
+        const enabled = Boolean(refs.toggles.deepAgent?.checked);
+        toggleDisplay(refs.sections.agentAdvanced, enabled);
+      });
+    }
 
-    container.appendChild(fragment);
-    toggleDisplay(refs.sections.searchResults, true);
-  }
+    if (typeof document === 'undefined') return;
 
-  function init() {
-    assignRefs();
-
-    const stored = readStoredConfig();
-    if (stored) {
-      hydrateFromConfig(stored);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
     } else {
-  updateConfiguredState(null);
-  broadcastConfig({ deepAgent: DEFAULT_AGENT_SETTINGS });
+      init();
     }
-
-    toggleDisplay(refs.sections.searchResults, false);
-
-    refs.buttons.saveConfig?.addEventListener('click', saveConfig);
-    refs.buttons.testSearch?.addEventListener('click', testSearch);
-    refs.toggles.deepAgent?.addEventListener('change', () => {
-      const enabled = Boolean(refs.toggles.deepAgent?.checked);
-      toggleDisplay(refs.sections.agentAdvanced, enabled);
-    });
-  }
-
-  if (typeof document === 'undefined') return;
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
+  })();
 </script>
 
 <div class="settings-panel search-config-panel" data-i18n-scope="searchConfig">
@@ -494,22 +500,45 @@ import { SearchAPIClient } from '../lib/search-api-client.js';
 
         <div class="field">
           <label for="bing-key">Bing API Key</label>
-          <input type="password" id="bing-key" class="input-control" placeholder="输入 Bing API 密钥" autocomplete="off" />
+          <input
+            type="password"
+            id="bing-key"
+            class="input-control"
+            placeholder="输入 Bing API 密钥"
+            autocomplete="off"
+          />
         </div>
 
         <div class="field">
           <label for="google-key">Google API Key</label>
-          <input type="password" id="google-key" class="input-control" placeholder="输入 Google API 密钥" autocomplete="off" />
+          <input
+            type="password"
+            id="google-key"
+            class="input-control"
+            placeholder="输入 Google API 密钥"
+            autocomplete="off"
+          />
         </div>
 
         <div class="field">
           <label for="google-cse">Google CSE ID</label>
-          <input type="text" id="google-cse" class="input-control" placeholder="输入 Google 自定义搜索引擎 ID" autocomplete="off" />
+          <input
+            type="text"
+            id="google-cse"
+            class="input-control"
+            placeholder="输入 Google 自定义搜索引擎 ID"
+            autocomplete="off"
+          />
         </div>
 
         <div class="field">
           <label for="search-query">测试查询</label>
-          <input type="text" id="search-query" class="input-control" placeholder="例如：新能源汽车市场格局" />
+          <input
+            type="text"
+            id="search-query"
+            class="input-control"
+            placeholder="例如：新能源汽车市场格局"
+          />
           <p class="field-hint">保存配置后可输入关键词进行一次快速搜索验证。</p>
         </div>
       </div>
@@ -537,26 +566,55 @@ import { SearchAPIClient } from '../lib/search-api-client.js';
           <div class="field-grid">
             <div class="field">
               <label for="search-agent-model">SearchAgent 模型</label>
-              <input type="text" id="search-agent-model" class="input-control" placeholder="如：llama3:8b" />
+              <input
+                type="text"
+                id="search-agent-model"
+                class="input-control"
+                placeholder="如：llama3:8b"
+              />
             </div>
             <div class="field">
               <label for="modeling-agent-model">ModelingAgent 模型</label>
-              <input type="text" id="modeling-agent-model" class="input-control" placeholder="如：llama3:8b" />
+              <input
+                type="text"
+                id="modeling-agent-model"
+                class="input-control"
+                placeholder="如：llama3:8b"
+              />
             </div>
             <div class="field">
               <label for="report-agent-model">ReportAgent 模型</label>
-              <input type="text" id="report-agent-model" class="input-control" placeholder="如：llama3:70b" />
+              <input
+                type="text"
+                id="report-agent-model"
+                class="input-control"
+                placeholder="如：llama3:70b"
+              />
             </div>
           </div>
 
           <div class="field-grid">
             <div class="field">
               <label for="agent-temperature">Temperature</label>
-              <input type="number" step="0.05" min="0" max="2" id="agent-temperature" class="input-control" />
+              <input
+                type="number"
+                step="0.05"
+                min="0"
+                max="2"
+                id="agent-temperature"
+                class="input-control"
+              />
             </div>
             <div class="field">
               <label for="agent-top-p">Top P</label>
-              <input type="number" step="0.01" min="0" max="1" id="agent-top-p" class="input-control" />
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                id="agent-top-p"
+                class="input-control"
+              />
             </div>
           </div>
           <p class="field-hint">上述配置会注入到每次研究请求，可在单次任务内覆盖。</p>
@@ -578,182 +636,185 @@ import { SearchAPIClient } from '../lib/search-api-client.js';
 </div>
 
 <style>
-.search-config-panel {
-  margin-top: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
+  .search-config-panel {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
 
-.search-config-panel .panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-}
+  .search-config-panel .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
 
-.search-config-panel .header-meta .title h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #f8fafc;
-}
+  .search-config-panel .header-meta .title h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #f8fafc;
+  }
 
-.search-config-panel .header-meta .title p {
-  margin-top: 0.35rem;
-  font-size: 0.85rem;
-  color: rgba(226, 232, 240, 0.7);
-}
+  .search-config-panel .header-meta .title p {
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    color: rgba(226, 232, 240, 0.7);
+  }
 
-.search-config-panel .config-grid {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
+  .search-config-panel .config-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
 
-.toggle-grid {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
+  .toggle-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
 
-.toggle-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.45);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  cursor: pointer;
-  font-size: 0.85rem;
-  color: rgba(226, 232, 240, 0.85);
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-}
+  .toggle-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: rgba(226, 232, 240, 0.85);
+    transition:
+      background 0.18s ease,
+      border-color 0.18s ease,
+      color 0.18s ease;
+  }
 
-.toggle-pill input {
-  width: 1rem;
-  height: 1rem;
-  accent-color: #22d3ee;
-}
+  .toggle-pill input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #22d3ee;
+  }
 
-.toggle-pill input:checked + span,
-.toggle-pill input:checked ~ span {
-  color: rgba(16, 185, 129, 0.95);
-}
+  .toggle-pill input:checked + span,
+  .toggle-pill input:checked ~ span {
+    color: rgba(16, 185, 129, 0.95);
+  }
 
-.toggle-pill--inline {
-  margin-left: auto;
-}
+  .toggle-pill--inline {
+    margin-left: auto;
+  }
 
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 
-.field-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: rgba(226, 232, 240, 0.85);
-}
+  .field-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.85);
+  }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
 
-.field label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: rgba(226, 232, 240, 0.82);
-}
+  .field label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.82);
+  }
 
-.field-hint {
-  font-size: 0.75rem;
-  color: rgba(148, 163, 184, 0.75);
-}
+  .field-hint {
+    font-size: 0.75rem;
+    color: rgba(148, 163, 184, 0.75);
+  }
 
-.field-hint.muted {
-  margin: 0;
-  text-align: left;
-}
+  .field-hint.muted {
+    margin: 0;
+    text-align: left;
+  }
 
-.field-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
+  .field-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 
-.footer-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
+  .footer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
 
-.action-button--ghost {
-  background: rgba(15, 23, 42, 0.55);
-  color: rgba(226, 232, 240, 0.85);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  box-shadow: none;
-}
+  .action-button--ghost {
+    background: rgba(15, 23, 42, 0.55);
+    color: rgba(226, 232, 240, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow: none;
+  }
 
-.action-button--ghost:hover {
-  transform: translateY(-1px);
-  background: rgba(30, 64, 175, 0.35);
-  color: rgba(191, 219, 254, 0.95);
-}
+  .action-button--ghost:hover {
+    transform: translateY(-1px);
+    background: rgba(30, 64, 175, 0.35);
+    color: rgba(191, 219, 254, 0.95);
+  }
 
-.search-results-card .results-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  max-height: 340px;
-  overflow-y: auto;
-}
+  .search-results-card .results-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 340px;
+    overflow-y: auto;
+  }
 
-.results-meta {
-  font-size: 0.72rem;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: rgba(148, 163, 184, 0.68);
-}
+  .results-meta {
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(148, 163, 184, 0.68);
+  }
 
-.result-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: 0.75rem;
-}
+  .result-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.75rem;
+  }
 
-.result-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
+  .result-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
 
-.result-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: rgba(226, 232, 240, 0.95);
-}
+  .result-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.95);
+  }
 
-.result-snippet {
-  font-size: 0.8rem;
-  color: rgba(148, 163, 184, 0.85);
-  margin-top: 0.35rem;
-  line-height: 1.5;
-}
+  .result-snippet {
+    font-size: 0.8rem;
+    color: rgba(148, 163, 184, 0.85);
+    margin-top: 0.35rem;
+    line-height: 1.5;
+  }
 
-.result-link {
-  font-size: 0.75rem;
-  display: inline-block;
-  margin-top: 0.4rem;
-  color: rgba(56, 189, 248, 0.95);
-  text-decoration: underline;
-}
+  .result-link {
+    font-size: 0.75rem;
+    display: inline-block;
+    margin-top: 0.4rem;
+    color: rgba(56, 189, 248, 0.95);
+    text-decoration: underline;
+  }
 
-.results-empty {
-  text-align: center;
-  padding: 1.5rem 0;
-  font-size: 0.85rem;
-  color: rgba(148, 163, 184, 0.75);
-}
+  .results-empty {
+    text-align: center;
+    padding: 1.5rem 0;
+    font-size: 0.85rem;
+    color: rgba(148, 163, 184, 0.75);
+  }
 </style>

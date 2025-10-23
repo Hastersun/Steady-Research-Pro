@@ -4,14 +4,7 @@ import { Ollama } from 'ollama';
 const normalizeOptions = (options = {}) => {
   if (!options) return {};
 
-  const {
-    topP,
-    top_p,
-    topK,
-    top_k,
-    temperature,
-    ...rest
-  } = options;
+  const { topP, top_p, topK, top_k, temperature, ...rest } = options;
 
   const normalized = { ...rest };
 
@@ -37,7 +30,7 @@ const normalizeOptions = (options = {}) => {
 class OllamaClient {
   constructor() {
     this.ollama = new Ollama({
-      host: 'http://127.0.0.1:11434' // 默认 Ollama 地址
+      host: 'http://127.0.0.1:11434', // 默认 Ollama 地址
     });
   }
 
@@ -82,8 +75,8 @@ class OllamaClient {
         options: {
           temperature: options.temperature ?? 0.7,
           top_p: options.top_p ?? options.topP ?? 0.9,
-          ...normalizeOptions(options)
-        }
+          ...normalizeOptions(options),
+        },
       });
       return response.response;
     } catch (error) {
@@ -94,7 +87,7 @@ class OllamaClient {
 
   /**
    * 流式生成文本
-   * @param {string} model - 模型名称  
+   * @param {string} model - 模型名称
    * @param {string} prompt - 提示词
    * @param {Function} callback - 流式回调函数
    * @param {Object} options - 选项
@@ -108,8 +101,8 @@ class OllamaClient {
         options: {
           temperature: options.temperature ?? 0.7,
           top_p: options.top_p ?? options.topP ?? 0.9,
-          ...normalizeOptions(options)
-        }
+          ...normalizeOptions(options),
+        },
       });
 
       for await (const chunk of stream) {
@@ -142,8 +135,8 @@ class OllamaClient {
         options: {
           temperature: options.temperature ?? 0.7,
           top_p: options.top_p ?? options.topP ?? 0.9,
-          ...normalizeOptions(options)
-        }
+          ...normalizeOptions(options),
+        },
       });
       return response.message.content;
     } catch (error) {
@@ -155,7 +148,7 @@ class OllamaClient {
   /**
    * 流式聊天对话
    * @param {string} model - 模型名称
-   * @param {Array} messages - 消息列表  
+   * @param {Array} messages - 消息列表
    * @param {Function} callback - 流式回调函数
    * @param {Object} options - 选项
    */
@@ -168,8 +161,8 @@ class OllamaClient {
         options: {
           temperature: options.temperature ?? 0.7,
           top_p: options.top_p ?? options.topP ?? 0.9,
-          ...normalizeOptions(options)
-        }
+          ...normalizeOptions(options),
+        },
       });
 
       for await (const chunk of stream) {
@@ -196,7 +189,7 @@ class OllamaClient {
     try {
       const stream = await this.ollama.pull({
         model,
-        stream: true
+        stream: true,
       });
 
       for await (const chunk of stream) {

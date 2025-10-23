@@ -5,10 +5,10 @@ import { extractJson, truncate } from './utils.js';
 const DEFAULT_ENGINES = ['bing', 'google'];
 const DEFAULT_ENGINE_OPTIONS = {
   bing: { count: 5, market: 'zh-CN' },
-  google: { num: 5, lr: 'lang_zh-CN' }
+  google: { num: 5, lr: 'lang_zh-CN' },
 };
 
-const stripBullet = (line) => line.replace(/^[-*•\d\.\)\s]+/, '').trim();
+const stripBullet = line => line.replace(/^[-*•\d\.\)\s]+/, '').trim();
 
 const deduplicateByUrl = (results = []) => {
   const seen = new Set();
@@ -31,21 +31,23 @@ const toEvidenceNotes = (rawResults, summary) => {
       topic: note.topic || note.theme || '',
       sourceUrl: note.sourceUrl || note.url || rawResults[index]?.url || '',
       engine: note.engine || rawResults[index]?.engine || '',
-      confidence: typeof note.confidence === 'number' ? note.confidence : undefined
+      confidence: typeof note.confidence === 'number' ? note.confidence : undefined,
     }));
   }
 
   // fallback：直接使用搜索结果生成初步笔记
-  return rawResults.slice(0, 8).map((result) => ({
+  return rawResults.slice(0, 8).map(result => ({
     summary: result.snippet || result.description || result.title || '',
-    evidence: [{
-      quote: result.snippet || '',
-      source: result.url,
-      confidence: 0.5
-    }],
+    evidence: [
+      {
+        quote: result.snippet || '',
+        source: result.url,
+        confidence: 0.5,
+      },
+    ],
     topic: result.title || '',
     sourceUrl: result.url,
-    engine: result.engine || 'search'
+    engine: result.engine || 'search',
   }));
 };
 
@@ -69,11 +71,7 @@ export default class SearchAgent extends BaseAgent {
    */
   async run(payload = {}, runtime = {}) {
     const startedAt = Date.now();
-    const {
-      query,
-      config = {},
-      previous = {}
-    } = payload;
+    const { query, config = {}, previous = {} } = payload;
 
     if (!query) {
       throw new Error('[SearchAgent] 缺少 query');
@@ -85,7 +83,7 @@ export default class SearchAgent extends BaseAgent {
       maxResults = 15,
       maxQueries = 4,
       apiKeys,
-      model: overrideModel
+      model: overrideModel,
     } = config;
 
     if (apiKeys) {
@@ -100,10 +98,14 @@ export default class SearchAgent extends BaseAgent {
     const strategyPrompt = `你是一名信息检索专家，需要为如下研究问题规划检索策略：
 
 研究问题：${query}
-${planSummary ? `
+${
+  planSummary
+    ? `
 研究计划概要：
 ${planSummary}
-` : ''}
+`
+    : ''
+}
 请输出 JSON，包含字段：
 - primaryQuery: 最核心的检索语句（字符串）
 - queries: 覆盖多维度的检索语句数组（3-5 个）
@@ -119,7 +121,7 @@ ${planSummary}
       strategyText = await this.invokeLLM({
         model: resolvedModel,
         prompt: strategyPrompt,
-        options: sampling
+        options: sampling,
       });
       strategyJson = extractJson(strategyText);
     } catch (error) {
@@ -133,7 +135,7 @@ ${planSummary}
     const rawQueries = Array.isArray(strategyJson?.queries) ? strategyJson.queries : [];
 
     const formattedQueries = rawQueries
-      .map((item) => stripBullet(String(item || '')))
+      .map(item => stripBullet(String(item || '')))
       .filter(Boolean)
       .slice(0, maxQueries);
 
@@ -152,24 +154,24 @@ ${planSummary}
       const searchQuery = formattedQueries[i];
       try {
         if (i > 0) {
-          await new Promise((resolve) => setTimeout(resolve, 600));
+          await new Promise(resolve => setTimeout(resolve, 600));
         }
 
         const engineOpts = {
           ...DEFAULT_ENGINE_OPTIONS,
-          ...(engineOptions || {})
+          ...(engineOptions || {}),
         };
 
         const response = await this.searchClient.search(searchQuery, engines, engineOpts);
         if (response?.success) {
           const payloadResults = Array.isArray(response.data?.results) ? response.data.results : [];
-          payloadResults.forEach((item) => {
+          payloadResults.forEach(item => {
             searchResults.push({
               title: item.title,
               snippet: item.snippet || item.description,
               url: item.url || item.link,
               displayUrl: item.displayUrl,
-              engine: item.engine || item.source || 'search'
+              engine: item.engine || item.source || 'search',
             });
           });
         } else {
@@ -184,9 +186,12 @@ ${planSummary}
 
     let summaryJson = null;
     if (uniqueResults.length) {
-      const condensed = uniqueResults.map((item, index) => (
-        `${index + 1}. 标题: ${item.title || '无标题'}\n   摘要: ${item.snippet || '无摘要'}\n   来源: ${item.url}`
-      )).join('\n');
+      const condensed = uniqueResults
+        .map(
+          (item, index) =>
+            `${index + 1}. 标题: ${item.title || '无标题'}\n   摘要: ${item.snippet || '无摘要'}\n   来源: ${item.url}`
+        )
+        .join('\n');
 
       const summaryPrompt = `以下是与“${query}”相关的搜索结果，请汇总为 JSON：
 ${truncate(condensed, 3500)}
@@ -217,7 +222,7 @@ ${truncate(condensed, 3500)}
         const summaryText = await this.invokeLLM({
           model: resolvedModel,
           prompt: summaryPrompt,
-          options: sampling
+          options: sampling,
         });
         summaryJson = extractJson(summaryText);
       } catch (error) {
@@ -232,13 +237,14 @@ ${truncate(condensed, 3500)}
     if (allQueriesFailed) fallbackReason = 'api_error';
     else if (noResultsReturned) fallbackReason = 'no_results';
     else if (summarizationFallback) fallbackReason = 'summarize_unavailable';
-    const fallbackMessage = fallbackReason === 'api_error'
-      ? '搜索接口连续失败，使用回退策略'
-      : fallbackReason === 'no_results'
-        ? '搜索结果为空，提供基础计划作为参考'
-        : fallbackReason === 'summarize_unavailable'
-          ? '摘要生成失败，展示原始搜索结果'
-          : null;
+    const fallbackMessage =
+      fallbackReason === 'api_error'
+        ? '搜索接口连续失败，使用回退策略'
+        : fallbackReason === 'no_results'
+          ? '搜索结果为空，提供基础计划作为参考'
+          : fallbackReason === 'summarize_unavailable'
+            ? '摘要生成失败，展示原始搜索结果'
+            : null;
 
     return {
       strategy: {
@@ -246,14 +252,14 @@ ${truncate(condensed, 3500)}
         queries: formattedQueries,
         engines,
         notes: strategyJson?.notes || strategyText,
-        focusAreas: strategyJson?.focusAreas || []
+        focusAreas: strategyJson?.focusAreas || [],
       },
       notes: toEvidenceNotes(uniqueResults, summaryJson),
       rawResults: uniqueResults,
       summary: {
         highlights: summaryJson?.highlights || [],
         warnings: summaryJson?.warnings || [],
-        metadata: summaryJson?.metadata || {}
+        metadata: summaryJson?.metadata || {},
       },
       metadata: {
         durationMs: finishedAt - startedAt,
@@ -265,12 +271,12 @@ ${truncate(condensed, 3500)}
         fallbackMessage,
         coverage: {
           attempted: formattedQueries.length,
-          succeeded: searchResults.length
+          succeeded: searchResults.length,
         },
         warnings: summarizationFallback ? ['summarization_fallback'] : [],
         isApiFallback: allQueriesFailed,
-        noResultsReturned
-      }
+        noResultsReturned,
+      },
     };
   }
 }

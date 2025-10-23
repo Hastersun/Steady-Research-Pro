@@ -5,7 +5,7 @@ class SearchAPIClient {
     this.apiKeys = {
       bing: null,
       google: null,
-      googleCseId: null
+      googleCseId: null,
     };
   }
 
@@ -26,8 +26,8 @@ class SearchAPIClient {
           query: query || '__search_config__',
           bingApiKey: apiKeyPayload.bing,
           googleApiKey: apiKeyPayload.google,
-          googleCseId: apiKeyPayload.googleCseId
-        })
+          googleCseId: apiKeyPayload.googleCseId,
+        }),
       });
 
       const result = await response.json();
@@ -54,8 +54,8 @@ class SearchAPIClient {
           query,
           engines,
           options,
-          apiKeys: this.apiKeys
-        })
+          apiKeys: this.apiKeys,
+        }),
       });
 
       const result = await response.json();
@@ -82,9 +82,7 @@ class SearchAPIClient {
       throw new Error('缺少测试查询');
     }
 
-    const activeEngines = Array.isArray(engines) && engines.length
-      ? engines
-      : ['bing', 'google'];
+    const activeEngines = Array.isArray(engines) && engines.length ? engines : ['bing', 'google'];
 
     const resolvedKeys = { ...this.apiKeys };
     if (bing !== undefined) resolvedKeys.bing = bing;
@@ -101,8 +99,8 @@ class SearchAPIClient {
           query,
           engines: activeEngines,
           options: {},
-          apiKeys: resolvedKeys
-        })
+          apiKeys: resolvedKeys,
+        }),
       });
 
       if (!response.ok) {
@@ -135,8 +133,8 @@ class SearchAPIClient {
           action: 'bing-only',
           query,
           options: { bing: options },
-          apiKeys: this.apiKeys
-        })
+          apiKeys: this.apiKeys,
+        }),
       });
 
       const result = await response.json();
@@ -161,8 +159,8 @@ class SearchAPIClient {
           action: 'google-only',
           query,
           options: { google: options },
-          apiKeys: this.apiKeys
-        })
+          apiKeys: this.apiKeys,
+        }),
       });
 
       const result = await response.json();
@@ -186,8 +184,8 @@ class SearchAPIClient {
         body: JSON.stringify({
           action: 'generate-queries',
           query,
-          options: { domain }
-        })
+          options: { domain },
+        }),
       });
 
       const result = await response.json();
@@ -217,15 +215,15 @@ class SearchAPIClient {
       const searchPromises = queries.map(async (query, index) => {
         // 错开搜索请求以避免API限制
         await new Promise(resolve => setTimeout(resolve, index * 1000));
-        
+
         return await this.search(query, ['bing', 'google'], {
           bing: { count: 5, ...options.bing },
-          google: { num: 5, ...options.google }
+          google: { num: 5, ...options.google },
         });
       });
 
       const results = await Promise.allSettled(searchPromises);
-      
+
       // 汇总结果
       for (const result of results) {
         if (result.status === 'fulfilled' && result.value.success) {
@@ -235,7 +233,7 @@ class SearchAPIClient {
 
       // 去重和排序
       const uniqueResults = this.deduplicateResults(allResults);
-      
+
       return {
         success: true,
         data: {
@@ -244,15 +242,14 @@ class SearchAPIClient {
           totalQueries: queries.length,
           totalResults: uniqueResults.length,
           results: uniqueResults.slice(0, 20), // 限制返回结果数量
-          queries: queries
-        }
+          queries: queries,
+        },
       };
-
     } catch (error) {
       console.error('智能研究搜索失败:', error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -297,9 +294,7 @@ class SearchAPIClient {
     if (filters.includeKeywords) {
       filtered = filtered.filter(result => {
         const text = `${result.title} ${result.snippet}`.toLowerCase();
-        return filters.includeKeywords.some(keyword => 
-          text.includes(keyword.toLowerCase())
-        );
+        return filters.includeKeywords.some(keyword => text.includes(keyword.toLowerCase()));
       });
     }
 

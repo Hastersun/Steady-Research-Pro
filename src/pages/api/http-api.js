@@ -11,40 +11,31 @@ export async function POST({ request }) {
       apiKey,
       model,
       sampling,
-      messages
+      messages,
     } = await request.json();
 
     if (!message) {
-      return new Response(
-        JSON.stringify({ error: 'Message is required' }),
-        { 
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+      return new Response(JSON.stringify({ error: 'Message is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     if (!provider || provider === 'ollama') {
-      return new Response(
-        JSON.stringify({ error: 'Invalid provider for HTTP API' }),
-        { 
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+      return new Response(JSON.stringify({ error: 'Invalid provider for HTTP API' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     if (typeof apiKey === 'string' && apiKey.trim().length > 0) {
       try {
         httpApiClient.setApiKey(provider, apiKey.trim());
       } catch (error) {
-        return new Response(
-          JSON.stringify({ error: error.message, provider }),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+        return new Response(JSON.stringify({ error: error.message, provider }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
     }
 
@@ -62,15 +53,15 @@ export async function POST({ request }) {
                 model,
                 sampling,
                 messages,
-                mode: Array.isArray(messages) ? 'chat' : 'generate'
+                mode: Array.isArray(messages) ? 'chat' : 'generate',
               },
-              (chunk) => {
+              chunk => {
                 // 发送流式数据
                 const data = `data: ${JSON.stringify({ chunk })}\n\n`;
                 controller.enqueue(new TextEncoder().encode(data));
               }
             );
-            
+
             // 发送结束标记
             controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
             controller.close();
@@ -80,15 +71,15 @@ export async function POST({ request }) {
             controller.enqueue(new TextEncoder().encode(errorData));
             controller.close();
           }
-        }
+        },
       });
 
       return new Response(responseStream, {
         headers: {
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        }
+          Connection: 'keep-alive',
+        },
       });
     } else {
       // 常规响应
@@ -98,32 +89,32 @@ export async function POST({ request }) {
         model,
         sampling,
         messages,
-        mode: Array.isArray(messages) ? 'chat' : 'generate'
+        mode: Array.isArray(messages) ? 'chat' : 'generate',
       });
 
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           response,
           provider,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         }),
-        { 
+        {
           status: 200,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
   } catch (error) {
     console.error('HTTP API error:', error);
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message || 'Internal server error',
-        provider: request.provider || 'unknown'
+        provider: request.provider || 'unknown',
       }),
-      { 
+      {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   }
@@ -133,29 +124,29 @@ export async function POST({ request }) {
 export async function GET() {
   try {
     const status = await httpApiClient.getServiceStatus();
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         status,
         services: httpApiClient.getAvailableServices(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }),
-      { 
+      {
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   } catch (error) {
     console.error('Status check error:', error);
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message || 'Failed to check service status',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }),
-      { 
+      {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   }

@@ -12,7 +12,7 @@ class OllamaAPI {
       const response = await fetch(`${this.baseUrl}/ollama`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'health' })
+        body: JSON.stringify({ action: 'health' }),
       });
       const data = await response.json();
       return data.healthy;
@@ -30,7 +30,7 @@ class OllamaAPI {
       const response = await fetch(`${this.baseUrl}/ollama`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'models' })
+        body: JSON.stringify({ action: 'models' }),
       });
       const data = await response.json();
       return data.success ? data.models : [];
@@ -48,12 +48,12 @@ class OllamaAPI {
       const response = await fetch(`${this.baseUrl}/ollama`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           action: 'generate',
           model,
           prompt,
-          options
-        })
+          options,
+        }),
       });
       const data = await response.json();
       return data.success ? data.response : null;
@@ -75,8 +75,8 @@ class OllamaAPI {
           action: 'generate',
           model,
           prompt,
-          options
-        })
+          options,
+        }),
       });
 
       if (!response.ok) {
@@ -92,7 +92,7 @@ class OllamaAPI {
 
       while (true) {
         const { value, done } = await reader.read();
-        
+
         if (done) break;
 
         const chunk = decoder.decode(value);
@@ -102,11 +102,11 @@ class OllamaAPI {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              
+
               if (data.error) {
                 throw new Error(data.error);
               }
-              
+
               if (data.chunk) {
                 onChunk(data.chunk, false);
               } else if (data.done) {
@@ -141,8 +141,8 @@ class OllamaAPI {
           action: 'chat',
           model,
           messages,
-          options
-        })
+          options,
+        }),
       });
       const data = await response.json();
       return data.success ? data.response : null;
@@ -164,8 +164,8 @@ class OllamaAPI {
           action: 'chat',
           model,
           messages,
-          options
-        })
+          options,
+        }),
       });
 
       if (!response.ok) {
@@ -181,7 +181,7 @@ class OllamaAPI {
 
       while (true) {
         const { value, done } = await reader.read();
-        
+
         if (done) break;
 
         const chunk = decoder.decode(value);
@@ -191,11 +191,11 @@ class OllamaAPI {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              
+
               if (data.error) {
                 throw new Error(data.error);
               }
-              
+
               if (data.chunk) {
                 onChunk(data.chunk, false);
               } else if (data.done) {
@@ -228,10 +228,10 @@ class OllamaAPI {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'pull',
-          model
-        })
+          model,
+        }),
       });
-      
+
       const data = await response.json();
       if (data.success) {
         onProgress?.(100);
