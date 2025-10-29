@@ -43,7 +43,9 @@
   },
   "dependencies": {
     "@astrojs/node": "^9.5.0",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^24.5.2",
+    "crypto-js": "^4.2.0",
     "node-fetch": "^3.3.2",
     "ollama": "^0.6.0"
   }
