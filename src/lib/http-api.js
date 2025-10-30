@@ -157,14 +157,7 @@ class HttpApiClient {
    */
   formatRequest(
     service,
-    {
-      message = '',
-      systemPrompt = null,
-      model,
-      sampling = {},
-      messages = [],
-      mode = 'generate',
-    } = {}
+    { message = '', systemPrompt = null, model, sampling = {}, messages = [] } = {}
   ) {
     const resolvedModel =
       typeof model === 'string' && model.trim().length ? model : DEFAULT_MODELS[service];
@@ -489,7 +482,7 @@ class HttpApiClient {
                   onChunk(content);
                 }
               }
-            } catch (e) {
+            } catch {
               // Ignore parsing errors for incomplete chunks
             }
           }

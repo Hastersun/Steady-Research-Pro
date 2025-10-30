@@ -7,7 +7,7 @@ export async function POST({ request }) {
   let body;
   try {
     body = await request.json();
-  } catch (error) {
+  } catch {
     return new Response(
       JSON.stringify({
         success: false,

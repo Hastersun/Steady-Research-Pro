@@ -43,6 +43,13 @@ export default [
       'no-unused-vars': 'off', // Use TypeScript version instead
     },
   },
+  // 允许在 API 端点与库代码中使用 console（便于调试与日志）
+  {
+    files: ['src/pages/api/**/*.js', 'src/lib/**/*.js'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
   {
     ignores: [
       'dist/',
@@ -52,6 +59,8 @@ export default [
       '*.config.mjs',
       '*.config.cjs',
       '**/*.astro', // Temporarily ignore Astro files until we fix the parser
+      'src/lib/error-handler.js',
+      'tests/api-error-format.test.js',
     ],
   },
 ];

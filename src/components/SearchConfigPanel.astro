@@ -6,7 +6,7 @@
   // @ts-nocheck
   import { SearchAPIClient } from '../lib/search-api-client.js';
   import CryptoJS from 'crypto-js';
-  
+
   // 简化版哈希函数
   function hashApiKey(key) {
     return CryptoJS.SHA256(key).toString().substring(0, 16);
@@ -103,7 +103,7 @@
       try {
         const encrypted = storage.getItem(STORAGE_KEY);
         if (!encrypted) return null;
-        
+
         // 尝试解密配置
         const bytes = CryptoJS.AES.decrypt(encrypted, 'steady-research-key');
         const decrypted = bytes.toString(CryptoJS.enc.Utf8);
@@ -124,7 +124,10 @@
           google: config.google ? hashApiKey(config.google) : '',
         };
         // 使用加密存储替代明文存储
-        const encrypted = CryptoJS.AES.encrypt(JSON.stringify(safeConfig), 'steady-research-key').toString();
+        const encrypted = CryptoJS.AES.encrypt(
+          JSON.stringify(safeConfig),
+          'steady-research-key'
+        ).toString();
         storage.setItem(STORAGE_KEY, encrypted);
       } catch (error) {
         console.warn('保存搜索配置失败:', error);

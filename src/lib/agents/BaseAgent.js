@@ -29,8 +29,7 @@ export default class BaseAgent {
    * @param {object} payload
    * @param {object} runtime
    */
-  // eslint-disable-next-line class-methods-use-this
-  async run(payload, runtime) {
+  async run() {
     throw new Error(`[${this.name}] run() 未实现`);
   }
 

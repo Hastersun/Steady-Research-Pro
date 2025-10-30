@@ -8,7 +8,7 @@ const DEFAULT_ENGINE_OPTIONS = {
   google: { num: 5, lr: 'lang_zh-CN' },
 };
 
-const stripBullet = line => line.replace(/^[-*•\d\.\)\s]+/, '').trim();
+const stripBullet = line => line.replace(/^[-*•\d.)\s]+/, '').trim();
 
 const deduplicateByUrl = (results = []) => {
   const seen = new Set();
@@ -55,6 +55,11 @@ export default class SearchAgent extends BaseAgent {
   constructor({ llmClient, config = {}, searchClient = searchApiClient } = {}) {
     super({ name: 'SearchAgent', llmClient, config });
     this.searchClient = searchClient;
+  }
+
+  // 兼容测试与外部调用：execute 别名 run
+  async execute(payload = {}, runtime = {}) {
+    return await this.run(payload, runtime);
   }
 
   /**
@@ -124,11 +129,8 @@ ${planSummary}
         options: sampling,
       });
       strategyJson = extractJson(strategyText);
-    } catch (error) {
-      const uniqueResults = deduplicateByUrl(searchResults).slice(0, maxResults);
-
-      const allQueriesFailed = searchErrors.length && searchResults.length === 0;
-      const noResultsReturned = uniqueResults.length === 0;
+    } catch {
+      // 忽略规划失败，后续使用回退策略
     }
 
     const primaryQuery = strategyJson?.primaryQuery?.trim() || query;
@@ -225,13 +227,15 @@ ${truncate(condensed, 3500)}
           options: sampling,
         });
         summaryJson = extractJson(summaryText);
-      } catch (error) {
-        console.warn('[SearchAgent] summarization failed', error);
+      } catch {
+        // 摘要生成失败，使用回退
       }
     }
 
     const finishedAt = Date.now();
     const summarizationFallback = !summaryJson;
+    const noResultsReturned = uniqueResults.length === 0;
+    const allQueriesFailed = searchErrors.length && searchResults.length === 0;
     const isFallback = allQueriesFailed || noResultsReturned || summarizationFallback;
     let fallbackReason = null;
     if (allQueriesFailed) fallbackReason = 'api_error';

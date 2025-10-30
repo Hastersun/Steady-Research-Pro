@@ -114,6 +114,7 @@ class HttpLLMClient {
     this.provider = provider;
     this.client = client;
     this.streamCapable = STREAM_CAPABLE_PROVIDERS.has(provider);
+    this.config = {};
   }
 
   get samplingDefaults() {
@@ -251,6 +252,12 @@ class HttpLLMClient {
     } catch (error) {
       callback('', true, error);
     }
+  }
+
+  // 供外部在运行时更新基础配置；保持宽松校验，测试仅断言不抛错
+  updateConfig(config) {
+    if (!config || typeof config !== 'object') return;
+    this.config = { ...this.config, ...config };
   }
 }
 

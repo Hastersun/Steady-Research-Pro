@@ -14,7 +14,13 @@ export function extractJson(text) {
   const fencedMatch = text.match(/```json\s*([\s\S]*?)```/i);
   const raw = fencedMatch ? fencedMatch[1] : text;
 
-  const startIndex = raw.search(/[\[{]/);
+  // 查找第一个 JSON 起始字符（{ 或 [）
+  const idxBrace = raw.indexOf('{');
+  const idxBracket = raw.indexOf('[');
+  const indices = [];
+  if (idxBrace !== -1) indices.push(idxBrace);
+  if (idxBracket !== -1) indices.push(idxBracket);
+  const startIndex = indices.length ? Math.min(...indices) : -1;
   if (startIndex === -1) {
     return null;
   }

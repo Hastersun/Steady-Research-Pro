@@ -7,6 +7,59 @@ class SearchAPIClient {
       google: null,
       googleCseId: null,
     };
+    this.retry = {
+      retries: 2,
+      retryOn: [429, 500, 502, 503, 504],
+      baseDelayMs: 300,
+      timeoutMs: 12000,
+    };
+  }
+
+  /**
+   * 带超时与重试的 JSON fetch
+   * @param {RequestInfo} url
+   * @param {RequestInit} init
+   * @param {{timeoutMs?:number,retries?:number,retryOn?:number[],baseDelayMs?:number}} opts
+   */
+  async _fetchJSON(url, init, opts = {}) {
+    const timeoutMs = opts.timeoutMs ?? this.retry.timeoutMs;
+    const retries = opts.retries ?? this.retry.retries;
+    const retryOn = opts.retryOn ?? this.retry.retryOn;
+    const baseDelayMs = opts.baseDelayMs ?? this.retry.baseDelayMs;
+
+    let attempt = 0;
+    let lastErr = null;
+
+    while (attempt <= retries) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const resp = await fetch(url, { ...init, signal: controller.signal });
+        clearTimeout(timeout);
+        const status = resp.status;
+        const json = await resp.json().catch(() => ({}));
+        if (!resp.ok && retryOn.includes(status) && attempt < retries) {
+          const delay = Math.min(5000, baseDelayMs * Math.pow(2, attempt));
+          await new Promise(r => setTimeout(r, delay));
+          attempt++;
+          continue;
+        }
+        return { response: resp, json, status };
+      } catch (e) {
+        clearTimeout(timeout);
+        lastErr = e;
+        // Abort/网络错误也重试
+        if (attempt < retries) {
+          const delay = Math.min(5000, baseDelayMs * Math.pow(2, attempt));
+          await new Promise(r => setTimeout(r, delay));
+          attempt++;
+          continue;
+        }
+        throw e;
+      }
+    }
+    // 理论上不会到达
+    throw lastErr || new Error('请求失败');
   }
 
   /**
@@ -18,7 +71,7 @@ class SearchAPIClient {
     this.apiKeys = { ...this.apiKeys, ...apiKeyPayload };
 
     try {
-      const response = await fetch(this.baseUrl, {
+      const { json } = await this._fetchJSON(this.baseUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -29,9 +82,7 @@ class SearchAPIClient {
           googleCseId: apiKeyPayload.googleCseId,
         }),
       });
-
-      const result = await response.json();
-      return result;
+      return json;
     } catch (error) {
       console.error('设置 API 密钥失败:', error);
       throw error;
@@ -46,7 +97,7 @@ class SearchAPIClient {
    */
   async search(query, engines = ['bing', 'google'], options = {}) {
     try {
-      const response = await fetch(this.baseUrl, {
+      const { json } = await this._fetchJSON(this.baseUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -57,9 +108,7 @@ class SearchAPIClient {
           apiKeys: this.apiKeys,
         }),
       });
-
-      const result = await response.json();
-      return result;
+      return json;
     } catch (error) {
       console.error('搜索失败:', error);
       throw error;
@@ -91,7 +140,11 @@ class SearchAPIClient {
     this.apiKeys = resolvedKeys;
 
     try {
-      const response = await fetch(this.baseUrl, {
+      const {
+        response,
+        json: result,
+        status,
+      } = await this._fetchJSON(this.baseUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -104,12 +157,13 @@ class SearchAPIClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`HTTP ${status}`);
       }
 
-      const result = await response.json();
       if (!result.success) {
-        throw new Error(result.error || '搜索失败');
+        const msg =
+          typeof result.error === 'string' ? result.error : result.error?.message || '搜索失败';
+        throw new Error(msg);
       }
 
       return result.data?.results || [];
@@ -126,7 +180,7 @@ class SearchAPIClient {
    */
   async searchBing(query, options = {}) {
     try {
-      const response = await fetch(this.baseUrl, {
+      const { json } = await this._fetchJSON(this.baseUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -136,9 +190,7 @@ class SearchAPIClient {
           apiKeys: this.apiKeys,
         }),
       });
-
-      const result = await response.json();
-      return result;
+      return json;
     } catch (error) {
       console.error('Bing 搜索失败:', error);
       throw error;
@@ -152,7 +204,7 @@ class SearchAPIClient {
    */
   async searchGoogle(query, options = {}) {
     try {
-      const response = await fetch(this.baseUrl, {
+      const { json } = await this._fetchJSON(this.baseUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -162,9 +214,7 @@ class SearchAPIClient {
           apiKeys: this.apiKeys,
         }),
       });
-
-      const result = await response.json();
-      return result;
+      return json;
     } catch (error) {
       console.error('Google 搜索失败:', error);
       throw error;
@@ -178,7 +228,7 @@ class SearchAPIClient {
    */
   async generateSearchQueries(query, domain = 'general') {
     try {
-      const response = await fetch(this.baseUrl, {
+      const { json } = await this._fetchJSON(this.baseUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -187,9 +237,7 @@ class SearchAPIClient {
           options: { domain },
         }),
       });
-
-      const result = await response.json();
-      return result;
+      return json;
     } catch (error) {
       console.error('生成查询建议失败:', error);
       throw error;
