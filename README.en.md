@@ -11,7 +11,7 @@
 
 English | [简体中文](README.md)
 
-[✨ Features](#-features) • [🚀 Quick Start](#-quick-start) • [📖 Documentation](#-documentation) • [🤝 Contributing](#-contributing)
+[⚡ 5-Min Setup](QUICKSTART.md) • [✨ Features](#-features) • [🚀 Quick Start](#-quick-start) • [📖 Documentation](#-documentation) • [🤝 Contributing](#-contributing)
 
 </div>
 
@@ -185,6 +185,7 @@ npm run lint
 - [Contributing Guide](CONTRIBUTING.md) - How to contribute to the project
 - [Security Policy](SECURITY.md) - Security vulnerability reporting process
 - [Changelog](CHANGELOG.md) - Version history and updates
+- [Roadmap](ROADMAP.md) - Future plans and features
 
 ## 🎯 Use Cases
 
