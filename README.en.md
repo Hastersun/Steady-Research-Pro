@@ -180,6 +180,11 @@ npm run lint
 - [AI Service Configuration](AI_SERVICE_SELECTOR_README.md) - Multi-AI service setup guide
 - [Search Engine Setup](SEARCH_API_SETUP.md) - Bing and Google Search API configuration
 - [Agent Protocol](docs/agents-protocol.md) - Research agent communication protocol
+- [Feature Showcase](FEATURES.md) - Detailed feature descriptions and comparisons
+- [FAQ](FAQ.md) - Frequently Asked Questions
+- [Contributing Guide](CONTRIBUTING.md) - How to contribute to the project
+- [Security Policy](SECURITY.md) - Security vulnerability reporting process
+- [Changelog](CHANGELOG.md) - Version history and updates
 
 ## 🎯 Use Cases
 

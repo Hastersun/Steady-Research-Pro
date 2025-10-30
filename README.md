@@ -178,6 +178,11 @@ npm run lint
 - [AI服务配置](AI_SERVICE_SELECTOR_README.md) - 多AI服务配置指南
 - [搜索引擎设置](SEARCH_API_SETUP.md) - Bing和Google搜索API配置
 - [代理协议](docs/agents-protocol.md) - 研究代理通信协议
+- [功能特性](FEATURES.md) - 详细功能介绍和对比
+- [常见问题](FAQ.md) - 常见问题解答
+- [贡献指南](CONTRIBUTING.md) - 如何参与项目开发
+- [安全政策](SECURITY.md) - 安全问题报告流程
+- [更新日志](CHANGELOG.md) - 版本更新历史
 
 ## 🎯 使用场景
 
