@@ -154,10 +154,11 @@ Legend: ✅ Fully Supported | ⚠️ Partially/Limited | ❌ Not Available | �
   - Best for: Privacy, no recurring costs
 
 - **Option 2 (Cloud AI - Pay as You Go)**:
-  - OpenAI: ~$0.001-0.03 per 1K tokens
-  - DeepSeek: ~$0.0001-0.001 per 1K tokens (cheapest!)
+  - OpenAI: ~$0.001-0.03 per 1K tokens (as of Q4 2024, check current pricing)
+  - DeepSeek: ~$0.0001-0.001 per 1K tokens (as of Q4 2024, check current pricing)
   - Typical research: $0.10-$1.00
   - Best for: Quality, speed
+  - **Note**: Prices vary by service and change over time. Check provider websites for current rates.
 
 - **Search APIs (Optional)**:
   - Bing: 1000 free queries/month, then $7/1000
@@ -187,8 +188,10 @@ Legend: ✅ Fully Supported | ⚠️ Partially/Limited | ❌ Not Available | �
 | **Local Option** | ✅ Yes (Ollama) | ❌ No | ❌ No | ❌ No | ❌ No |
 | **Open Source** | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No |
 | **Self-Hosted** | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No |
-| **Data Retention** | You Control | 30 days+ | Unknown | 90 days+ | Unknown |
+| **Data Retention** | You Control | 30 days+ | Not Publicly Disclosed | 90 days+ | Not Publicly Disclosed |
 | **Third-Party Sharing** | No | Per Policy | Per Policy | Per Policy | Per Policy |
+
+*Note: Privacy policies are subject to change. Always review current policies on provider websites. Data last verified: October 2024.*
 
 **Privacy Score:**
 - 🥇 **Steady Research Pro (with Ollama)**: 10/10 - Complete control
@@ -228,7 +231,9 @@ Legend: ✅ Fully Supported | ⚠️ Partially/Limited | ❌ Not Available | �
 
 ## Feature Roadmap Comparison
 
-### Near-Term (Next 3 months)
+**Note**: Planned features are subject to change based on community feedback and development priorities. See [ROADMAP.md](ROADMAP.md) for detailed timelines.
+
+### Near-Term (Target: Next 3 months)
 
 | Feature | Steady Research Pro | ChatGPT | Perplexity | Others |
 |---------|---------------------|---------|------------|--------|
@@ -237,7 +242,7 @@ Legend: ✅ Fully Supported | ⚠️ Partially/Limited | ❌ Not Available | �
 | Research Templates | 🚧 Planned | ❌ No | ❌ No | ❌ No |
 | Browser Extensions | 🚧 Planned | ✅ Yes | ❌ No | ⚠️ Some |
 
-### Long-Term (6-12 months)
+### Long-Term (Target: 6-12 months)
 
 | Feature | Steady Research Pro | ChatGPT | Perplexity | Others |
 |---------|---------------------|---------|------------|--------|
@@ -245,6 +250,8 @@ Legend: ✅ Fully Supported | ⚠️ Partially/Limited | ❌ Not Available | �
 | Collaboration | 🚧 Planned | ⚠️ Limited | ❌ No | ⚠️ Some |
 | Custom Models | 🚧 Planned | ❌ No | ❌ No | ❌ No |
 | Enterprise Features | 🚧 Planned | ✅ Yes | ✅ Yes | ✅ Yes |
+
+*Disclaimer: Roadmap items are aspirational and subject to change. No guarantees on delivery dates.*
 
 ---
 
