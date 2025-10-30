@@ -1,161 +1,243 @@
-# Steady Research Pro — Deep Fix Report
+# 🔬 Steady Research Pro
 
-[English](README.en.md) | [简体中文](README.md)
+<div align="center">
 
-## Overview
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16-brightgreen)](https://nodejs.org/)
+[![Astro](https://img.shields.io/badge/Astro-5.14.8-FF5D01?logo=astro)](https://astro.build/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-Steady Research Pro is an intelligent research assistant UI built with Astro + Tailwind CSS + Ollama. It provides deep research and analysis capabilities with a clean, responsive interface.
+**An AI-powered research assistant that makes deep research simple and efficient**
+
+English | [简体中文](README.md)
+
+[✨ Features](#-features) • [🚀 Quick Start](#-quick-start) • [📖 Documentation](#-documentation) • [🤝 Contributing](#-contributing)
+
+</div>
+
+---
+
+## 📖 About
+
+Steady Research Pro is a modern intelligent research assistant platform built with **Astro + Tailwind CSS + Ollama**. It combines AI large language models with multi-source information retrieval to provide an all-in-one deep research solution for researchers, students, and content creators.
+
+### 🌟 Why Choose Steady Research Pro?
+
+- 🤖 **Multiple AI Services** - Support for local Ollama, OpenAI, DeepSeek, Claude, Google Gemini, and more
+- 🔍 **Intelligent Multi-Source Search** - Integrate Bing and Google Search APIs with automatic aggregation and deduplication
+- 📊 **Visual Progress Tracking** - Real-time display of research progress and reasoning traces
+- 🎨 **Elegant User Interface** - Modern responsive design based on Tailwind CSS
+- 🔄 **Streaming Data Processing** - Support for real-time streaming responses for smooth interactions
+- 🌐 **Fully Open Source** - ISC license, free to use and modify
 
 ## What’s Fixed
 
-### ✅ Issues Resolved
+## 💡 Key Advantages
 
-1. TypeScript typing errors
-   - Fixed `currentStep` type inference in `ResearchAgentUI.astro`
-   - Resolved "Property 'start/finish/addLine' does not exist on type 'never'" errors
-   - Fixed all TypeScript issues in `OllamaPanel.astro`
-   - Added proper type assertions and null checks
+### 🆓 Completely Free
+- Open-source code, free to use and modify
+- Support for local Ollama models, no API fees
+- Optional cloud AI services for flexibility
 
-2. Tailwind CSS configuration warning
-   - Removed deprecated `@tailwindcss/line-clamp` plugin
-   - Tailwind CSS v3.3+ includes line-clamp natively
+### 🔒 Privacy & Security
+- Local operation mode, data stays on your device
+- API keys stored locally
+- Full control over data security
 
-3. Component event conflicts
-   - Fixed duplicate listeners on the same button in `ResearchAgentUI` and `SidePanel`
-   - Refactored to a custom-event based communication mechanism
-   - `SidePanel` owns research logic; `ResearchAgentUI` focuses on UI animations
+### ⚡ High Performance
+- Astro static generation for ultra-fast loading
+- Streaming responses with real-time feedback
+- Optimized search aggregation algorithms
 
-4. Module import issues
-   - Removed dependency on a non-existent `/src/lib/ollama-api.js` import path
-   - Simplified `OllamaPanel` implementation to use the Fetch API directly
+### 🎨 User-Friendly
+- Intuitive user interface
+- Real-time progress visualization
+- Responsive design for all devices
 
-5. Code structure improvements
-   - Cleaned up redundant code blocks
-   - Optimized script execution order
-   - Clearer separation of concerns across components
-   - Better error handling and edge-case checks
+## ✨ Features
 
-### ⚠️ Notes
+### Core Capabilities
 
-1. API routes
-   - API routes only support POST; sending GET will log a warning (expected)
-   - All API endpoints (`/api/ollama`, `/api/research`, etc.) require POST
+- 🧠 **Intelligent Research Planning** - AI automatically analyzes research topics and generates structured plans
+- 🔍 **Multi-Source Search & Aggregation** - Search multiple engines simultaneously with smart deduplication and ranking
+- 📈 **Real-Time Progress Tracking** - Visual display of research stages, progress, and status
+- 🔬 **Reasoning Trace Display** - Transparent view of AI's thought process and reasoning chain
+- 💬 **Multiple AI Model Support** - Flexible switching between different AI services and models
 
-2. Ollama dependency
-   - The project depends on a local Ollama service at http://127.0.0.1:11434
-   - Ensure Ollama is running to access full functionality
+### Technical Highlights
 
-## Features
+- ⚡ **Astro Static Generation** - Fast loading with excellent SEO performance
+- 🎨 **Tailwind CSS** - Modern responsive UI design
+- 🤖 **Ollama Integration** - Support for locally deployed open-source AI models
+- 🌊 **Streaming Responses** - Server-Sent Events for smooth data streaming
+- 📱 **Mobile-Friendly** - Fully responsive design for all screen sizes
+- 🔒 **Privacy Protection** - Local operation mode keeps data on your device
 
-- ✅ Intelligent research plan generation
-- ✅ Multi-source search and aggregation
-- ✅ Real-time progress tracking and visualization
-- ✅ Chain-of-thought style trace display
-- ✅ Ollama model integration
-- ✅ Responsive design (mobile-friendly)
-- ✅ Streamed data handling
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-src/
-├── components/
-│   ├── ResearchAgentUI.astro      # Main UI component
-│   ├── OllamaPanel.astro          # Ollama control panel
-│   └── agent/
-│       ├── SidePanel.astro        # Side configuration panel
-│       └── ResultsGrid.astro      # Results grid
-├── lib/
-│   ├── ollama-client.js           # Ollama client helper
-│   ├── ollama-api.js              # API helper functions
-│   └── research-processor.js      # Research flow processor
-├── pages/
-│   ├── index.astro                # Main page
-│   └── api/                       # API endpoints
-│       ├── ollama.js              # Ollama API
-│       ├── ollama-stream.js       # Streaming generation
-│       ├── research.js            # Research API
-│       └── research-stream.js     # Streaming research
-└── styles/
-    └── global.css                 # Global styles
+Steady-Research-Pro/
+├── src/
+│   ├── components/          # Astro components
+│   │   ├── ResearchAgentUI.astro      # Main research interface
+│   │   ├── OllamaPanel.astro          # AI service control panel
+│   │   ├── AIServiceSelector.astro    # AI service selector
+│   │   └── agent/                     # Research agent components
+│   │       ├── SidePanel.astro        # Configuration sidebar
+│   │       └── ResultsGrid.astro      # Results display grid
+│   ├── lib/                 # Utility libraries
+│   │   ├── ollama-client.js           # Ollama client
+│   │   ├── http-api.js                # HTTP API client
+│   │   ├── search-api-client.js       # Search API client
+│   │   └── research-processor.js      # Research flow processor
+│   ├── pages/               # Pages and API routes
+│   │   ├── index.astro                # Home page
+│   │   └── api/                       # API endpoints
+│   │       ├── ollama.js              # Ollama API
+│   │       ├── http-api.js            # HTTP LLM API
+│   │       ├── research.js            # Research API
+│   │       └── search.js              # Search API
+│   └── styles/
+│       └── global.css                 # Global styles
+├── docs/                    # Documentation
+│   ├── API.md                         # API documentation
+│   └── agents-protocol.md             # Agent protocol docs
+├── tests/                   # Test files
+└── public/                  # Static assets
 ```
 
-## Getting Started
+## 🚀 Quick Start
 
-1. Start the dev server
+### Prerequisites
 
-```powershell
-npm run dev
-```
+- **Node.js** 16 or higher
+- **npm** or **yarn**
+- **Ollama** (optional, for local AI models)
 
-2. Build for production
+### Installation
 
-```powershell
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Hastersun/Steady-Research-Pro.git
+   cd Steady-Research-Pro
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open the application**
+   
+   Visit `http://localhost:4321` in your browser
+
+### Configure AI Services
+
+#### Using Local Ollama (Recommended for beginners)
+
+1. Install [Ollama](https://ollama.ai/)
+2. Pull a model: `ollama pull llama2`
+3. Start the Ollama service
+4. Select "Local Ollama" in the application
+
+#### Using Cloud AI Services
+
+Configure your API keys in the AI service selector:
+- OpenAI
+- DeepSeek
+- Claude (Anthropic)
+- Google Gemini
+
+For detailed configuration, see [AI Service Configuration](AI_SERVICE_SELECTOR_README.md)
+
+### Available Commands
+
+```bash
+# Build for production
 npm run build
-```
 
-3. Preview the build
-
-```powershell
+# Preview production build
 npm run preview
+
+# Run tests
+npm test
+
+# Format code
+npm run format
+
+# Lint code
+npm run lint
 ```
 
-## Requirements
+## 📖 Documentation
 
-- Node.js 16+
-- npm or yarn
-- Ollama (installed and running locally)
+- [API Documentation](docs/API.md) - Complete REST API reference
+- [AI Service Configuration](AI_SERVICE_SELECTOR_README.md) - Multi-AI service setup guide
+- [Search Engine Setup](SEARCH_API_SETUP.md) - Bing and Google Search API configuration
+- [Agent Protocol](docs/agents-protocol.md) - Research agent communication protocol
 
-## Changelog
+## 🎯 Use Cases
 
-v1.0.6 — 2025-01-27
-- Removed creativity parameter control from SidePanel
-- Simplified research configuration; depth level is now a single row
-- Fixed temperature at 0.7 to keep generation quality consistent
-- Improved panel layout and usability
+### Target Users
 
-v1.0.5 — 2025-01-27
-- Removed SourcesTable component
-- Simplified layout to focus on core research features
-- Reduced UI complexity; improved UX
-- Faster initial load
+- 📚 **Academic Researchers** - Quickly gather and organize research materials
+- ✍️ **Content Creators** - Deep research for writing materials
+- 👨‍💼 **Business Analysts** - Market research and competitor analysis
+- 🎓 **Students** - Topic research and essay writing
+- 💡 **Product Managers** - User research and industry trend analysis
 
-v1.0.4 — 2025-01-27
-- Removed temperature control from OllamaPanel
-- Simplified model configuration with two-column layout
-- Removed slider and related listeners
-- Focused on core model management
+### Typical Applications
 
-v1.0.3 — 2025-01-27
-- Removed quick test feature from OllamaPanel
-- Cleaner UI for model management and service status
-- Removed related code and listeners
-- Overall simplification and UX improvements
+- Literature reviews for academic papers
+- Technology trend research reports
+- Market analysis and competitive research
+- In-depth news event analysis
+- Knowledge base construction and organization
 
-v1.0.2 — 2025-01-27
-- Fixed all TypeScript errors
-- Removed dependency on missing modules
-- Improved component communication
-- Better error handling and edge checks
-- No more build warnings or errors
+## 🤝 Contributing
 
-v1.0.1 — 2025-01-27
-- Fixed TypeScript errors
-- Improved component communication
-- Removed deprecated Tailwind plugin
-- Cleaner code structure and maintainability
+We welcome all forms of contributions! Whether it's reporting bugs, suggesting new features, or submitting code improvements.
 
-v1.0.0 — Initial
-- Core features
-- Astro + Tailwind CSS + Ollama integration
+### How to Contribute
 
-## Developer Notes
+1. Fork this repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-- Built with the Astro static site generator
-- UI styled with Tailwind CSS and HyperUI-inspired patterns
-- All client scripts tuned with TypeScript checks
-- Supports all modern browsers
+For detailed contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## Summary
+## 📄 License
 
-All known build errors and warnings have been resolved. The project builds and runs successfully with a clearer component responsibility split. For best results, ensure the local Ollama service is running before use.
+This project is licensed under the [ISC License](LICENSE).
+
+## 🙏 Acknowledgments
+
+Thanks to the following open-source projects and services:
+
+- [Astro](https://astro.build/) - Modern static site generator
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Ollama](https://ollama.ai/) - Run large language models locally
+- [HyperUI](https://www.hyperui.dev/) - Tailwind CSS component library
+
+## 💬 Contact & Support
+
+- 🐛 [Report a Bug](https://github.com/Hastersun/Steady-Research-Pro/issues)
+- 💡 [Request a Feature](https://github.com/Hastersun/Steady-Research-Pro/issues)
+- ⭐ If this project helps you, please give us a Star!
+
+---
+
+<div align="center">
+
+**If you find this project helpful, please ⭐Star us!**
+
+Made with ❤️ by [Hastersun](https://github.com/Hastersun)
+
+</div>

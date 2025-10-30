@@ -15,10 +15,33 @@
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
-  "author": "",
+  "author": "Hastersun",
   "license": "ISC",
-  "keywords": [],
-  "description": "",
+  "keywords": [
+    "research",
+    "ai",
+    "ollama",
+    "astro",
+    "tailwindcss",
+    "research-assistant",
+    "llm",
+    "chatbot",
+    "search-engine",
+    "deepseek",
+    "openai",
+    "claude",
+    "gemini",
+    "knowledge-management"
+  ],
+  "description": "An AI-powered research assistant that makes deep research simple and efficient",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hastersun/Steady-Research-Pro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Hastersun/Steady-Research-Pro/issues"
+  },
+  "homepage": "https://github.com/Hastersun/Steady-Research-Pro#readme",
   "devDependencies": {
     "@astrojs/tailwind": "^6.0.2",
     "@eslint/js": "^9.38.0",
