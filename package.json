@@ -1,52 +1,77 @@
 {
-  "name": "steady-research-pro",
+  "name": "astro-tailwind-ollama",
   "version": "1.0.0",
-  "private": true,
   "type": "module",
-  "main": "index.js",
+  "description": "A modern AI chat web application built with Astro.js, Tailwind CSS, and Ollama AI",
+  "keywords": [
+    "astro",
+    "tailwindcss",
+    "ollama",
+    "ai",
+    "chat",
+    "llm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/yourusername/astro-tailwind-ollama#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/astro-tailwind-ollama.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/astro-tailwind-ollama/issues"
+  },
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "start": "astro dev",
+    "build": "astro check && astro build",
     "preview": "astro preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "eslint . --ext .js,.ts,.astro",
-    "lint:fix": "eslint . --ext .js,.ts,.astro --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
-  },
-  "author": "",
-  "license": "ISC",
-  "keywords": [],
-  "description": "",
-  "devDependencies": {
-    "@astrojs/tailwind": "^6.0.2",
-    "@eslint/js": "^9.38.0",
-    "@tailwindcss/aspect-ratio": "^0.4.2",
-    "@tailwindcss/forms": "^0.5.9",
-    "@tailwindcss/line-clamp": "^0.4.4",
-    "@tailwindcss/typography": "^0.5.15",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "@typescript-eslint/parser": "^8.46.2",
-    "astro": "^5.14.8",
-    "astro-eslint-parser": "^1.2.2",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^9.38.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-astro": "^1.3.1",
-    "eslint-plugin-prettier": "^5.5.4",
-    "postcss": "^8.5.6",
-    "prettier": "^3.6.2",
-    "prettier-plugin-astro": "^0.14.1",
-    "tailwindcss": "^3.4.17",
-    "vitest": "^3.2.4"
+    "astro": "astro",
+    "server": "tsx src/server.ts",
+    "server:dev": "nodemon --exec tsx src/server.ts",
+    "server:watch": "nodemon --watch src --ext ts --exec tsx src/server.ts"
   },
   "dependencies": {
-    "@astrojs/node": "^9.5.0",
-    "@types/crypto-js": "^4.2.2",
-    "@types/node": "^24.5.2",
-    "crypto-js": "^4.2.0",
-    "node-fetch": "^3.3.2",
-    "ollama": "^0.6.0"
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/react": "^4.4.0",
+    "@astrojs/tailwind": "^6.0.2",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@supabase/auth-ui-react": "^0.4.7",
+    "@supabase/auth-ui-shared": "^0.1.8",
+    "@supabase/supabase-js": "^2.76.1",
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "astro": "^5.14.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "lucide-react": "^0.546.0",
+    "ollama": "^0.6.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^3.4.18",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.7.2",
+    "daisyui": "^5.3.10",
+    "nodemon": "^3.1.10",
+    "tsx": "^4.20.6"
   }
 }
