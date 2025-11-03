@@ -9,14 +9,32 @@
 
 一个现代化的 AI 聊天 Web 应用程序，集成了 Astro.js、Tailwind CSS 和 Ollama AI
 
-[在线演示](http://localhost:4321) • [快速开始](#-快速开始) • [文档](#-项目结构)
+[在线演示](http://localhost:4321) • [快速开始](#-快速开始) • [文档](#-文档索引)
 
 </div>
+
+## 🎉 最新更新 v1.2.0
+
+### 🌓 Dark Mode 支持
+- ✅ 完整的深色模式功能
+- ✅ 自动检测系统主题偏好
+- ✅ 一键切换，平滑过渡
+- ✅ 主题持久化保存
+
+### ☁️ 云端 LLM 提供商
+- ✅ OpenAI (GPT-4, GPT-3.5-turbo)
+- ✅ Anthropic Claude (Claude 3 系列)
+- ✅ Google Gemini (Gemini Pro, Ultra)
+- ✅ 统一接口，动态切换
+- ✅ 流式响应支持
+
+[查看完整更新日志](docs/cn/CHANGELOG.md)
 
 ## ✨ 功能特性
 
 - 🚀 **Astro.js** - 现代静态网站生成器，零 JavaScript 运行时
 - 🎨 **Tailwind CSS** - 实用优先的 CSS 框架，快速构建现代 UI
+- 🌓 **Dark Mode** - 完整的深色模式支持，自动检测系统偏好
 - 🤖 **多 LLM 提供商** - 支持 OpenAI、Anthropic Claude、Google Gemini、Ollama 等
 - ☁️ **云端 AI 集成** - 无缝集成主流云端 LLM 服务
 - 🏠 **本地 AI 支持** - Ollama 和 OpenLLM 本地部署选项
@@ -97,40 +115,157 @@
 
 详细配置请参考 [云端 LLM 集成指南](docs/cn/integration/CLOUD_LLM_INTEGRATION.md)
 
+## 🌓 Dark Mode（深色模式）
+
+项目内置完整的深色模式支持，提供更舒适的使用体验。
+
+### 主要特性
+
+- **自动检测** - 自动检测系统主题偏好
+- **一键切换** - 页面右上角的主题切换按钮
+- **持久化** - 主题选择保存在 localStorage
+- **平滑过渡** - 优雅的颜色过渡动画
+- **无闪烁** - 页面加载时无主题闪烁
+
+### 快速使用
+
+```astro
+<!-- 在 Astro 组件中使用 dark: 变体 -->
+<div class="bg-white dark:bg-gray-900">
+  <h1 class="text-black dark:text-white">标题</h1>
+</div>
+```
+
+```tsx
+// 在 React 组件中
+<button className="bg-blue-500 dark:bg-blue-700">
+  按钮
+</button>
+```
+
+### 自定义主题颜色
+
+编辑 `src/styles/globals.css` 自定义颜色：
+
+```css
+:root {
+  --background: 0 0% 100%;        /* 浅色背景 */
+  --foreground: 222.2 84% 4.9%;   /* 浅色文字 */
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;   /* 深色背景 */
+  --foreground: 210 40% 98%;      /* 深色文字 */
+}
+```
+
+📚 **完整文档**: 查看 [Dark Mode 使用指南](docs/cn/features/DARK_MODE_GUIDE.md) 了解更多详情
+
 ## 📁 项目结构
 
 ```
-📦 templ/
+📦 utemplate-main/
 ├── 📂 public/                     # 静态资源
 │   └── favicon.svg
 ├── 📂 src/
-│   ├── 📂 components/             # Astro 组件
-│   │   └── Chat.astro            # 聊天界面组件
-│   ├── 📂 lib/                   # 工具库
-│   │   ├── config.ts             # 应用配置
-│   │   └── ollama.ts             # Ollama API 封装
-│   ├── 📂 routes/                # Express 路由
-│   │   ├── chat.ts              # 聊天路由
-│   │   └── models.ts            # 模型管理路由
-│   ├── 📂 pages/                 # Astro 页面路由
-│   │   ├── 📂 api/               # Astro API 端点
-│   │   │   ├── chat.ts           # 聊天 API
-│   │   │   └── models.ts         # 模型列表 API
-│   │   ├── index.astro           # 首页
-│   │   └── chat.astro            # 聊天页面
-│   └── server.ts                 # Express 服务器
-├── 📂 docs/                      # 项目文档
-│   ├── 📂 guide/                 # 使用指南
-│   │   ├── express-integration.md # Express 集成指南
-│   │   └── ...
-│   └── 📂 api/                   # API 文档
-│       ├── express-api.md        # Express API 文档
-│       └── ...
-├── .env.example                  # 环境变量示例
-├── astro.config.mjs              # Astro 配置
-├── tailwind.config.mjs           # Tailwind 配置
-└── package.json                  # 项目依赖
+│   ├── 📂 components/             # React & Astro 组件
+│   │   ├── Dashboard.tsx          # 仪表盘组件
+│   │   ├── FileUpload.tsx         # 文件上传组件
+│   │   ├── Research.tsx           # 研究组件
+│   │   ├── Settings.tsx           # 设置组件
+│   │   ├── ThemeToggle.tsx        # 主题切换组件 🌓
+│   │   └── ui/                    # shadcn/ui 组件库
+│   │       ├── avatar.tsx
+│   │       ├── badge.tsx
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── input.tsx
+│   │       └── label.tsx
+│   ├── 📂 layouts/                # 页面布局
+│   │   └── Layout.astro           # 主布局（包含 Dark Mode）
+│   ├── 📂 lib/                    # 工具库
+│   │   ├── config.ts              # 应用配置（LLM 提供商）
+│   │   ├── llm-providers.ts       # 统一 LLM 接口 ☁️
+│   │   ├── ollama.ts              # Ollama API 封装
+│   │   └── utils.ts               # 工具函数
+│   ├── 📂 routes/                 # Express 路由
+│   │   ├── chat.ts                # 聊天路由（多提供商）
+│   │   └── models.ts              # 模型管理路由
+│   ├── 📂 pages/                  # Astro 页面路由
+│   │   ├── 📂 api/                # Astro API 端点
+│   │   │   ├── chat.ts            # 聊天 API
+│   │   │   └── models.ts          # 模型列表 API
+│   │   ├── index.astro            # 首页（Research）
+│   │   ├── settings.astro         # 设置页面
+│   │   └── upload.astro           # 文件上传页面
+│   ├── 📂 styles/                 # 样式文件
+│   │   └── globals.css            # 全局样式（Dark Mode 变量）
+│   ├── env.d.ts                   # 环境类型定义
+│   └── server.ts                  # Express 服务器
+├── 📂 docs/                       # 项目文档
+│   ├── 📂 cn/                     # 中文文档
+│   │   ├── 📂 features/           # 功能文档
+│   │   │   ├── DARK_MODE_GUIDE.md        # Dark Mode 完整指南 🌓
+│   │   │   └── DARK_MODE_QUICK_REF.md    # Dark Mode 快速参考 🌓
+│   │   ├── 📂 integration/        # 集成指南
+│   │   │   ├── CLOUD_LLM_INTEGRATION.md         # 云端 LLM 集成 ☁️
+│   │   │   ├── CLOUD_LLM_INTEGRATION_SUMMARY.md # 集成总结 ☁️
+│   │   │   ├── EXPRESS_INTEGRATION_SUMMARY.md
+│   │   │   └── REACT_SHADCN_INTEGRATION.md
+│   │   ├── 📂 testing/            # 测试文档
+│   │   │   ├── CLOUD_LLM_QUICK_TEST.md  # 云端 LLM 测试 ☁️
+│   │   │   └── QUICK_TEST.md
+│   │   ├── CHANGELOG.md           # 变更日志
+│   │   └── QUICK_REFERENCE.md     # 快速参考 ☁️
+│   └── 📂 en/                     # 英文文档
+│       ├── 📂 integration/
+│       │   └── CLOUD_LLM_INTEGRATION.en.md  # 英文集成指南 ☁️
+│       └── CHANGELOG.en.md
+├── .env.example                   # 环境变量示例（含 API Keys）
+├── astro.config.mjs               # Astro 配置
+├── components.json                # shadcn/ui 配置
+├── tailwind.config.mjs            # Tailwind 配置（Dark Mode）
+├── tsconfig.json                  # TypeScript 配置
+├── package.json                   # 项目依赖
+└── DEPLOYMENT_CHECKLIST.md        # 部署检查清单
+
+图例: 🌓 Dark Mode 相关 | ☁️ 云端 LLM 相关
 ```
+
+## 📚 文档索引
+
+### 快速开始
+- [快速开始指南](#-快速开始) - 5 分钟快速搭建
+- [环境配置](#环境配置) - 配置开发环境
+- [使用说明](#-使用说明) - 基本操作指南
+
+### 功能特性
+- **🌓 [Dark Mode 指南](docs/cn/features/DARK_MODE_GUIDE.md)** - 深色模式完整文档
+  - [快速参考](docs/cn/features/DARK_MODE_QUICK_REF.md)
+- **☁️ [云端 LLM 集成](docs/cn/integration/CLOUD_LLM_INTEGRATION.md)** - 多提供商支持
+  - [快速测试](docs/cn/testing/CLOUD_LLM_QUICK_TEST.md)
+  - [集成总结](docs/cn/integration/CLOUD_LLM_INTEGRATION_SUMMARY.md)
+  - [快速参考](docs/cn/QUICK_REFERENCE.md)
+
+### 集成指南
+- [Express 集成](docs/cn/integration/EXPRESS_INTEGRATION_SUMMARY.md)
+- [React + shadcn/ui 集成](docs/cn/integration/REACT_SHADCN_INTEGRATION.md)
+- [OpenLLM 集成](docs/cn/integration/OPENLLM_INTEGRATION.md)
+- [Supabase 集成](docs/cn/integration/SUPABASE_INTEGRATION.md)
+
+### API 文档
+- [Express API 参考](docs/api/express-api.md)
+- [API 端点说明](#-api-接口)
+
+### 测试文档
+- [快速测试指南](docs/cn/testing/QUICK_TEST.md)
+- [云端 LLM 测试](docs/cn/testing/CLOUD_LLM_QUICK_TEST.md)
+- [OpenLLM 测试](docs/cn/testing/OPENLLM_QUICK_TEST.md)
+
+### 其他
+- [变更日志](docs/cn/CHANGELOG.md)
+- [部署检查清单](DEPLOYMENT_CHECKLIST.md)
+- [贡献指南](#-贡献指南)
 
 ## 🎯 使用说明
 
@@ -475,6 +610,10 @@ export default defineConfig({
       <br><strong>TypeScript</strong>
     </td>
     <td align="center" width="100">
+      <img src="https://react.dev/favicon.ico" width="48" height="48" alt="React" />
+      <br><strong>React</strong>
+    </td>
+    <td align="center" width="100">
       <img src="https://ollama.ai/public/ollama.png" width="48" height="48" alt="Ollama" />
       <br><strong>Ollama</strong>
     </td>
@@ -484,16 +623,43 @@ export default defineConfig({
 ### 核心技术
 
 - **[Astro.js](https://astro.build/)** `^5.14.3` - 现代静态网站生成器
+- **[React](https://react.dev/)** `^19.2.0` - 用户界面库（Islands Architecture）
 - **[Tailwind CSS](https://tailwindcss.com/)** `^3.4.18` - 实用优先 CSS 框架
-- **[TypeScript](https://www.typescriptlang.org/)** - 类型安全的 JavaScript 超集
+- **[shadcn/ui](https://ui.shadcn.com/)** - 可定制的 React 组件库
+- **[TypeScript](https://www.typescriptlang.org/)** `^5.9.3` - 类型安全的 JavaScript 超集
+- **[Express.js](https://expressjs.com/)** `^5.1.0` - Node.js Web 应用框架
+
+### AI 集成
+
 - **[Ollama](https://ollama.ai/)** `^0.6.0` - 本地大语言模型运行时
+- **[OpenAI API](https://platform.openai.com/)** - GPT-4, GPT-3.5-turbo
+- **[Anthropic Claude](https://www.anthropic.com/)** - Claude 3 系列
+- **[Google Gemini](https://ai.google.dev/)** - Gemini Pro, Ultra
 - **[OpenLLM](https://github.com/bentoml/OpenLLM)** - 生产级 LLM 部署平台
+
+### UI 组件库
+
+- **[@radix-ui/react-avatar](https://www.radix-ui.com/)** - 无障碍头像组件
+- **[@radix-ui/react-label](https://www.radix-ui.com/)** - 表单标签组件
+- **[@radix-ui/react-slot](https://www.radix-ui.com/)** - 组件组合工具
+- **[lucide-react](https://lucide.dev/)** `^0.546.0` - 精美图标库
+- **[class-variance-authority](https://cva.style/)** - 样式变体管理
+- **[tailwind-merge](https://github.com/dcastil/tailwind-merge)** - Tailwind 类名合并
+- **[tailwindcss-animate](https://github.com/jamiebuilds/tailwindcss-animate)** - 动画工具
 
 ### 开发工具
 
 - **@astrojs/check** - Astro 项目类型检查
+- **@astrojs/react** - Astro React 集成
 - **@astrojs/tailwind** - Astro Tailwind CSS 集成
-- **Vite** - 快速的前端构建工具 (Astro 内置)
+- **tsx** - TypeScript 执行器
+- **nodemon** - 文件监听和自动重启
+- **Vite** - 快速的前端构建工具（Astro 内置）
+
+### 后端服务
+
+- **cors** - 跨域资源共享中间件
+- **dotenv** - 环境变量管理
 
 ## 🤖 AI 集成
 
@@ -532,14 +698,41 @@ openllm start facebook/opt-1.3b --port 3000
 
 ## 📊 项目状态
 
-- ✅ 基础架构搭建完成
-- ✅ Ollama API 集成完成  
-- ✅ OpenLLM API 集成完成
-- ✅ 聊天界面开发完成
-- ✅ 响应式设计完成
-- ✅ 错误处理完成
-- ✅ TypeScript 支持完成
-- ✅ 流式响应支持完成
+### 已完成功能 ✅
+- ✅ 基础架构搭建
+- ✅ Ollama API 集成  
+- ✅ OpenLLM API 集成
+- ✅ **云端 LLM 提供商集成** (v1.1.0)
+  - OpenAI
+  - Anthropic Claude
+  - Google Gemini
+- ✅ **Dark Mode 深色模式** (v1.2.0)
+- ✅ 聊天界面开发
+- ✅ 响应式设计
+- ✅ 错误处理
+- ✅ TypeScript 支持
+- ✅ 流式响应支持
+- ✅ shadcn/ui 组件库集成
+- ✅ 主题切换功能
+
+### 开发中功能 🚧
+- 🚧 用户认证系统（Supabase Auth）
+- 🚧 对话历史管理
+- 🚧 多轮对话上下文
+- 🚧 RAG（检索增强生成）集成
+
+### 计划功能 📋
+- 📋 函数调用支持
+- 📋 多模态输入（图片、音频）
+- 📋 Agent 工作流
+- 📋 团队协作功能
+- 📋 API 使用量统计
+- 📋 成本监控
+
+### 版本历史
+- **v1.2.0** (2025-11-03) - Dark Mode + 文档更新
+- **v1.1.0** (2025-11-03) - 云端 LLM 提供商支持
+- **v1.0.0** (2025-10-10) - 初始版本发布
 
 ## 🤝 贡献指南
 

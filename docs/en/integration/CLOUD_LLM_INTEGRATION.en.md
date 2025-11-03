@@ -288,8 +288,6 @@ function ChatInterface() {
 - `claude-3-opus-20240229` - Most powerful Claude 3 model
 - `claude-3-sonnet-20240229` - Balance of performance and speed
 - `claude-3-haiku-20240307` - Fastest Claude 3 model
-- `claude-2.1` - Claude 2.1 version
-- `claude-2.0` - Claude 2.0 version
 
 ### Google Gemini
 - `gemini-pro` - Standard Gemini model

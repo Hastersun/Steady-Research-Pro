@@ -6,6 +6,7 @@ interface Props {
 
 const { title, activePage = 'research' } = Astro.props;
 import '@/styles/globals.css';
+import { ThemeToggle } from '@/components/ThemeToggle';
 ---
 
 <html lang="zh-CN">
@@ -15,22 +16,28 @@ import '@/styles/globals.css';
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{title} - Steady Research Pro</title>
+    
+    <!-- 防止主题闪烁的脚本 - 必须在 head 中立即执行 -->
+    <script is:inline>
+      (function() {
+        const theme = localStorage.getItem('theme') || 
+                     (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+      })();
+    </script>
   </head>
-  <body class="min-h-screen bg-background">
+  <body class="min-h-screen bg-background transition-colors duration-300">
     <!-- Top Navigation -->
-    <nav class="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 fixed top-0 left-0 right-0 z-50">
+    <nav class="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 fixed top-0 left-0 right-0 z-50 transition-colors duration-300">
       <div class="px-4 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
             <a href="/" class="text-xl font-bold">Steady Research Pro</a>
           </div>
-          <div class="flex items-center space-x-4">
-            <button class="text-sm font-medium text-muted-foreground hover:text-primary">
-              Notifications 🔔
-            </button>
-            <button class="text-sm font-medium text-muted-foreground hover:text-primary">
-              Profile 👤
-            </button>
+          
+          <!-- Theme Toggle Button -->
+          <div class="flex items-center gap-2">
+            <ThemeToggle client:load />
           </div>
         </div>
       </div>
@@ -39,7 +46,7 @@ import '@/styles/globals.css';
     <!-- Layout Container -->
     <div class="flex pt-[73px] min-h-screen">
       <!-- Left Sidebar -->
-      <aside class="w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 fixed left-0 top-[73px] bottom-0 overflow-y-auto">
+      <aside class="w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 fixed left-0 top-[73px] bottom-0 overflow-y-auto transition-colors duration-300">
         <nav class="p-4 space-y-2">
           <a 
             href="/" 

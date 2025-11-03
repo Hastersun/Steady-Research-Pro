@@ -5,6 +5,76 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-11-03
+
+### Added
+- 🌓 **Dark Mode Support** - Complete dark mode functionality
+  - Created `ThemeToggle` React component for theme switching
+  - Anti-flash script for seamless page load
+  - Automatic system theme preference detection
+  - Theme persistence to localStorage
+  - Smooth color transition animations
+- 🎨 **Theme Toggle Button** - Visual theme switcher in navigation bar
+  - Moon icon (light mode)
+  - Sun icon (dark mode)
+  - Keyboard navigation and screen reader support
+- 📚 **Dark Mode Documentation** - Complete usage and customization guides
+  - `docs/cn/features/DARK_MODE_GUIDE.md` - Complete guide (Chinese)
+  - `docs/en/features/DARK_MODE_QUICK_REF.en.md` - Quick reference (English)
+  - `docs/cn/features/DARK_MODE_QUICK_REF.md` - Quick reference (Chinese)
+
+### Changed
+- 🎨 **Updated Layout** - `Layout.astro` integrated theme toggle
+- 💅 **Optimized CSS** - Added smooth transition effects for theme switching
+- 🎯 **Improved Accessibility** - Theme toggle includes complete ARIA labels
+
+### Technical Details
+- React hooks for theme state management
+- CSS variables for dynamic theme switching
+- System theme preference detection (`prefers-color-scheme`)
+- localStorage theme persistence
+- Tailwind CSS `dark:` variant support
+
+## [1.1.0] - 2025-11-03
+
+### Added
+- ☁️ **Cloud LLM Provider Support** - Integration with multiple cloud AI services
+  - OpenAI (GPT-4, GPT-3.5-turbo, etc.)
+  - Anthropic Claude (Claude 3 Opus, Sonnet, Haiku)
+  - Google Gemini (Gemini Pro, Ultra)
+- 🔄 **Unified LLM Interface** - Common LLM provider interface (`src/lib/llm-providers.ts`)
+- 🎯 **Dynamic Provider Switching** - API endpoints support provider parameter selection
+- 📡 **Provider Status Query** - New `/api/chat/providers` endpoint for provider status
+- 🌊 **Unified Streaming** - All providers support Server-Sent Events (SSE) streaming
+- 🔐 **Environment Configuration** - Extended `.env.example` with cloud provider API Keys
+- 📚 **Complete Documentation** - Cloud LLM integration and testing guides
+  - `docs/cn/integration/CLOUD_LLM_INTEGRATION.md`
+  - `docs/en/integration/CLOUD_LLM_INTEGRATION.en.md`
+  - `docs/cn/testing/CLOUD_LLM_QUICK_TEST.md`
+  - `docs/cn/integration/CLOUD_LLM_INTEGRATION_SUMMARY.md`
+  - `docs/cn/QUICK_REFERENCE.md`
+
+### Changed
+- ♻️ **Refactored Routes** - Updated `src/routes/chat.ts` for multi-provider support
+- 🔧 **Extended Config** - Added all provider configurations in `src/lib/config.ts`
+- 📝 **Updated README** - Cloud LLM provider usage instructions
+
+### Technical Details
+- Native Fetch API implementation, no extra SDK dependencies
+- `ILLMProvider` interface for consistent behavior
+- Support for both streaming and non-streaming modes
+- Complete type safety and error handling
+
+### API Changes
+- All chat APIs now accept `provider` parameter
+  ```json
+  {
+    "message": "Your message",
+    "provider": "openai|anthropic|google|ollama|openllm",
+    "model": "specific model name"
+  }
+  ```
+
 ## [1.0.0] - 2025-10-31
 
 ### Added
