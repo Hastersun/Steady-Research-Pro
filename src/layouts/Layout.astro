@@ -1,0 +1,95 @@
+---
+interface Props {
+  title: string;
+  activePage?: 'research' | 'upload' | 'settings';
+}
+
+const { title, activePage = 'research' } = Astro.props;
+import '@/styles/globals.css';
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title} - Steady Research Pro</title>
+  </head>
+  <body class="min-h-screen bg-background">
+    <!-- Top Navigation -->
+    <nav class="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 fixed top-0 left-0 right-0 z-50">
+      <div class="px-4 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <a href="/" class="text-xl font-bold">Steady Research Pro</a>
+          </div>
+          <div class="flex items-center space-x-4">
+            <button class="text-sm font-medium text-muted-foreground hover:text-primary">
+              Notifications 🔔
+            </button>
+            <button class="text-sm font-medium text-muted-foreground hover:text-primary">
+              Profile 👤
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Layout Container -->
+    <div class="flex pt-[73px] min-h-screen">
+      <!-- Left Sidebar -->
+      <aside class="w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 fixed left-0 top-[73px] bottom-0 overflow-y-auto">
+        <nav class="p-4 space-y-2">
+          <a 
+            href="/" 
+            class={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              activePage === 'research' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'hover:bg-accent hover:text-accent-foreground'
+            }`}
+          >
+            <span class="text-xl">🔍</span>
+            <span>Research</span>
+          </a>
+          <a 
+            href="/upload" 
+            class={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              activePage === 'upload' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'hover:bg-accent hover:text-accent-foreground'
+            }`}
+          >
+            <span class="text-xl">📤</span>
+            <span>File Upload</span>
+          </a>
+          <a 
+            href="/settings" 
+            class={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              activePage === 'settings' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'hover:bg-accent hover:text-accent-foreground'
+            }`}
+          >
+            <span class="text-xl">⚙️</span>
+            <span>Settings</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="flex-1 ml-64">
+        <div class="container mx-auto px-6 py-8">
+          <slot />
+        </div>
+
+        <!-- Footer -->
+        <footer class="border-t mt-16">
+          <div class="px-6 py-6 text-center text-sm text-muted-foreground">
+            <p>© 2025 Steady Research Pro. Built with Astro + shadcn/ui</p>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

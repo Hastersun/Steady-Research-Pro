@@ -24,7 +24,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, change, changeType, i
         <span className={changeType === 'increase' ? 'text-green-600' : 'text-red-600'}>
           {changeType === 'increase' ? '↑' : '↓'} {change}
         </span>
-        {' '}与上月相比
+        {' '}compared to last month
       </p>
     </CardContent>
   </Card>
@@ -42,28 +42,28 @@ interface Activity {
 const Dashboard: React.FC = () => {
   const stats = [
     {
-      title: '总收入',
+      title: 'Total Revenue',
       value: '¥45,231',
       change: '+20.1%',
       changeType: 'increase' as const,
       icon: '💰',
     },
     {
-      title: '活跃用户',
+      title: 'Active Users',
       value: '2,350',
       change: '+15.3%',
       changeType: 'increase' as const,
       icon: '👥',
     },
     {
-      title: '订单数',
+      title: 'Orders',
       value: '892',
       change: '+12.5%',
       changeType: 'increase' as const,
       icon: '📦',
     },
     {
-      title: '转化率',
+      title: 'Conversion Rate',
       value: '3.2%',
       change: '-2.4%',
       changeType: 'decrease' as const,
@@ -74,34 +74,34 @@ const Dashboard: React.FC = () => {
   const recentActivities: Activity[] = [
     {
       id: 1,
-      user: '张三',
+      user: 'Zhang San',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-      action: '完成了新订单 #1234',
-      time: '5分钟前',
+      action: 'Completed new order #1234',
+      time: '5 minutes ago',
       status: 'success',
     },
     {
       id: 2,
-      user: '李四',
+      user: 'Li Si',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
-      action: '更新了个人资料',
-      time: '15分钟前',
+      action: 'Updated profile',
+      time: '15 minutes ago',
       status: 'success',
     },
     {
       id: 3,
-      user: '王五',
+      user: 'Wang Wu',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jasmine',
-      action: '提交了退款请求',
-      time: '1小时前',
+      action: 'Submitted refund request',
+      time: '1 hour ago',
       status: 'warning',
     },
     {
       id: 4,
-      user: '赵六',
+      user: 'Zhao Liu',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie',
-      action: '注册新账户',
-      time: '2小时前',
+      action: 'Registered new account',
+      time: '2 hours ago',
       status: 'success',
     },
   ];
@@ -113,9 +113,9 @@ const Dashboard: React.FC = () => {
       warning: 'destructive',
     };
     const labels = {
-      success: '成功',
-      pending: '进行中',
-      warning: '警告',
+      success: 'Success',
+      pending: 'In Progress',
+      warning: 'Warning',
     };
     return (
       <Badge variant={variants[status] as any}>
@@ -128,8 +128,8 @@ const Dashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Action Buttons */}
       <div className="flex gap-2 justify-end">
-        <Button variant="outline">📥 导出报告</Button>
-        <Button>🔄 刷新数据</Button>
+        <Button variant="outline">📥 Export Report</Button>
+        <Button>🔄 Refresh Data</Button>
       </div>
 
       {/* Stats Grid */}
@@ -143,8 +143,8 @@ const Dashboard: React.FC = () => {
         {/* Overview Chart */}
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle>收入概览</CardTitle>
-            <CardDescription>近6个月的收入趋势</CardDescription>
+            <CardTitle>Revenue Overview</CardTitle>
+            <CardDescription>Revenue trends for the last 6 months</CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
             <div className="h-[300px] flex items-end justify-around gap-2 px-4">
@@ -158,12 +158,12 @@ const Dashboard: React.FC = () => {
               ))}
             </div>
             <div className="flex justify-around mt-4 text-xs text-muted-foreground">
-              <span>5月</span>
-              <span>6月</span>
-              <span>7月</span>
-              <span>8月</span>
-              <span>9月</span>
-              <span>10月</span>
+              <span>May</span>
+              <span>June</span>
+              <span>July</span>
+              <span>Aug</span>
+              <span>Sep</span>
+              <span>Oct</span>
             </div>
           </CardContent>
         </Card>
@@ -171,8 +171,8 @@ const Dashboard: React.FC = () => {
         {/* Recent Activity */}
         <Card className="col-span-3">
           <CardHeader>
-            <CardTitle>最近活动</CardTitle>
-            <CardDescription>用户最新的操作记录</CardDescription>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>Latest user actions</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -201,58 +201,58 @@ const Dashboard: React.FC = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>快速操作</CardTitle>
-            <CardDescription>常用功能快捷入口</CardDescription>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Quick access to common functions</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full" variant="outline">➕ 创建新订单</Button>
-            <Button className="w-full" variant="outline">👤 管理用户</Button>
-            <Button className="w-full" variant="outline">⚙️ 系统设置</Button>
+            <Button className="w-full" variant="outline">➕ Create New Order</Button>
+            <Button className="w-full" variant="outline">👤 Manage Users</Button>
+            <Button className="w-full" variant="outline">⚙️ System Settings</Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>系统状态</CardTitle>
-            <CardDescription>服务运行情况</CardDescription>
+            <CardTitle>System Status</CardTitle>
+            <CardDescription>Service health status</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm">数据库</span>
-              <Badge variant="default">正常</Badge>
+              <span className="text-sm">Database</span>
+              <Badge variant="default">Normal</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">API 服务</span>
-              <Badge variant="default">正常</Badge>
+              <span className="text-sm">API Service</span>
+              <Badge variant="default">Normal</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">存储空间</span>
-              <Badge variant="secondary">78% 使用</Badge>
+              <span className="text-sm">Storage</span>
+              <Badge variant="secondary">78% Used</Badge>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>待办事项</CardTitle>
-            <CardDescription>需要处理的任务</CardDescription>
+            <CardTitle>To-Do List</CardTitle>
+            <CardDescription>Tasks that need attention</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center gap-2">
               <input type="checkbox" className="rounded" />
-              <span className="text-sm">审核待处理订单</span>
+              <span className="text-sm">Review pending orders</span>
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" className="rounded" />
-              <span className="text-sm">回复客户咨询</span>
+              <span className="text-sm">Reply to customer inquiries</span>
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" className="rounded" />
-              <span className="text-sm">更新产品库存</span>
+              <span className="text-sm">Update product inventory</span>
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" className="rounded" />
-              <span className="text-sm">生成月度报表</span>
+              <span className="text-sm">Generate monthly report</span>
             </div>
           </CardContent>
         </Card>

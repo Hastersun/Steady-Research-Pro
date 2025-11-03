@@ -1,12 +1,12 @@
-// Ollama 配置文件
+// Ollama configuration file
 export const OLLAMA_CONFIG = {
-  // Ollama 服务器地址
+  // Ollama server address
   HOST: 'http://localhost:11434',
   
-  // 默认模型
+  // Default model
   DEFAULT_MODEL: 'llama2',
   
-  // 支持的模型列表（如果 Ollama 服务不可用时的备选）
+  // Supported models list (fallback when Ollama service is unavailable)
   FALLBACK_MODELS: [
     'llama2',
     'llama2:13b',
@@ -16,7 +16,7 @@ export const OLLAMA_CONFIG = {
     'starling-lm'
   ],
   
-  // API 端点
+  // API endpoints
   ENDPOINTS: {
     HEALTH: '/api/version',
     MODELS: '/api/tags',
@@ -24,25 +24,25 @@ export const OLLAMA_CONFIG = {
     GENERATE: '/api/generate'
   },
   
-  // 请求配置
-  REQUEST_TIMEOUT: 30000, // 30秒超时
+  // Request configuration
+  REQUEST_TIMEOUT: 30000, // 30 seconds timeout
   
-  // 流式响应配置
+  // Streaming response configuration
   STREAM_CONFIG: {
     enabled: true,
     chunkSize: 1024
   }
 };
 
-// OpenLLM 配置文件
+// OpenLLM configuration file
 export const OPENLLM_CONFIG = {
-  // OpenLLM 服务器地址（兼容 OpenAI API 格式）
+  // OpenLLM server address (compatible with OpenAI API format)
   BASE_URL: 'http://localhost:3000',
   
-  // 默认模型
+  // Default model
   DEFAULT_MODEL: 'facebook/opt-1.3b',
   
-  // 支持的模型列表
+  // Supported models list
   SUPPORTED_MODELS: [
     'facebook/opt-1.3b',
     'facebook/opt-2.7b',
@@ -54,7 +54,7 @@ export const OPENLLM_CONFIG = {
     'mistralai/Mistral-7B-v0.1',
   ],
   
-  // API 端点
+  // API endpoints
   ENDPOINTS: {
     HEALTH: '/health',
     MODELS: '/v1/models',
@@ -62,10 +62,10 @@ export const OPENLLM_CONFIG = {
     COMPLETIONS: '/v1/completions',
   },
   
-  // 请求配置
-  REQUEST_TIMEOUT: 60000, // 60秒超时
+  // Request configuration
+  REQUEST_TIMEOUT: 60000, // 60 seconds timeout
   
-  // 生成配置
+  // Generation configuration
   GENERATION_CONFIG: {
     temperature: 0.7,
     max_tokens: 1024,
@@ -74,19 +74,90 @@ export const OPENLLM_CONFIG = {
     presence_penalty: 0,
   },
   
-  // 流式响应配置
+  // Streaming response configuration
   STREAM_CONFIG: {
     enabled: true,
   }
 };
 
-// 错误消息配置
+// Cloud LLM Provider Types
+export type LLMProvider = 'ollama' | 'openai' | 'anthropic' | 'google' | 'openllm';
+
+// OpenAI configuration
+export const OPENAI_CONFIG = {
+  API_KEY: import.meta.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY || '',
+  BASE_URL: 'https://api.openai.com/v1',
+  DEFAULT_MODEL: 'gpt-3.5-turbo',
+  SUPPORTED_MODELS: [
+    'gpt-4-turbo-preview',
+    'gpt-4',
+    'gpt-3.5-turbo',
+    'gpt-3.5-turbo-16k',
+  ],
+  GENERATION_CONFIG: {
+    temperature: 0.7,
+    max_tokens: 2048,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+  },
+  REQUEST_TIMEOUT: 60000,
+};
+
+// Anthropic Claude configuration
+export const ANTHROPIC_CONFIG = {
+  API_KEY: import.meta.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY || '',
+  BASE_URL: 'https://api.anthropic.com/v1',
+  DEFAULT_MODEL: 'claude-3-sonnet-20240229',
+  SUPPORTED_MODELS: [
+    'claude-3-opus-20240229',
+    'claude-3-sonnet-20240229',
+    'claude-3-haiku-20240307',
+    'claude-2.1',
+    'claude-2.0',
+  ],
+  GENERATION_CONFIG: {
+    temperature: 0.7,
+    max_tokens: 4096,
+    top_p: 1,
+  },
+  REQUEST_TIMEOUT: 60000,
+};
+
+// Google Gemini configuration
+export const GOOGLE_CONFIG = {
+  API_KEY: import.meta.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY || '',
+  BASE_URL: 'https://generativelanguage.googleapis.com/v1beta',
+  DEFAULT_MODEL: 'gemini-pro',
+  SUPPORTED_MODELS: [
+    'gemini-pro',
+    'gemini-pro-vision',
+    'gemini-ultra',
+  ],
+  GENERATION_CONFIG: {
+    temperature: 0.7,
+    maxOutputTokens: 2048,
+    topP: 0.8,
+    topK: 40,
+  },
+  REQUEST_TIMEOUT: 60000,
+};
+
+// Default LLM Provider
+export const DEFAULT_LLM_PROVIDER: LLMProvider = 'ollama';
+
+// Error messages configuration
 export const ERROR_MESSAGES = {
-  SERVICE_UNAVAILABLE: 'Ollama 服务不可用，请确保 Ollama 正在运行',
-  OPENLLM_UNAVAILABLE: 'OpenLLM 服务不可用，请确保 OpenLLM 正在运行',
-  MODEL_NOT_FOUND: '指定的模型未找到',
-  TIMEOUT: '请求超时，请稍后重试',
-  NETWORK_ERROR: '网络连接错误',
-  INVALID_REQUEST: '请求格式无效',
-  EMPTY_MESSAGE: '消息内容不能为空'
+  SERVICE_UNAVAILABLE: 'Ollama service is unavailable, please make sure Ollama is running',
+  OPENLLM_UNAVAILABLE: 'OpenLLM service is unavailable, please make sure OpenLLM is running',
+  OPENAI_UNAVAILABLE: 'OpenAI service is unavailable, please check your API key',
+  ANTHROPIC_UNAVAILABLE: 'Anthropic service is unavailable, please check your API key',
+  GOOGLE_UNAVAILABLE: 'Google Gemini service is unavailable, please check your API key',
+  MODEL_NOT_FOUND: 'The specified model was not found',
+  TIMEOUT: 'Request timed out, please try again later',
+  NETWORK_ERROR: 'Network connection error',
+  INVALID_REQUEST: 'Invalid request format',
+  EMPTY_MESSAGE: 'Message content cannot be empty',
+  PROVIDER_NOT_SUPPORTED: 'The specified LLM provider is not supported',
+  API_KEY_MISSING: 'API key is missing for the selected provider'
 };

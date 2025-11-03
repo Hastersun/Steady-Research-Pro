@@ -3,12 +3,12 @@ import { getAvailableModels, checkOllamaHealth } from '../../lib/ollama';
 
 export const GET: APIRoute = async () => {
   try {
-    // 检查 Ollama 服务是否可用
+    // Check if Ollama service is available
     const isHealthy = await checkOllamaHealth();
     if (!isHealthy) {
       return new Response(JSON.stringify({
         success: false,
-        error: 'Ollama 服务不可用，请确保 Ollama 正在运行',
+        error: 'Ollama service is unavailable, please make sure Ollama is running',
         models: []
       }), {
         status: 503,
@@ -27,10 +27,10 @@ export const GET: APIRoute = async () => {
     });
 
   } catch (error) {
-    console.error('获取模型列表错误:', error);
+    console.error('Error getting model list:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: error instanceof Error ? error.message : '服务器内部错误',
+      error: error instanceof Error ? error.message : 'Internal server error',
       models: []
     }), {
       status: 500,

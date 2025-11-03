@@ -5,14 +5,14 @@ import dotenv from 'dotenv';
 import chatRouter from './routes/chat.js';
 import modelsRouter from './routes/models.js';
 
-// 加载环境变量
+// Load environment variables
 dotenv.config();
 
-// 创建 Express 应用
+// Create Express application
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
-// 中间件配置
+// Middleware configuration
 app.use(cors({
   origin: process.env.CORS_ORIGIN || '*',
   credentials: true
@@ -20,13 +20,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 请求日志中间件
+// Request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
 
-// 健康检查端点
+// Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
   res.json({
     status: 'ok',
@@ -35,32 +35,32 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-// API 路由
+// API routes
 app.use('/api/chat', chatRouter);
 app.use('/api/models', modelsRouter);
 
-// 404 处理
+// 404 handler
 app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,
-    error: '请求的资源不存在'
+    error: 'The requested resource does not exist'
   });
 });
 
-// 错误处理中间件
+// Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error('服务器错误:', err);
+  console.error('Server error:', err);
   res.status(500).json({
     success: false,
-    error: err.message || '服务器内部错误'
+    error: err.message || 'Internal server error'
   });
 });
 
-// 启动服务器
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Express 服务器运行在 http://localhost:${PORT}`);
-  console.log(`📝 API 文档: http://localhost:${PORT}/api`);
-  console.log(`❤️  健康检查: http://localhost:${PORT}/health`);
+  console.log(`🚀 Express server running at http://localhost:${PORT}`);
+  console.log(`📝 API documentation: http://localhost:${PORT}/api`);
+  console.log(`❤️  Health check: http://localhost:${PORT}/health`);
 });
 
 export default app;

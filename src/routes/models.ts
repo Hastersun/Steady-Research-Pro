@@ -6,21 +6,21 @@ const router = Router();
 
 /**
  * GET /api/models
- * 获取可用的模型列表
+ * Get list of available models
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    // 检查 Ollama 服务是否可用
+    // Check if Ollama service is available
     const isHealthy = await checkOllamaHealth();
     if (!isHealthy) {
       return res.status(503).json({
         success: false,
-        error: 'Ollama 服务不可用，请确保 Ollama 正在运行',
+        error: 'Ollama service is unavailable, please make sure Ollama is running',
         models: []
       });
     }
 
-    // 获取模型列表
+    // Get model list
     const models = await getAvailableModels();
 
     return res.json({
@@ -35,10 +35,10 @@ router.get('/', async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    console.error('获取模型列表错误:', error);
+    console.error('Error getting model list:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : '服务器内部错误',
+      error: error instanceof Error ? error.message : 'Internal server error',
       models: []
     });
   }
@@ -46,7 +46,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 /**
  * GET /api/models/:name
- * 获取特定模型的详细信息
+ * Get detailed information for a specific model
  */
 router.get('/:name', async (req: Request, res: Response) => {
   try {
@@ -55,27 +55,27 @@ router.get('/:name', async (req: Request, res: Response) => {
     if (!modelName) {
       return res.status(400).json({
         success: false,
-        error: '模型名称不能为空'
+        error: 'Model name cannot be empty'
       });
     }
 
-    // 检查 Ollama 服务是否可用
+    // Check if Ollama service is available
     const isHealthy = await checkOllamaHealth();
     if (!isHealthy) {
       return res.status(503).json({
         success: false,
-        error: 'Ollama 服务不可用，请确保 Ollama 正在运行'
+        error: 'Ollama service is unavailable, please make sure Ollama is running'
       });
     }
 
-    // 获取所有模型并查找指定模型
+    // Get all models and find the specified model
     const models = await getAvailableModels();
     const model = models.find((m: any) => m.name === modelName);
 
     if (!model) {
       return res.status(404).json({
         success: false,
-        error: `未找到模型: ${modelName}`
+        error: `Model not found: ${modelName}`
       });
     }
 
@@ -91,10 +91,10 @@ router.get('/:name', async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    console.error('获取模型详情错误:', error);
+    console.error('Error getting model details:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : '服务器内部错误'
+      error: error instanceof Error ? error.message : 'Internal server error'
     });
   }
 });

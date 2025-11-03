@@ -58,13 +58,13 @@ export default {
     require("daisyui")
   ],
   daisyui: {
-    themes: ["light", "dark", "cupcake", "cyberpunk"], // 可以根据需要选择主题
-    darkTheme: "dark", // 默认暗色主题
-    base: true, // 应用背景颜色和前景颜色
-    styled: true, // 应用样式化的组件类
-    utils: true, // 添加响应式和修饰符工具类
-    prefix: "", // daisyUI 类名前缀（空字符串表示无前缀）
-    logs: true, // 显示日志
-    themeRoot: ":root", // 主题变量的根元素
+    themes: ["light", "dark", "cupcake", "cyberpunk"], // Choose themes as needed
+    darkTheme: "dark", // Default dark theme
+    base: true, // Apply background and foreground colors
+    styled: true, // Apply styled component classes
+    utils: true, // Add responsive and modifier utility classes
+    prefix: "", // daisyUI class name prefix (empty string means no prefix)
+    logs: true, // Show logs
+    themeRoot: ":root", // Root element for theme variables
   },
 }

@@ -17,15 +17,16 @@
 
 - 🚀 **Astro.js** - 现代静态网站生成器，零 JavaScript 运行时
 - 🎨 **Tailwind CSS** - 实用优先的 CSS 框架，快速构建现代 UI
-- 🤖 **Ollama AI** - 本地 AI 模型集成，支持多种开源大语言模型
-- � **OpenLLM** - 生产级 LLM 部署平台，兼容 OpenAI API
-- �💬 **实时聊天** - 流畅的 AI 对话体验，支持多模型切换
-- 🔄 **Express.js API** - 独立的 RESTful API 服务器，支持流式响应
+- 🤖 **多 LLM 提供商** - 支持 OpenAI、Anthropic Claude、Google Gemini、Ollama 等
+- ☁️ **云端 AI 集成** - 无缝集成主流云端 LLM 服务
+- 🏠 **本地 AI 支持** - Ollama 和 OpenLLM 本地部署选项
+- 💬 **实时聊天** - 流畅的 AI 对话体验，支持流式响应
+- 🔄 **Express.js API** - 独立的 RESTful API 服务器，支持多提供商切换
 - 📱 **响应式设计** - 完美适配桌面端和移动端设备
 - ⚡ **快速开发** - 热重载开发体验，毫秒级构建速度
 - 🛡️ **类型安全** - 完整的 TypeScript 支持
 - 🎯 **零配置** - 开箱即用的开发环境
-- 🔒 **隐私优先** - 所有数据处理都在本地进行
+- 🔒 **隐私优先** - 支持完全本地部署，数据不出本地
 
 ## 🚀 快速开始
 
@@ -33,7 +34,8 @@
 
 - Node.js 18+ 
 - npm 或 yarn
-- [Ollama](https://ollama.ai/) (用于本地 AI 模型)
+- (可选) [Ollama](https://ollama.ai/) - 用于本地 AI 模型
+- (可选) 云端 LLM API Keys - OpenAI、Anthropic、Google Gemini
 
 ### 安装步骤
 
@@ -48,7 +50,18 @@
    npm install
    ```
 
-3. **安装并启动 Ollama**
+3. **配置环境变量**
+   ```bash
+   # 复制环境变量示例文件
+   cp .env.example .env
+   
+   # 编辑 .env 文件，添加你的 API Keys
+   # OPENAI_API_KEY=sk-...
+   # ANTHROPIC_API_KEY=sk-ant-...
+   # GOOGLE_API_KEY=AIzaSy...
+   ```
+
+4. **(可选) 设置本地 Ollama**
    ```bash
    # 下载并安装 Ollama (访问 https://ollama.ai)
    # 启动 Ollama 服务
@@ -58,14 +71,31 @@
    ollama pull llama2
    ```
 
-4. **启动开发服务器**
+5. **启动开发服务器**
    ```bash
+   # Terminal 1: 启动 Express API 服务器
+   npm run server:dev
+   
+   # Terminal 2: 启动 Astro 开发服务器
    npm run dev
    ```
 
-5. **打开浏览器**
+6. **打开浏览器**
    
    访问 [http://localhost:4321](http://localhost:4321) 开始使用！
+
+## 🌐 支持的 LLM 提供商
+
+### 云端提供商
+- **OpenAI** - GPT-4, GPT-3.5-turbo 等
+- **Anthropic** - Claude 3 Opus, Sonnet, Haiku
+- **Google** - Gemini Pro, Ultra
+
+### 本地提供商
+- **Ollama** - Llama2, CodeLlama, Mistral 等
+- **OpenLLM** - 兼容 OpenAI API 的本地部署
+
+详细配置请参考 [云端 LLM 集成指南](docs/cn/integration/CLOUD_LLM_INTEGRATION.md)
 
 ## 📁 项目结构
 

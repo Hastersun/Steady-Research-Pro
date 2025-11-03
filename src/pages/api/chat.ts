@@ -3,12 +3,12 @@ import { sendMessage, checkOllamaHealth } from '../../lib/ollama';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    // 检查 Ollama 服务是否可用
+    // Check if Ollama service is available
     const isHealthy = await checkOllamaHealth();
     if (!isHealthy) {
       return new Response(JSON.stringify({
         success: false,
-        error: 'Ollama 服务不可用，请确保 Ollama 正在运行'
+        error: 'Ollama service is unavailable, please make sure Ollama is running'
       }), {
         status: 503,
         headers: { 'Content-Type': 'application/json' }
@@ -21,7 +21,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (!message) {
       return new Response(JSON.stringify({
         success: false,
-        error: '消息内容不能为空'
+        error: 'Message content cannot be empty'
       }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -36,10 +36,10 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
   } catch (error) {
-    console.error('API 路由错误:', error);
+    console.error('API route error:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: error instanceof Error ? error.message : '服务器内部错误'
+      error: error instanceof Error ? error.message : 'Internal server error'
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
