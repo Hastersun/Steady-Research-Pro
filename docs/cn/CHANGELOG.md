@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-11-06
+
+### Added
+- 📤 **配置文件导出/导入功能** - Settings 组件新增完整的配置管理
+  - JSON 文件导出功能，支持自定义文件名
+  - 自定义文件名对话框，包含配置预览
+  - 智能默认文件名（包含模型、日期、时间信息）
+  - JSON 文件导入功能（按钮和拖放两种方式）
+  - 配置验证和错误处理
+- 🎨 **拖放导入支持** - 直观的拖放文件上传体验
+  - 拖放区域视觉反馈（边框高亮、背景变化）
+  - 拖放过程中的文件名显示
+  - 文件类型验证（仅接受 .json 文件）
+  - 实时拖放状态追踪
+- ✨ **丰富的交互动画** - 提升用户体验的视觉效果
+  - 脉冲波纹效果（拖放时）
+  - 渐变背景动画
+  - 图标动画（缩放、旋转、弹跳）
+  - 文字呼吸效果
+  - 成功庆祝动画（✨⭐🎉✅）
+  - 动态边框角标
+  - 容器放大和阴影效果
+  - 平滑的状态过渡动画
+- 📋 **文件名追踪显示** - 清晰的文件状态反馈
+  - 拖拽中的文件名实时显示
+  - 导入成功时的文件名高亮
+  - 最后导入文件名的持久化显示
+  - 不同状态的视觉区分（蓝色/绿色/默认主题）
+
+### Changed
+- 🎯 **优化 Settings 组件** - 增强配置管理用户体验
+  - 重构导入/导出区域布局
+  - 添加配置预览卡片
+  - 改进错误提示信息
+- 💅 **UI/UX 改进** - 更直观的交互设计
+  - 添加文件名显示卡片（带动画）
+  - 导出对话框包含当前配置摘要
+  - 统一的视觉反馈系统
+
+### Technical Details
+- 使用 React hooks 管理拖放状态
+- FileReader API 处理文件读取
+- Blob API 生成下载文件
+- shadcn/ui Dialog 组件集成
+- 多层动画叠加效果
+- localStorage 持久化配置
+
 ## [1.2.0] - 2025-11-03
 
 ### Added

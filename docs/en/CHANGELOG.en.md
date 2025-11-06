@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-11-06
+
+### Added
+- 📤 **Configuration Export/Import** - Complete config management in Settings component
+  - JSON file export with custom filename
+  - Custom filename dialog with config preview
+  - Smart default naming (model + date + time)
+  - JSON file import (button and drag-drop)
+  - Configuration validation and error handling
+- 🎨 **Drag & Drop Import** - Intuitive file upload experience
+  - Visual feedback (border highlight, background change)
+  - Filename display during dragging
+  - File type validation (.json only)
+  - Real-time drag state tracking
+- ✨ **Rich Interactive Animations** - Enhanced user experience
+  - Pulse ripple effects (during drag)
+  - Gradient background animations
+  - Icon animations (scale, rotate, bounce)
+  - Text breathing effects
+  - Success celebration animations (✨⭐🎉✅)
+  - Dynamic border corners
+  - Container scale and shadow effects
+  - Smooth state transitions
+- 📋 **Filename Tracking Display** - Clear file status feedback
+  - Real-time display of dragging filename
+  - Highlight imported filename on success
+  - Persistent display of last imported file
+  - Visual distinction by state (blue/green/default)
+
+### Changed
+- 🎯 **Enhanced Settings Component** - Improved config management UX
+  - Refactored import/export area layout
+  - Added configuration preview card
+  - Improved error messages
+- 💅 **UI/UX Improvements** - More intuitive interaction design
+  - Added filename display card with animations
+  - Export dialog includes current config summary
+  - Unified visual feedback system
+
+### Technical Details
+- React hooks for drag-drop state management
+- FileReader API for file reading
+- Blob API for file download generation
+- shadcn/ui Dialog component integration
+- Multi-layer animation stacking
+- localStorage config persistence
+
 ## [1.2.0] - 2025-11-03
 
 ### Added

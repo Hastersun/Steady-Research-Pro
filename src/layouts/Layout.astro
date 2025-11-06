@@ -1,7 +1,7 @@
 ---
 interface Props {
   title: string;
-  activePage?: 'research' | 'upload' | 'settings' | 'components';
+  activePage?: 'research' | 'resources' | 'settings' | 'components';
 }
 
 const { title, activePage = 'research' } = Astro.props;
@@ -88,17 +88,17 @@ import '@/styles/globals.css';
           </a>
           
           <a 
-            href="/upload" 
+            href="/resources" 
             class={`flex items-center gap-3 px-4 py-3.5 rounded-lg transition-all duration-200 ${
-              activePage === 'upload' 
+              activePage === 'resources' 
                 ? 'bg-primary text-primary-foreground shadow-md scale-[1.02]' 
                 : 'hover:bg-accent hover:text-accent-foreground hover:scale-[1.01]'
             }`}
           >
-            <span class="text-2xl">📤</span>
+            <span class="text-2xl">�</span>
             <div class="flex-1">
-              <div class="font-semibold">File Upload</div>
-              <div class="text-xs opacity-80">Manage documents</div>
+              <div class="font-semibold">Resources Management</div>
+              <div class="text-xs opacity-80">Files & web scraping</div>
             </div>
           </a>
           
