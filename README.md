@@ -39,6 +39,8 @@
 - ☁️ **云端 AI 集成** - 无缝集成主流云端 LLM 服务
 - 🏠 **本地 AI 支持** - Ollama 和 OpenLLM 本地部署选项
 - 💬 **实时聊天** - 流畅的 AI 对话体验，支持流式响应
+- ⚙️ **配置管理** - JSON 导出/导入，拖放上传，配置文件备份与分享
+- 🎭 **丰富动画** - 脉冲、波纹、弹跳等多种交互动画效果
 - 🔄 **Express.js API** - 独立的 RESTful API 服务器，支持多提供商切换
 - 📱 **响应式设计** - 完美适配桌面端和移动端设备
 - ⚡ **快速开发** - 热重载开发体验，毫秒级构建速度
@@ -172,8 +174,10 @@
 │   │   ├── Dashboard.tsx          # 仪表盘组件
 │   │   ├── FileUpload.tsx         # 文件上传组件
 │   │   ├── Research.tsx           # 研究组件
-│   │   ├── Settings.tsx           # 设置组件
+│   │   ├── Settings.tsx           # 设置组件（持久化配置）💾
 │   │   ├── ThemeToggle.tsx        # 主题切换组件 🌓
+│   │   ├── TextInput.tsx          # 文本输入组件 ✨
+│   │   ├── SliderWithInput.tsx    # 滑块输入组件 ✨
 │   │   └── ui/                    # shadcn/ui 组件库
 │   │       ├── avatar.tsx
 │   │       ├── badge.tsx
@@ -202,7 +206,7 @@
 │   │   └── globals.css            # 全局样式（Dark Mode 变量）
 │   ├── env.d.ts                   # 环境类型定义
 │   └── server.ts                  # Express 服务器
-├── 📂 docs/                       # 项目文档
+│   ├── 📂 docs/                       # 项目文档
 │   ├── 📂 cn/                     # 中文文档
 │   │   ├── 📂 features/           # 功能文档
 │   │   │   ├── DARK_MODE_GUIDE.md        # Dark Mode 完整指南 🌓
@@ -216,6 +220,7 @@
 │   │   │   ├── CLOUD_LLM_QUICK_TEST.md  # 云端 LLM 测试 ☁️
 │   │   │   └── QUICK_TEST.md
 │   │   ├── CHANGELOG.md           # 变更日志
+│   │   ├── SETTINGS_COMPONENT.md  # Settings 组件文档 💾
 │   │   └── QUICK_REFERENCE.md     # 快速参考 ☁️
 │   └── 📂 en/                     # 英文文档
 │       ├── 📂 integration/

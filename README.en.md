@@ -17,14 +17,19 @@ A modern AI chat web application built with Astro.js, Tailwind CSS, and Ollama A
 
 - 🚀 **Astro.js** - Modern static site generator with zero JavaScript runtime
 - 🎨 **Tailwind CSS** - Utility-first CSS framework for rapid modern UI development
-- 🤖 **Ollama AI** - Local AI model integration supporting multiple open-source LLMs
-- 💬 **Real-time Chat** - Smooth AI conversation experience with multi-model switching
-- 🔄 **Express.js API** - Independent RESTful API server with streaming support
+- 🌓 **Dark Mode** - Complete dark mode support with system preference detection
+- 🤖 **Multi LLM Providers** - Support for OpenAI, Anthropic Claude, Google Gemini, Ollama, etc.
+- ☁️ **Cloud AI Integration** - Seamless integration with major cloud LLM services
+- 🏠 **Local AI Support** - Ollama and OpenLLM local deployment options
+- 💬 **Real-time Chat** - Smooth AI conversation experience with streaming responses
+- ⚙️ **Config Management** - JSON export/import, drag-drop upload, config backup & sharing
+- 🎭 **Rich Animations** - Pulse, ripple, bounce and various interactive animation effects
+- 🔄 **Express.js API** - Independent RESTful API server with multi-provider switching
 - 📱 **Responsive Design** - Perfect adaptation for desktop and mobile devices
 - ⚡ **Fast Development** - Hot reload development experience with millisecond build speed
 - 🛡️ **Type Safety** - Complete TypeScript support
 - 🎯 **Zero Configuration** - Out-of-the-box development environment
-- 🔒 **Privacy First** - All data processing happens locally
+- 🔒 **Privacy First** - Support for complete local deployment, data stays local
 
 ## 🚀 Quick Start
 
