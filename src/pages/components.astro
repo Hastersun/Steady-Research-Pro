@@ -1,0 +1,219 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+---
+
+<Layout title="shadcn/ui 组件" activePage="components">
+  <div class="space-y-8">
+    <div>
+      <h1 class="text-3xl font-bold mb-4">shadcn/ui 组件展示</h1>
+      <p class="text-muted-foreground">这个页面展示了项目中已集成的 shadcn/ui 组件</p>
+    </div>
+
+    <!-- Buttons Section -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">按钮 (Buttons)</h2>
+      <div class="flex flex-wrap gap-2">
+        <Button client:load>Default</Button>
+        <Button client:load variant="secondary">Secondary</Button>
+        <Button client:load variant="destructive">Destructive</Button>
+        <Button client:load variant="outline">Outline</Button>
+        <Button client:load variant="ghost">Ghost</Button>
+        <Button client:load variant="link">Link</Button>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <Button client:load size="sm">Small</Button>
+        <Button client:load size="default">Default</Button>
+        <Button client:load size="lg">Large</Button>
+        <Button client:load size="icon">
+          <span>🔍</span>
+        </Button>
+      </div>
+    </section>
+
+    <!-- Cards Section -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">卡片 (Cards)</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card client:load>
+          <CardHeader>
+            <CardTitle>卡片标题</CardTitle>
+            <CardDescription>这是卡片的描述文字</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>这是卡片的主要内容区域。你可以在这里放置任何内容。</p>
+          </CardContent>
+          <CardFooter>
+            <Button client:load className="w-full">操作按钮</Button>
+          </CardFooter>
+        </Card>
+
+        <Card client:load>
+          <CardHeader>
+            <CardTitle>简单卡片</CardTitle>
+            <CardDescription>没有底部操作区</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>这是一个简单的卡片示例，只包含标题、描述和内容。</p>
+          </CardContent>
+        </Card>
+
+        <Card client:load>
+          <CardHeader>
+            <CardTitle>带列表的卡片</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul class="space-y-2">
+              <li class="flex items-center gap-2">
+                <span class="text-green-500">✓</span>
+                <span>功能一</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-green-500">✓</span>
+                <span>功能二</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-green-500">✓</span>
+                <span>功能三</span>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+
+    <!-- Form Elements -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">表单元素 (Form Elements)</h2>
+      <Card client:load>
+        <CardHeader>
+          <CardTitle>登录表单示例</CardTitle>
+          <CardDescription>使用 shadcn/ui 表单组件</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div class="space-y-2">
+            <Label client:load htmlFor="email">邮箱地址</Label>
+            <Input client:load id="email" type="email" placeholder="your@email.com" />
+          </div>
+          <div class="space-y-2">
+            <Label client:load htmlFor="password">密码</Label>
+            <Input client:load id="password" type="password" placeholder="••••••••" />
+          </div>
+          <div class="space-y-2">
+            <Label client:load htmlFor="name">用户名</Label>
+            <Input client:load id="name" type="text" placeholder="请输入用户名" />
+          </div>
+        </CardContent>
+        <CardFooter className="flex gap-2">
+          <Button client:load className="flex-1">登录</Button>
+          <Button client:load variant="outline" className="flex-1">取消</Button>
+        </CardFooter>
+      </Card>
+    </section>
+
+    <!-- Badges -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">徽章 (Badges)</h2>
+      <div class="flex flex-wrap gap-2">
+        <Badge client:load>Default</Badge>
+        <Badge client:load variant="secondary">Secondary</Badge>
+        <Badge client:load variant="destructive">Destructive</Badge>
+        <Badge client:load variant="outline">Outline</Badge>
+      </div>
+      <div class="flex items-center gap-2">
+        <span>状态：</span>
+        <Badge client:load className="bg-green-500">在线</Badge>
+        <Badge client:load className="bg-yellow-500">离开</Badge>
+        <Badge client:load className="bg-red-500">离线</Badge>
+      </div>
+    </section>
+
+    <!-- Avatars -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">头像 (Avatars)</h2>
+      <div class="flex flex-wrap gap-4">
+        <Avatar client:load>
+          <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+        <Avatar client:load>
+          <AvatarFallback>AB</AvatarFallback>
+        </Avatar>
+        <Avatar client:load>
+          <AvatarFallback>🧑</AvatarFallback>
+        </Avatar>
+      </div>
+    </section>
+
+    <!-- Combined Example -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">组合示例</h2>
+      <Card client:load>
+        <CardHeader>
+          <div class="flex items-center justify-between">
+            <div>
+              <CardTitle>用户资料</CardTitle>
+              <CardDescription>查看和编辑用户信息</CardDescription>
+            </div>
+            <Badge client:load className="bg-green-500">已验证</Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div class="flex items-center gap-4">
+            <Avatar client:load>
+              <AvatarImage src="https://github.com/shadcn.png" alt="User" />
+              <AvatarFallback>UN</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 class="font-semibold">张三</h3>
+              <p class="text-sm text-muted-foreground">zhangsan@example.com</p>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <Label client:load htmlFor="bio">个人简介</Label>
+            <Input client:load id="bio" placeholder="介绍一下你自己..." />
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button client:load variant="outline">取消</Button>
+          <Button client:load>保存更改</Button>
+        </CardFooter>
+      </Card>
+    </section>
+
+    <!-- Component Usage Guide -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold">使用说明</h2>
+      <Card client:load>
+        <CardHeader>
+          <CardTitle>如何在项目中使用</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <h3 class="font-semibold mb-2">1. 在 Astro 页面中</h3>
+            <pre class="bg-muted p-4 rounded-lg overflow-x-auto"><code>{`import { Button } from '@/components/ui/button';
+
+<Button client:load>点击我</Button>`}</code></pre>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-2">2. 在 React 组件中</h3>
+            <pre class="bg-muted p-4 rounded-lg overflow-x-auto"><code>{`import { Button } from '@/components/ui/button';
+
+export function MyComponent() {
+  return <Button onClick={() => alert('Clicked!')}>点击我</Button>;
+}`}</code></pre>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-2">3. 添加新组件</h3>
+            <pre class="bg-muted p-4 rounded-lg overflow-x-auto"><code>npx shadcn@latest add [component-name]</code></pre>
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+  </div>
+</Layout>

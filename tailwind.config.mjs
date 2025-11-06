@@ -54,17 +54,6 @@ export default {
     },
   },
   plugins: [
-    require("tailwindcss-animate"),
-    require("daisyui")
+    require("tailwindcss-animate")
   ],
-  daisyui: {
-    themes: ["light", "dark", "cupcake", "cyberpunk"], // Choose themes as needed
-    darkTheme: "dark", // Default dark theme
-    base: true, // Apply background and foreground colors
-    styled: true, // Apply styled component classes
-    utils: true, // Add responsive and modifier utility classes
-    prefix: "", // daisyUI class name prefix (empty string means no prefix)
-    logs: true, // Show logs
-    themeRoot: ":root", // Root element for theme variables
-  },
 }

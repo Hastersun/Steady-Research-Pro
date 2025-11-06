@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Completions API 测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .response-area {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .response-area h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .response-content {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            border-left-color: #f44;
+            color: #c00;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
+
+        .info-box strong {
+            color: #1976d2;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Chat Completions API 测试</h1>
+        <p class="subtitle">OpenAI 兼容的聊天完成 API</p>
+
+        <div class="info-box">
+            <strong>📍 API 端点:</strong> <code>/api/v1/chat/completions</code><br>
+            <strong>📚 文档:</strong> <a href="/docs/cn/CHAT_COMPLETIONS_API.md" target="_blank">查看完整文档</a>
+        </div>
+
+        <form id="chatForm">
+            <div class="grid">
+                <div class="input-group">
+                    <label for="model">模型 (Model)</label>
+                    <select id="model">
+                        <option value="llama2">llama2</option>
+                        <option value="llama3">llama3</option>
+                        <option value="mistral">mistral</option>
+                        <option value="codellama">codellama</option>
+                        <option value="phi">phi</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="temperature">Temperature (0-2)</label>
+                    <input type="number" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="system">System Prompt (系统提示)</label>
+                <textarea id="system" placeholder="例如: 你是一个有帮助的AI助手。">你是一个有帮助的AI助手。</textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="message">User Message (用户消息)</label>
+                <textarea id="message" placeholder="输入你的问题..." required>什么是人工智能？</textarea>
+            </div>
+
+            <div class="button-group">
+                <button type="submit">🚀 发送请求</button>
+                <button type="button" onclick="clearResponse()">🗑️ 清空响应</button>
+            </div>
+        </form>
+
+        <div class="response-area">
+            <h3>📤 响应结果</h3>
+            <div id="response" class="response-content">
+                等待请求...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('chatForm');
+        const responseDiv = document.getElementById('response');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const model = document.getElementById('model').value;
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const system = document.getElementById('system').value;
+            const message = document.getElementById('message').value;
+
+            // Show loading
+            responseDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>正在生成响应...</div>
+                </div>
+            `;
+            responseDiv.classList.remove('error');
+
+            try {
+                const response = await fetch('/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            ...(system ? [{ role: 'system', content: system }] : []),
+                            { role: 'user', content: message }
+                        ],
+                        model: model,
+                        temperature: temperature
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.choices) {
+                    // Success
+                    const content = data.choices[0].message.content;
+                    responseDiv.innerHTML = `
+                        <strong>✅ 成功响应</strong><br><br>
+                        <strong>Model:</strong> ${data.model}<br>
+                        <strong>ID:</strong> ${data.id}<br>
+                        <strong>Created:</strong> ${new Date(data.created * 1000).toLocaleString()}<br><br>
+                        <strong>Content:</strong><br>
+                        ${escapeHtml(content)}
+                    `;
+                } else {
+                    // Error from API
+                    responseDiv.classList.add('error');
+                    responseDiv.innerHTML = `
+                        <strong>❌ 错误</strong><br><br>
+                        <strong>Type:</strong> ${data.error?.type || 'unknown'}<br>
+                        <strong>Code:</strong> ${data.error?.code || 'unknown'}<br>
+                        <strong>Message:</strong> ${data.error?.message || 'Unknown error'}<br><br>
+                        <strong>Full Response:</strong><br>
+                        ${JSON.stringify(data, null, 2)}
+                    `;
+                }
+            } catch (error) {
+                // Network or other error
+                responseDiv.classList.add('error');
+                responseDiv.innerHTML = `
+                    <strong>❌ 请求失败</strong><br><br>
+                    ${error.message}<br><br>
+                    请确保：<br>
+                    1. Ollama 服务正在运行 (ollama serve)<br>
+                    2. 模型已安装 (ollama pull ${document.getElementById('model').value})<br>
+                    3. API 服务器正常运行
+                `;
+            }
+        });
+
+        function clearResponse() {
+            responseDiv.innerHTML = '等待请求...';
+            responseDiv.classList.remove('error');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
