@@ -134,7 +134,7 @@ const Settings: React.FC = () => {
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {
       console.error('Failed to export settings:', error);
-      alert('导出配置失败，请重试');
+      alert('Export configuration failed, please try again');
     }
   };
 
@@ -177,7 +177,7 @@ const Settings: React.FC = () => {
         setTimeout(() => setIsImportSuccess(false), 2000);
       } catch (error) {
         console.error('Failed to import settings:', error);
-        alert('导入配置失败，请检查文件格式是否正确');
+        alert('Import configuration failed, please check the file format');
       }
     };
     reader.readAsText(file);
@@ -233,7 +233,7 @@ const Settings: React.FC = () => {
     
     // Check if file is JSON
     if (!file.name.endsWith('.json')) {
-      alert('请拖放JSON文件');
+      alert('Please drop a JSON file');
       return;
     }
 
@@ -271,7 +271,7 @@ const Settings: React.FC = () => {
         setTimeout(() => setIsImportSuccess(false), 2000);
       } catch (error) {
         console.error('Failed to import settings:', error);
-        alert('导入配置失败，请检查文件格式是否正确');
+        alert('Import configuration failed, please check the file format');
       }
     };
     reader.readAsText(file);

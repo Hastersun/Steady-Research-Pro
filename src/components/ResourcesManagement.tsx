@@ -11,7 +11,7 @@ interface Resource {
   id: number;
   name: string;
   type: 'file' | 'url';
-  source: string; // 文件路径或 URL
+  source: string; // File path or URL
   size?: string;
   fileType?: string;
   addedDate: string;
@@ -94,7 +94,7 @@ export default function ResourcesManagement() {
       
       setResources((prev) => [newResource, ...prev]);
       
-      // 模拟上传完成
+      // Simulate upload completion
       setTimeout(() => {
         setResources((prev) =>
           prev.map((r) => (r.id === newResource.id ? { ...r, status: 'completed' as const } : r))
@@ -105,7 +105,7 @@ export default function ResourcesManagement() {
 
   const handleUrlScrape = async () => {
     if (!url) {
-      setError('请输入有效的 URL');
+      setError('Please enter a valid URL');
       return;
     }
 
@@ -129,7 +129,7 @@ export default function ResourcesManagement() {
       
       setProgress(60);
       
-      // 模拟爬取完成
+      // Simulate scraping completion
       setTimeout(() => {
         setProgress(100);
         setResources((prev) =>
@@ -141,7 +141,7 @@ export default function ResourcesManagement() {
       }, 1500);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : '爬取失败');
+      setError(err instanceof Error ? err.message : 'Scraping failed');
       setIsLoading(false);
       setProgress(0);
     }
@@ -163,11 +163,11 @@ export default function ResourcesManagement() {
   const getStatusBadge = (status: Resource['status']) => {
     switch (status) {
       case 'completed':
-        return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">完成</Badge>;
+        return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">Completed</Badge>;
       case 'processing':
-        return <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20">处理中</Badge>;
+        return <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20">Processing</Badge>;
       case 'failed':
-        return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/20">失败</Badge>;
+        return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/20">Failed</Badge>;
     }
   };
 
@@ -178,20 +178,20 @@ export default function ResourcesManagement() {
           Resources Management
         </h1>
         <p className="text-muted-foreground mt-2">
-          统一管理文件上传和网页数据抓取
+          Unified management of file uploads and webpage data scraping
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 文件上传区域 */}
+        {/* File Upload Area */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <span className="text-2xl">📤</span>
-              文件上传
+              File Upload
             </CardTitle>
             <CardDescription>
-              拖拽文件到此处或点击选择文件
+              Drag and drop files here or click to select files
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -208,9 +208,9 @@ export default function ResourcesManagement() {
               <div className="space-y-4">
                 <div className="text-5xl">📁</div>
                 <div>
-                  <p className="text-lg font-medium">拖拽文件到此处</p>
+                  <p className="text-lg font-medium">Drag and drop files here</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    支持 CSV, PDF, XLSX, TXT 等格式
+                    Supports CSV, PDF, XLSX, TXT and other formats
                   </p>
                 </div>
                 <div>
@@ -223,7 +223,7 @@ export default function ResourcesManagement() {
                   />
                   <label htmlFor="file-upload">
                     <Button variant="outline" className="cursor-pointer" asChild>
-                      <span>选择文件</span>
+                      <span>Select Files</span>
                     </Button>
                   </label>
                 </div>
@@ -232,15 +232,15 @@ export default function ResourcesManagement() {
           </CardContent>
         </Card>
 
-        {/* URL 爬取区域 */}
+        {/* URL Scraping Area */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <span className="text-2xl">🕸️</span>
-              URL 爬取
+              URL Scraping
             </CardTitle>
             <CardDescription>
-              输入网页 URL 进行数据抓取
+              Enter webpage URL for data scraping
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -258,14 +258,14 @@ export default function ResourcesManagement() {
                 disabled={isLoading || !url}
                 className="min-w-[100px]"
               >
-                {isLoading ? '爬取中...' : '开始爬取'}
+                {isLoading ? 'Scraping...' : 'Start Scraping'}
               </Button>
             </div>
 
             {isLoading && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">爬取进度</span>
+                  <span className="text-muted-foreground">Scraping Progress</span>
                   <span className="font-medium">{progress}%</span>
                 </div>
                 <Progress value={progress} className="h-2" />
@@ -279,31 +279,31 @@ export default function ResourcesManagement() {
             )}
 
             <div className="pt-4 space-y-2 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">💡 使用提示：</p>
+              <p className="font-medium text-foreground">💡 Usage Tips:</p>
               <ul className="space-y-1 list-disc list-inside">
-                <li>确保输入完整的 URL</li>
-                <li>遵守网站的使用条款</li>
-                <li>大型网页可能需要较长时间</li>
+                <li>Make sure to enter a complete URL</li>
+                <li>Respect the website's terms of use</li>
+                <li>Large webpages may take longer</li>
               </ul>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* 统一的资源列表 */}
+      {/* Unified Resource List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <span className="text-2xl">�</span>
-              所有资源
+              <span className="text-2xl">📚</span>
+              All Resources
             </span>
             <Badge variant="outline" className="text-base">
-              {resources.length} 项
+              {resources.length} items
             </Badge>
           </CardTitle>
           <CardDescription>
-            文件和网页数据的统一管理视图
+            Unified view for managing files and webpage data
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -311,8 +311,8 @@ export default function ResourcesManagement() {
             {resources.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <div className="text-5xl mb-4">📭</div>
-                <p>还没有任何资源</p>
-                <p className="text-sm mt-1">上传文件或爬取网页开始使用</p>
+                <p>No resources yet</p>
+                <p className="text-sm mt-1">Upload files or scrape webpages to get started</p>
               </div>
             ) : (
               resources.map((resource) => (
@@ -329,7 +329,7 @@ export default function ResourcesManagement() {
                         <p className="font-semibold truncate">{resource.name}</p>
                         {getStatusBadge(resource.status)}
                         <Badge variant="secondary" className="text-xs">
-                          {resource.type === 'file' ? '📁 文件' : '🌐 URL'}
+                          {resource.type === 'file' ? '📁 File' : '🌐 URL'}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground flex-wrap">
@@ -349,7 +349,7 @@ export default function ResourcesManagement() {
                         size="sm"
                         onClick={() => window.open(resource.source, '_blank')}
                       >
-                        🔗 访问
+                        🔗 Visit
                       </Button>
                     )}
                     <Button 
@@ -357,7 +357,7 @@ export default function ResourcesManagement() {
                       size="sm"
                       onClick={() => handleDelete(resource.id)}
                     >
-                      🗑️ 删除
+                      🗑️ Delete
                     </Button>
                   </div>
                 </div>

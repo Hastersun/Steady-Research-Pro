@@ -15,7 +15,7 @@ export default function WebScraper() {
 
   const handleScrape = async () => {
     if (!url) {
-      setError('请输入有效的 URL');
+      setError('Please enter a valid URL');
       return;
     }
 
@@ -25,10 +25,10 @@ export default function WebScraper() {
     setProgress(10);
 
     try {
-      // 模拟爬取过程
+      // Simulate scraping process
       setProgress(30);
       
-      // TODO: 实际的 API 调用将在这里实现
+      // TODO: Actual API call will be implemented here
       // const response = await fetch('/api/scrape', {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
@@ -37,15 +37,15 @@ export default function WebScraper() {
       
       setProgress(60);
       
-      // 模拟数据
+      // Simulated data
       setTimeout(() => {
         setProgress(100);
-        setScrapedData(`成功爬取网页: ${url}\n\n这是一个示例输出。实际的爬虫功能需要后端 API 支持。`);
+        setScrapedData(`Successfully scraped webpage: ${url}\n\nThis is a sample output. Actual scraping functionality requires backend API support.`);
         setIsLoading(false);
       }, 1000);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : '爬取失败');
+      setError(err instanceof Error ? err.message : 'Scraping failed');
       setIsLoading(false);
       setProgress(0);
     }
@@ -64,10 +64,10 @@ export default function WebScraper() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <span className="text-2xl">🕸️</span>
-            URL 输入
+            URL Input
           </CardTitle>
           <CardDescription>
-            输入要爬取的网页 URL
+            Enter the webpage URL to scrape
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -85,21 +85,21 @@ export default function WebScraper() {
               disabled={isLoading || !url}
               className="min-w-[100px]"
             >
-              {isLoading ? '爬取中...' : '开始爬取'}
+              {isLoading ? 'Scraping...' : 'Start Scraping'}
             </Button>
             <Button 
               onClick={handleClear} 
               variant="outline"
               disabled={isLoading}
             >
-              清空
+              Clear
             </Button>
           </div>
 
           {isLoading && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">爬取进度</span>
+                <span className="text-muted-foreground">Scraping Progress</span>
                 <span className="font-medium">{progress}%</span>
               </div>
               <Progress value={progress} className="h-2" />
@@ -120,14 +120,14 @@ export default function WebScraper() {
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <span className="text-2xl">📄</span>
-                爬取结果
+                Scraping Results
               </span>
               <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
-                成功
+                Success
               </Badge>
             </CardTitle>
             <CardDescription>
-              提取的网页内容
+              Extracted webpage content
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -141,7 +141,7 @@ export default function WebScraper() {
                 variant="outline"
                 onClick={() => navigator.clipboard.writeText(scrapedData)}
               >
-                📋 复制到剪贴板
+                📋 Copy to Clipboard
               </Button>
               <Button 
                 variant="outline"
@@ -155,7 +155,7 @@ export default function WebScraper() {
                   URL.revokeObjectURL(url);
                 }}
               >
-                💾 下载结果
+                💾 Download Results
               </Button>
             </div>
           </CardContent>
@@ -166,14 +166,14 @@ export default function WebScraper() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <span className="text-2xl">💡</span>
-            使用提示
+            Usage Tips
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>• 确保输入完整的 URL（包含 http:// 或 https://）</p>
-          <p>• 某些网站可能有反爬虫机制，可能无法成功爬取</p>
-          <p>• 大型网页可能需要较长时间处理</p>
-          <p>• 请遵守网站的 robots.txt 和使用条款</p>
+          <p>• Make sure to enter a complete URL (including http:// or https://)</p>
+          <p>• Some websites may have anti-scraping mechanisms and may not be successfully scraped</p>
+          <p>• Large webpages may take longer to process</p>
+          <p>• Please respect the website's robots.txt and terms of use</p>
         </CardContent>
       </Card>
     </div>

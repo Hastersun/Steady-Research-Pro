@@ -5,7 +5,7 @@ export function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mounted, setMounted] = useState(false);
 
-  // 组件挂载后才能访问 localStorage 和 document
+  // Can only access localStorage and document after component mounts
   useEffect(() => {
     setMounted(true);
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
@@ -23,7 +23,7 @@ export function ThemeToggle() {
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
 
-  // 避免服务端渲染时的闪烁
+  // Avoid flashing during server-side rendering
   if (!mounted) {
     return (
       <Button variant="ghost" size="icon" className="w-9 h-9">
@@ -38,7 +38,7 @@ export function ThemeToggle() {
       size="icon" 
       onClick={toggleTheme}
       className="w-9 h-9"
-      title={theme === 'light' ? '切换到深色模式' : '切换到浅色模式'}
+      title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
     >
       {theme === 'light' ? (
         <svg
@@ -78,7 +78,7 @@ export function ThemeToggle() {
         </svg>
       )}
       <span className="sr-only">
-        {theme === 'light' ? '切换到深色模式' : '切换到浅色模式'}
+        {theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
       </span>
     </Button>
   );
