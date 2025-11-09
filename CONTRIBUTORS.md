@@ -1,122 +1,121 @@
-# 贡献者名单 (Contributors)
+# Contributors
 
-感谢所有为这个项目做出贡献的开发者！🎉
+Thank you to all the developers who have contributed to this project! 🎉
 
-## 核心维护者 (Core Maintainers)
+## Core Maintainers
 
-- **[@Your Name](https://github.com/yourusername)** - 项目创建者和主要维护者
+- **[@Your Name](https://github.com/yourusername)** - Project Creator and Lead Maintainer
 
-## 贡献者 (Contributors)
+## Contributors
 
-感谢以下贡献者对本项目的支持：
+Thanks to the following contributors for their support:
 
 <!-- 
-贡献者列表将自动更新。如果您贡献了代码、文档或其他改进，您的名字将会出现在这里。
-Contributors list will be automatically updated. If you've contributed code, documentation, or other improvements, your name will appear here.
+The contributors list will be automatically updated. If you've contributed code, documentation, or other improvements, your name will appear here.
 -->
 
-### 如何成为贡献者 (How to Become a Contributor)
+### How to Become a Contributor
 
-我们欢迎所有形式的贡献，包括但不限于：
+We welcome all forms of contributions, including but not limited to:
 
-#### 代码贡献 (Code Contributions)
-- 🐛 修复 Bug
-- ✨ 添加新功能
-- ⚡ 性能优化
-- 🎨 UI/UX 改进
+#### Code Contributions
+- 🐛 Bug fixes
+- ✨ New features
+- ⚡ Performance improvements
+- 🎨 UI/UX enhancements
 
-#### 文档贡献 (Documentation Contributions)
-- 📝 改进文档
-- 🌍 翻译文档
-- 📚 添加示例和教程
+#### Documentation Contributions
+- 📝 Documentation improvements
+- 🌍 Translations
+- 📚 Examples and tutorials
 
-#### 其他贡献 (Other Contributions)
-- 🐛 报告 Bug
-- 💡 提出新功能建议
-- 🧪 测试和反馈
-- ⭐ Star 本项目
+#### Other Contributions
+- 🐛 Bug reports
+- 💡 Feature suggestions
+- 🧪 Testing and feedback
+- ⭐ Star the project
 
-## 贡献指南 (Contribution Guidelines)
+## Contribution Guidelines
 
-### 1. Fork 项目
-点击右上角的 "Fork" 按钮，将项目 Fork 到你的 GitHub 账户。
+### 1. Fork the Repository
+Click the "Fork" button in the top right corner to fork the project to your GitHub account.
 
-### 2. 克隆到本地
+### 2. Clone to Local
 ```bash
 git clone https://github.com/your-username/astro-tailwind-ollama.git
 cd astro-tailwind-ollama
 ```
 
-### 3. 创建新分支
+### 3. Create a New Branch
 ```bash
 git checkout -b feature/your-feature-name
-# 或
+# or
 git checkout -b fix/your-bug-fix
 ```
 
-### 4. 进行更改
-- 遵循现有的代码风格
-- 确保代码通过 TypeScript 类型检查
-- 添加必要的注释和文档
-- 测试你的更改
+### 4. Make Changes
+- Follow the existing code style
+- Ensure code passes TypeScript type checking
+- Add necessary comments and documentation
+- Test your changes
 
-### 5. 提交更改
+### 5. Commit Changes
 ```bash
 git add .
-git commit -m "feat: 添加新功能描述"
-# 或
-git commit -m "fix: 修复 Bug 描述"
+git commit -m "feat: add new feature description"
+# or
+git commit -m "fix: fix bug description"
 ```
 
-**提交信息规范：**
-- `feat:` - 新功能
-- `fix:` - Bug 修复
-- `docs:` - 文档更新
-- `style:` - 代码格式调整
-- `refactor:` - 代码重构
-- `perf:` - 性能优化
-- `test:` - 测试相关
-- `chore:` - 构建/工具相关
+**Commit Message Convention:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation update
+- `style:` - Code formatting
+- `refactor:` - Code refactoring
+- `perf:` - Performance improvement
+- `test:` - Testing related
+- `chore:` - Build/tooling related
 
-### 6. 推送到 GitHub
+### 6. Push to GitHub
 ```bash
 git push origin feature/your-feature-name
 ```
 
-### 7. 创建 Pull Request
-在 GitHub 上创建 Pull Request，详细描述你的更改。
+### 7. Create a Pull Request
+Create a Pull Request on GitHub with a detailed description of your changes.
 
-## 行为准则 (Code of Conduct)
+## Code of Conduct
 
-### 我们的承诺
-为了营造一个开放和友好的环境，我们承诺：
+### Our Pledge
+To foster an open and welcoming environment, we pledge to:
 
-- 🤝 尊重不同的观点和经验
-- 💬 使用友好和包容的语言
-- 🎯 专注于对社区最有利的事情
-- 🌟 展现同理心和善意
+- 🤝 Respect differing viewpoints and experiences
+- 💬 Use welcoming and inclusive language
+- 🎯 Focus on what is best for the community
+- 🌟 Show empathy and kindness
 
-### 不可接受的行为
-- 使用性化的语言或图像
-- 人身攻击或侮辱性评论
-- 骚扰（公开或私下）
-- 未经许可发布他人的私人信息
-- 其他不道德或不专业的行为
+### Unacceptable Behavior
+- Use of sexualized language or imagery
+- Personal attacks or insulting comments
+- Harassment (public or private)
+- Publishing others' private information without permission
+- Other unethical or unprofessional conduct
 
-## 致谢 (Acknowledgments)
+## Acknowledgments
 
-本项目使用了以下优秀的开源项目：
+This project uses the following excellent open source projects:
 
-- [Astro](https://astro.build/) - 现代化的静态网站生成器
-- [Tailwind CSS](https://tailwindcss.com/) - 实用优先的 CSS 框架
-- [Ollama](https://ollama.ai/) - 本地 AI 模型运行工具
-- [Express.js](https://expressjs.com/) - Node.js Web 框架
-- [shadcn/ui](https://ui.shadcn.com/) - 可复用的 React 组件
-- [TypeScript](https://www.typescriptlang.org/) - JavaScript 的超集
+- [Astro](https://astro.build/) - Modern static site generator
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Ollama](https://ollama.ai/) - Local AI model runtime
+- [Express.js](https://expressjs.com/) - Node.js web framework
+- [shadcn/ui](https://ui.shadcn.com/) - Reusable React components
+- [TypeScript](https://www.typescriptlang.org/) - JavaScript superset
 
-## 联系方式 (Contact)
+## Contact
 
-如有任何问题或建议，请通过以下方式联系我们：
+If you have any questions or suggestions, please contact us through:
 
 - 📧 Email: your.email@example.com
 - 🐛 Issues: [GitHub Issues](https://github.com/yourusername/astro-tailwind-ollama/issues)
@@ -124,6 +123,6 @@ git push origin feature/your-feature-name
 
 ---
 
-再次感谢所有贡献者的支持！❤️
+Thank you again to all contributors for your support! ❤️
 
-*最后更新: 2025年10月31日*
+*Last updated: October 31, 2025*
