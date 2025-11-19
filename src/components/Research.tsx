@@ -10,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import DocumentPreview from '@/components/DocumentPreview';
 
 interface ResearchTemplate {
   id: number;
@@ -30,9 +31,33 @@ const Research: React.FC = () => {
 
   const researchTemplates: ResearchTemplate[] = [
     {
+      id: 0,
+      title: 'Blank Document',
+      description: 'Start with a clean slate',
+      template: `# Untitled Document
+
+## Introduction
+
+Start writing your content here...
+
+## Section 1
+
+Add your content...
+
+## Section 2
+
+Add your content...
+
+## Conclusion
+
+Summarize your findings...`,
+      category: 'General',
+      icon: '📄',
+    },
+    {
       id: 1,
       title: 'Market Research Report',
-      description: 'Comprehensive market analysis document structure',
+      description: 'Comprehensive market analysis template',
       template: `# Market Research Report
 
 ## Executive Summary
@@ -339,6 +364,77 @@ const Research: React.FC = () => {
       category: 'Academic',
       icon: '📚',
     },
+    {
+      id: 5,
+      title: 'AI Ethics Research Template',
+      description: 'Framework for analyzing ethical implications of AI systems',
+      template: `# AI Ethics Research Template
+
+## Executive Summary
+- AI system overview
+- Key ethical concerns identified
+- Recommendations for responsible AI development
+
+## 1. AI System Description
+### 1.1 Purpose & Functionality
+### 1.2 Target Users & Use Cases
+### 1.3 Technical Architecture Overview
+
+## 2. Ethical Analysis Framework
+### 2.1 Fairness & Bias Assessment
+- Data bias evaluation
+- Algorithmic fairness metrics
+- Disparate impact analysis
+
+### 2.2 Transparency & Explainability
+- Model interpretability
+- Decision explanation capabilities
+- Audit trail requirements
+
+### 2.3 Privacy & Data Protection
+- Data collection practices
+- User consent mechanisms
+- Data minimization strategies
+
+### 2.4 Accountability & Governance
+- Responsibility assignment
+- Oversight mechanisms
+- Incident response protocols
+
+## 3. Risk Assessment
+### 3.1 Potential Harms
+- Individual level impacts
+- Societal implications
+- Long-term consequences
+
+### 3.2 Vulnerability Analysis
+- Attack vectors
+- Failure modes
+- Edge cases
+
+## 4. Mitigation Strategies
+### 4.1 Technical Safeguards
+- Bias detection algorithms
+- Privacy-preserving techniques
+- Robustness improvements
+
+### 4.2 Policy & Governance
+- Ethical guidelines implementation
+- Regular audits and reviews
+- Stakeholder engagement
+
+## 5. Recommendations
+### 5.1 Immediate Actions
+### 5.2 Long-term Strategy
+### 5.3 Monitoring & Evaluation
+
+## Appendix
+- Ethical review checklist
+- Implementation timeline
+- Resource requirements`,
+      category: 'Technology',
+      icon: '🤖',
+    },
   ];
 
   const handleTemplateSelect = (template: ResearchTemplate) => {
@@ -519,10 +615,8 @@ const Research: React.FC = () => {
                               )}
                             </Button>
                           </div>
-                          <div className="flex-1 overflow-y-auto p-4">
-                            <pre className="text-sm whitespace-pre-wrap font-mono bg-background p-4 rounded border">
-                              {previewTemplate.template}
-                            </pre>
+                          <div className="flex-1 overflow-y-auto p-4 bg-surface">
+                            <DocumentPreview content={previewTemplate.template} />
                           </div>
                         </>
                       ) : (

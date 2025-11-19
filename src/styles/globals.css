@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Document preview (paper-like) styles */
+.document-container {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+.document-page {
+  width: 210mm; /* A4 width */
+  min-height: 297mm; /* A4 height */
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.document-header,
+.document-footer {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+@media print {
+  body * { visibility: hidden; }
+  .document-page, .document-page * { visibility: visible; }
+  .document-page { position: absolute; left: 0; top: 0; }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

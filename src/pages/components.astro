@@ -137,14 +137,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
     <section class="space-y-4">
       <h2 class="text-2xl font-semibold">Avatars</h2>
       <div class="flex flex-wrap gap-4">
-        <Avatar client:load>
+        <Avatar client:only="react">
           <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
-        <Avatar client:load>
+        <Avatar client:only="react">
           <AvatarFallback>AB</AvatarFallback>
         </Avatar>
-        <Avatar client:load>
+        <Avatar client:only="react">
           <AvatarFallback>🧑</AvatarFallback>
         </Avatar>
       </div>
@@ -165,7 +165,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
         </CardHeader>
         <CardContent className="space-y-4">
           <div class="flex items-center gap-4">
-            <Avatar client:load>
+            <Avatar client:only="react">
               <AvatarImage src="https://github.com/shadcn.png" alt="User" />
               <AvatarFallback>UN</AvatarFallback>
             </Avatar>
